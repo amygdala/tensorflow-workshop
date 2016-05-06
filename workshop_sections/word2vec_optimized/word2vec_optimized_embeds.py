@@ -399,6 +399,46 @@ class Word2Vec(object):
         print("%-20s %6.4f" % (self._id2word[neighbor], distance))
 
 
+  def build_get_embed_graph(self):
+    """Build a graph structure to generate an embedding."""
+    # get embedding graph ?
+    opts = self._options
+
+    word_a = tf.placeholder(dtype=tf.int32)  # [N]
+    # Normalized word embeddings of shape [vocab_size, emb_dim].
+    nemb = tf.nn.l2_normalize(self._w_in, 1)
+    self._a_emb = tf.gather(nemb, word_a)  # a's embeddings
+    # Node in the construct graph to run
+    self._word_a = word_a
+
+
+  def get_embed(self, word):
+    """Get the embedding for a given word."""
+
+    print('word: %s' % word)
+    wid = np.array([[self._word2id.get(w, 0) for w in [word]]])
+    word_idx = wid[:, 0]
+    if not word_idx:
+      print('could not find word %s' % word)
+      return None
+    else:
+      [EDIT THIS]
+      # add the code to run the graph node that will generate the embedding.
+      return emb
+
+
+  # Time-consuming operation when run serially.
+  def build_embeddings_index(self, oput_fname):
+    """Output the learned embeddings for all words in the vocubulary."""
+    with open(oput_fname, "w") as f2:
+      for word in self._word2id.keys():
+        embed = {}
+        emb = self.get_embed(word)
+        if emb != None:
+          embed[word.decode('utf-8')] = emb.tolist()
+          f2.write(json.dumps(embed) + '\n')
+
+
 def _start_shell(local_ns=None):
   # An interactive shell is useful for debugging/development.
   import IPython
@@ -433,7 +473,7 @@ def main(_):
         # [1]: model.nearby([b'proton', b'elephant', b'maxwell'])
         _start_shell(locals())
     else:
-      print("Not training -- loading existing model vars.")
+      print("not training -- loading existing model vars.")
 
       ckpt = tf.train.get_checkpoint_state(FLAGS.save_path)
       print(ckpt.model_checkpoint_path)

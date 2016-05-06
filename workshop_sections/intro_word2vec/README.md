@@ -14,6 +14,18 @@ $ python word2vec_basic.py
 
 While it's running, we'll look at what how this graph is constructed, what it does and why that is interesting.
 
+## (Alternately) run the training within a jupyter notebook
+
+[** add explanation **] 
+
+```sh
+$ cd <tensorflow>/tensorflow/examples/udacity
+$ jupyter notebook
+```
+
+Then select the `5_word2vec` notebook from the list.
+
+
 ## Look at the results
 
 After the training is finished, the script will map the model's learned word vectors into a 2D space, and plot the results using matplotlib in conjunction with an [sklearn](xxx) library called [TSNE](xxx).
