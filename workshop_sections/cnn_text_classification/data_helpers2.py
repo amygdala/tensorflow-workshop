@@ -51,17 +51,19 @@ def clean_str(string):
     return string.strip().lower()
 
 
-def load_data_and_labels(cat1="./data/reddit/aww/subreddit_news",
-        cat2="./data/reddit/aww/subreddit_aww"):
+def load_data_and_labels(
+        #cat1="./data/reddit/aww/subreddit_news",
+        #cat2="./data/reddit/aww/subreddit_aww"
+        cat1="./data/rt-polaritydata/rt-polarity.pos",
+        cat2="./data/rt-polaritydata/rt-polarity.neg"
+        ):
     """
     Loads two-category data from files, splits the data into words and generates
     labels. Returns split sentences and labels.
     """
     # Load data from files
-    # positive_examples = list(open("./data/rt-polaritydata/rt-polarity.pos", "r").readlines())
     positive_examples = list(open(cat1, "r").readlines())
     positive_examples = [s.strip() for s in positive_examples]
-    # negative_examples = list(open("./data/rt-polaritydata/rt-polarity.neg", "r").readlines())
     negative_examples = list(open(cat2, "r").readlines())
     negative_examples = [s.strip() for s in negative_examples]
     # Split by words
@@ -77,8 +79,11 @@ def load_data_and_labels(cat1="./data/reddit/aww/subreddit_news",
 
 # aju
 def build_vocab_mapping(run="", write_mapping=True,
-        cat1="./data/reddit/aww/subreddit_news",
-        cat2="./data/reddit/aww/subreddit_aww"):
+        #cat1="./data/reddit/aww/subreddit_news",
+        #cat2="./data/reddit/aww/subreddit_aww"
+        cat1="./data/rt-polaritydata/rt-polarity.pos",
+        cat2="./data/rt-polaritydata/rt-polarity.neg"
+        ):
     """
     Generate vocabulary mapping info, save it for later eval. This ensures that
     the mapping used for the eval is the same.
@@ -103,7 +108,7 @@ def build_vocab_mapping(run="", write_mapping=True,
 
 
 def pad_sentences(sentences, padding_word="<PAD/>",
-        max_sent_length=40):
+        max_sent_length=60):
     """
     Pads all sentences to the same length. The length is defined by the min of
     the longest sentence and a given max sentence length.
@@ -128,7 +133,7 @@ def pad_sentences(sentences, padding_word="<PAD/>",
     return padded_sentences
 
 
-def build_vocab(sentences, max_vocab=10000):
+def build_vocab(sentences, max_vocab=30000):
     """
     Builds a vocabulary mapping from word to index based on the sentences.
     Returns vocabulary mapping and inverse vocabulary mapping.

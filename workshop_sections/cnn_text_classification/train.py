@@ -72,7 +72,7 @@ y_shuffled = y[shuffle_indices]
 # Split train/test set
 # TODO: This is very crude, should use cross-validation
 # aju - unhardwire dev size
-dev_size = 8000
+dev_size = 1000
 x_train, x_dev = x_shuffled[:-dev_size], x_shuffled[-dev_size:]
 y_train, y_dev = y_shuffled[:-dev_size], y_shuffled[-dev_size:]
 print("Vocabulary Size: {:d}".format(len(vocabulary)))
