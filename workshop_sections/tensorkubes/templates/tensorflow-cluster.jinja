@@ -7,15 +7,15 @@ metadata:
     namespace: {{ NAMESPACE }}
 data:
     clusterconfig: >
-    {
-        {% for job in properties['jobs'] %}
-        "{{ job['name'] }}": [
-            {% for i in range(job['num_tasks']) %}
-            "{{ job['name'] }}-{{ i }}.{{ NAMESPACE }}.svc.cluster.local:{{ job['port'] or 8080 }}",
+        {
+            {% for job in properties['jobs'] %}
+            "{{ job['name'] }}": [
+                {% for i in range(job['num_tasks']) %}
+                "{{ job['name'] }}-{{ i }}.{{ NAMESPACE }}.svc.cluster.local:{{ job['port'] or 8080 }}",
+                {% endfor %}
+            ],
             {% endfor %}
-        ],
-        {% endfor %}
-    }
+        }
 ---
 {% for job in properties['jobs'] %}
 {% for i in range(job['num_tasks']) %}
