@@ -41,9 +41,8 @@ gcloud compute forwarding-rules list
 and use the listed `IP_ADDRESS`.
 
 
-For more detailed explanation of distributed tensorflow, check out [the tensorflow docs](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/g3doc/how_tos/distributed/index.md). When you need to specify a tensorflow cluster config, your workers will be at the following address for `/jobs:{job_name}/workers:{task_id}`:
+For more detailed explanation of distributed tensorflow, check out [the tensorflow docs](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/g3doc/how_tos/distributed/index.md). When you need to specify a tensorflow cluster config, you can use the provided environment variable as follows:
 
 ```
-{job_name}-{task_id}.{namespace}.svc.cluster.local:8080
+cluster_def = ast.literal_eval(os.environ.get('CLUSTER_CONFIG'))
 ```
-
