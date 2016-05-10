@@ -1,0 +1,55 @@
+{% set SERVER_IMAGE = properties['image'] or 'gcr.io/oscon-tf-workshop/tf-worker:latest' %}
+{% set NAMESPACE = properties['namespace'] or 'default' %}
+
+{% for job in properties['jobs'] %}
+{% for i in range(0, job['num_tasks']) %}
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ job['name'] }}-{{ i }}
+  namespace: {{ NAMESPACE }}
+spec:
+  ports:
+    - port: {{ job['port'] or 8080 }}
+      name: grpc-server
+  selector:
+    job: {{ job['name'] }}
+    task: '{{ i }}'
+---
+kind: ReplicationController
+apiVersion: v1
+metadata:
+  name: {{ job['name'] }}-{{ i }}
+  namespace: {{ NAMESPACE }}
+spec:
+  replicas: 1
+  selector:
+    job: {{ job['name'] }}
+    task: '{{ i }}'
+  template:
+    metadata:
+      labels:
+        job: {{ job['name'] }}
+        task: '{{ i }}'
+    spec:
+      containers:
+        - name: tf-grpc-server
+          image: {{ SERVER_IMAGE }}
+          ports:
+            - name: grpc-server
+              containerPort: 8080
+          args:
+            - '--job-config'
+            - "{{ properties['jobs']|string }}"
+          env:
+            - name: POD_NAME
+              valueFrom:
+                  fieldRef:
+                      fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                  fieldRef:
+                      fieldPath: metadata.namespace
+---
+{% endfor %}
+{% endfor %}
