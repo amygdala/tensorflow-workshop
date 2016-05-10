@@ -1,0 +1,69 @@
+{% set SERVER_IMAGE = properties['image'] or 'gcr.io/oscon-tf-workshop/tf-worker:latest' %}
+{% set NAMESPACE = properties['namespace'] or 'default' %}
+kind: ConfigMap
+apiVersion: v1
+metadata:
+    name: tensorflow-cluster-config
+    namespace: {{ NAMESPACE }}
+data:
+    clusterconfig: >
+    {
+        {% for job in properties['jobs'] %}
+        "{{ job['name'] }}": [
+            {% for i in range(job['num_tasks']) %}
+            "{{ job['name'] }}-{{ i }}.{{ NAMESPACE }}.svc.cluster.local:{{ job['port'] or 8080 }}",
+            {% endfor %}
+        ],
+        {% endfor %}
+    }
+---
+{% for job in properties['jobs'] %}
+{% for i in range(job['num_tasks']) %}
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ job['name'] }}-{{ i }}
+  namespace: {{ NAMESPACE }}
+spec:
+  ports:
+    - port: {{ job['port'] or 8080 }}
+      name: grpc-server
+  selector:
+    job: {{ job['name'] }}
+    task: '{{ i }}'
+---
+kind: ReplicationController
+apiVersion: v1
+metadata:
+  name: {{ job['name'] }}-{{ i }}
+  namespace: {{ NAMESPACE }}
+spec:
+  replicas: 1
+  selector:
+    job: {{ job['name'] }}
+    task: '{{ i }}'
+  template:
+    metadata:
+      labels:
+        job: {{ job['name'] }}
+        task: '{{ i }}'
+    spec:
+      containers:
+        - name: tf-grpc-server
+          image: {{ SERVER_IMAGE }}
+          ports:
+            - name: grpc-server
+              containerPort: 8080
+          env:
+            - name: POD_NAME
+              valueFrom:
+                  fieldRef:
+                      fieldPath: metadata.name
+            - name: CLUSTER_CONFIG
+              valueFrom:
+                  configMapKeyRef:
+                      name: tensorflow-cluster-config
+                      key: clusterconfig
+---
+{% endfor %}
+{% endfor %}
