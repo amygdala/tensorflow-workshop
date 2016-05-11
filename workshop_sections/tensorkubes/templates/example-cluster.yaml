@@ -1,8 +1,6 @@
 imports:
     - name: tensorflow-cluster
       path: tensorflow-cluster.jinja
-    - name: jupyter-service
-      path: jupyter-service.jinja
 resources:
   - type: tensorflow-cluster
     properties:
@@ -13,7 +11,4 @@ resources:
               num_tasks: 2
             - name: workers
               num_tasks: 3
-  - type: jupyter-service
-    properties:
-        namespace: tensorflow
-        password: 'a good password'
+

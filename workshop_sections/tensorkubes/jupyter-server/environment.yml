@@ -1,0 +1,7 @@
+name: tensorflow
+dependencies:
+    - python=3.5
+    - numpy=1.11.0
+    - matplotlib=1.5.1
+    - pip:
+         - scikit-learn==0.17.1

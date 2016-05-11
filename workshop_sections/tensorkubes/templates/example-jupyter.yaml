@@ -1,0 +1,8 @@
+imports:
+  - name: jupyter-service
+    path: jupyter-service.jinja
+resources:
+  - type: jupyter-service
+    properties:
+        namespace: tensorflow
+        password: 'a good password'
