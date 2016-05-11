@@ -1,4 +1,5 @@
 {% set NAMESPACE = properties['namespace'] or 'default' %}
+{% set CLUSTER_CONFIG = properties['cluster_config'] or 'tensorflow-cluster-config' %}
 kind: Service
 apiVersion: v1
 metadata:
@@ -39,3 +40,8 @@ spec:
           env:
             - name: PASSWORD
               value: {{ properties['password'] }}
+            - name: CLUSTER_CONFIG
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ CLUSTER_CONFIG }}
+                  key: clusterconfig
