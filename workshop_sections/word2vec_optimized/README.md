@@ -6,12 +6,17 @@ In this section of the workshop, we're going to look at a more optimized version
 This directory contains a slightly modified version of the `word2vec_optimized.py` file in the `models/embedding` [directory](xxx) of the TensorFlow repo.
 See that directory's README for further detail.
 
+The graph for this model (click for larger version):
+
+<a href="https://storage.googleapis.com/oscon-tf-workshop-materials/images/word2vec_optimized.png" target="_blank"><img src="https://storage.googleapis.com/oscon-tf-workshop-materials/images/word2vec_optimized.png" width="300"/></a>
+
 The script in this directory has been modified from the original to allow a mode that doesn't run the model training, but instead just restores the model from saved checkpoint info, then starts up an interactive shell to let you explore the results.
 (We'll do that below).
 
 ## Start the process of training your model
 
 First, as indicated in `word2vec_optimized.py`, download and unzip this file: `http://mattmahoney.net/dc/text8.zip`.
+[** TBD: can we use the reddit corpus instead? **]
 Then, create a `saved_model` directory in which to store the saved model info. (You can put this directory whereever you like).
 
 Start the model training with the following command. In the flags, specify the location of the unzipped `text8` file, and the directory you just created in which you're going to save your model info.
@@ -35,7 +40,7 @@ We can save a graph's structure and values to disk -- both while it is training,
 `word2vec_optimized` shows how to restore graph variables from disk: we'll restore the model with checkpointed learned variables. (A later example will show how to load the graph structure from disk as well).
 
 Because you won't have time to fully train your model during this workshop, download pregenerated checkpoint data from an already-trained model [here](xxx).
-Then, create a `saved_model` directory in which to store the saved model info. (This example creates a subdirectory of the current directory; however, you can put it where you like.)
+Then, create a `saved_model` directory in which to store the saved model info. (This example assumes a subdirectory of the current directory.)
 
 Unzip the [** xxx file **] into this directory.  You should see some `model.ckpt*`` files as well as a file named `checkpoint`.
 
@@ -55,8 +60,8 @@ Without the `--train` flag, the script builds the model graph, and then restores
 
 [** use `word2vec_optimized_embeds.py`, which has a placeholder for where they should edit. **] 
 
-[** tbd: make this an exercise: define most of the function, make them add the code that actually runs the graph to get a word embedding. The answer is here: `word2vec_optimized_embeds_answ.py`. **]
+[** tbd: **make this an exercise**: define most of the function, make them add the code that actually runs the graph to get a word embedding. The answer is here: `word2vec_optimized_embeds_answ.py`. **]
 
 ## Coming up soon: using the learned embeddings
 
-In a following section, we'll use the word vectors (the embeddings) learned by this model, to improved the performance of different model -- a convolutional NN for text classification.
+In a following section, we'll use the word vectors (the embeddings) learned by this model, to improved the performance of a different model -- a convolutional NN for text classification.

@@ -12,8 +12,8 @@ This document points to more information for each step in the workshop.
 - [Introducing word2vec](workshop_sections/intro_word2vec/README.md)
 - [The TensorFlow distributed runtime on Kubernetes](workshop_sections/tensorkubes/README.md)
 - [A less basic version of word2vec](workshop_sections/word2vec_optimized/README.md)
-- [Using convolutional NNs for text classification, and TensorBoard](xx)
-- [Using convolutional NNs for text classification, part II: using learned word embeddings](xx)
+- [Using convolutional NNs for text classification, and TensorBoard](workshop_sections/cnn_text_classification/README.md#using-convolutional-nns-for-text-classification-and-tensorboard)
+- [Using convolutional NNs for text classification, part II: using learned word embeddings](workshop_sections/cnn_text_classification/README.md#using-convolutional-nns-for-text-classification-part-ii-using-learned-word-embeddings)
 
 
 [** Thanks to Denny Britz for ...  https://github.com/dennybritz/cnn-text-classification-tf 
