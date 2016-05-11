@@ -19,22 +19,24 @@ With your conda environment activated, intall the following packages:
 
 ```sh
 $ conda install numpy
-$ conda install sklearn
+$ pip install sklearn
 $ conda install matplotlib
-$ conda install IPython
+# $ conda install IPython
 $ conda install jupyter
 ```
 
-[** TBD: probably nicer way to do this and still use conda install instead of pip.  Also - is anything missing? 
-Double check that the jupyter install includes IPython specifically, which is imported by word2vec_optimized. In which case can remove that. **]
+[** TBD:
+Use https://github.com/conda/conda-env .
+Also - is anything missing?
+Confirm that the jupyter install includes IPython specifically-- should be able to remove. **]
 
 ## Clone/Download the TensorFlow repo from GitHub
 
-We'll be looking at some examples in the tensorflow repo. Clone or download it [here](https://github.com/tensorflow/tensorflow), or grab the 0.8 release [here](https://github.com/tensorflow/tensorflow/releases).  
+We'll be looking at some examples in the tensorflow repo. Clone or download it [here](https://github.com/tensorflow/tensorflow), or grab the 0.8 release [here](https://github.com/tensorflow/tensorflow/releases).
 
 ## Install Jupyter
 
-[** TBD: probably... There is already a word2vec_basic ipython notebook example. **] 
+[** TBD: probably... There is already a word2vec_basic ipython notebook example. **]
 
 ## Download data files for the workshop exercises
 

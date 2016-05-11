@@ -37,6 +37,8 @@ with graph.as_default():
     # evaluating.
     m3 = tf.Print(m3, [m3], message="m3 is: ")
 
+    m4 = tf.add(m3, m3)
+
     # Add variable initializer.
     init = tf.initialize_all_variables()
 
@@ -50,5 +52,6 @@ with tf.Session(graph=graph) as session:
 
   feed_dict = {m1_input: m1}
 
-  result = session.run([m3], feed_dict=feed_dict)
-  print("\nresult: {}\n".format(result))
+  result1, result2 = session.run([m4, m3], feed_dict=feed_dict)
+
+  print("\nresult1: {}, result2 {}".format(result1, result2))
