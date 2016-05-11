@@ -57,13 +57,14 @@ for attr, value in sorted(FLAGS.__flags.items()):
 print("")
 
 
-# Data Preparatopn
+# Data Preparation
 # ==================================================
 
 # Load data
 print("Loading data...")
 timestamp = str(int(time.time()))  # will use this for the run dir
-x, y, vocabulary, vocabulary_inv = data_helpers.load_data(run=timestamp)
+x, y, vocabulary, vocabulary_inv = data_helpers.load_data(
+    run=timestamp, cat1="./data/subreddit_news", cat2="./data/subreddit_aww")
 # Randomly shuffle data
 np.random.seed(10)
 shuffle_indices = np.random.permutation(np.arange(len(y)))
@@ -71,11 +72,10 @@ x_shuffled = x[shuffle_indices]
 y_shuffled = y[shuffle_indices]
 # Split train/test set
 # TODO: This is very crude, should use cross-validation
-# aju - unhardwire dev size
 dev_size = 1000
 x_train, x_dev = x_shuffled[:-dev_size], x_shuffled[-dev_size:]
 y_train, y_dev = y_shuffled[:-dev_size], y_shuffled[-dev_size:]
-print("Vocabulary Size: {:d}".format(len(vocabulary)))
+print("(Capped) Vocabulary Size: {:d}".format(len(vocabulary)))
 print("Train/Dev split: {:d}/{:d}".format(len(y_train), len(y_dev)))
 
 
@@ -126,12 +126,12 @@ with tf.Graph().as_default():
         # Train Summaries
         train_summary_op = tf.merge_summary([loss_summary, acc_summary, grad_summaries_merged])
         train_summary_dir = os.path.join(out_dir, "summaries", "train")
-        train_summary_writer = tf.train.SummaryWriter(train_summary_dir, sess.graph_def)
+        train_summary_writer = tf.train.SummaryWriter(train_summary_dir, sess.graph)
 
         # Dev summaries
         dev_summary_op = tf.merge_summary([loss_summary, acc_summary])
         dev_summary_dir = os.path.join(out_dir, "summaries", "dev")
-        dev_summary_writer = tf.train.SummaryWriter(dev_summary_dir, sess.graph_def)
+        dev_summary_writer = tf.train.SummaryWriter(dev_summary_dir, sess.graph)
 
         # Checkpoint directory. Tensorflow assumes this directory already exists so we need to create it
         checkpoint_dir = os.path.abspath(os.path.join(out_dir, "checkpoints"))
@@ -156,8 +156,8 @@ with tf.Graph().as_default():
                 [train_op, global_step, train_summary_op, cnn.loss, cnn.accuracy],
                 feed_dict)
             time_str = datetime.datetime.now().isoformat()
-            # aju TODO- try writing fewer training summaries, instead just
-            # showing overall trends, to keep events file from growing so big.
+            # write fewer training summaries, to keep events file from
+            # growing so big.
             if step % (FLAGS.evaluate_every / 2) == 0:
                 print("{}: step {}, loss {:g}, acc {:g}".format(
                     time_str, step, loss, accuracy))

@@ -1,7 +1,7 @@
 
 ## Running Distributed Tensorflow in Kubernetes
 
-[Kubernetes](kuberentes.io) is Google's open source container orchestration framework. It provides a useful framework to run microservice based apps.
+[Kubernetes](http://kubernetes.io/) is Google's open source container orchestration framework. It provides a useful framework to run microservice based apps.
 
 Tensorflow provides a distributed runtime with runs servers that communicate with [gRPC](http://www.grpc.io/) Google's high performance open-source RPC framework. Paired with Tensorflow's prepackaged docker containers, this makes Kubernetes a natural place to run distributed tensorflow.
 

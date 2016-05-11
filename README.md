@@ -2,6 +2,7 @@
 # TensorFlow workshop materials
 
 This repo contains materials for use in a TensorFlow workshop.
+The accompanying slides are [here](xxx).
 
 Contributions are not currently accepted.  This is not an official Google product.
 
@@ -15,6 +16,6 @@ This document points to more information for each step in the workshop.
 - [Using convolutional NNs for text classification, and TensorBoard](workshop_sections/cnn_text_classification/README.md#using-convolutional-nns-for-text-classification-and-tensorboard)
 - [Using convolutional NNs for text classification, part II: using learned word embeddings](workshop_sections/cnn_text_classification/README.md#using-convolutional-nns-for-text-classification-part-ii-using-learned-word-embeddings)
 
+Thanks to Denny Britz for this code: [https://github.com/dennybritz/cnn-text-classification-tf](https://github.com/dennybritz/cnn-text-classification-tf), which we adapted for some of the workshop sections.
 
-[** Thanks to Denny Britz for ...  https://github.com/dennybritz/cnn-text-classification-tf 
- **] 
+Thanks also to [reddit](https://www.reddit.com/), for allowing us to use some post data for a training corpus.

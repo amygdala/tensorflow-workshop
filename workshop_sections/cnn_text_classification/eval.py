@@ -48,7 +48,9 @@ print("")
 
 # Load data. Load your own data here
 print("Loading data...")
-x_test, y_test, vocabulary, vocabulary_inv = data_helpers.load_data(eval=True, vocab_file=FLAGS.vocab_file)
+x_test, y_test, vocabulary, vocabulary_inv = data_helpers.load_data(
+    eval=True, vocab_file=FLAGS.vocab_file,
+    cat1="./data/subreddit_news", cat2="./data/subreddit_aww")
 y_test = np.argmax(y_test, axis=1)
 print("Vocabulary size: {:d}".format(len(vocabulary)))
 print("Test set size {:d}".format(len(y_test)))

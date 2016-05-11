@@ -34,13 +34,10 @@ Confirm that the jupyter install includes IPython specifically-- should be able 
 
 We'll be looking at some examples in the tensorflow repo. Clone or download it [here](https://github.com/tensorflow/tensorflow), or grab the 0.8 release [here](https://github.com/tensorflow/tensorflow/releases).
 
-## Install Jupyter
-
-[** TBD: probably... There is already a word2vec_basic ipython notebook example. **]
 
 ## Download data files for the workshop exercises
 
 At various stages in this workshop, we'll need to download some data files. For convenience, we list them all here.
 
-[** TBD **]
+[** TBD **].
 

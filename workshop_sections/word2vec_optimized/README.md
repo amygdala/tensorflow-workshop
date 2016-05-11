@@ -3,35 +3,38 @@
 
 In this section of the workshop, we're going to look at a more optimized version of the word2vec code.
 
-This directory contains a slightly modified version of the `word2vec_optimized.py` file in the `models/embedding` [directory](xxx) of the TensorFlow repo.
+This directory contains a slightly modified version of the `word2vec_optimized.py` file in the `models/embedding` [directory](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/models/embedding/word2vec_optimized.py) of the TensorFlow repo.
 See that directory's README for further detail.
 
 The graph for this model (click for larger version):
 
-<a href="https://storage.googleapis.com/oscon-tf-workshop-materials/images/word2vec_optimized.png" target="_blank"><img src="https://storage.googleapis.com/oscon-tf-workshop-materials/images/word2vec_optimized.png" width="300"/></a>
+<a href="https://storage.googleapis.com/oscon-tf-workshop-materials/images/word2vec_optimized.png" target="_blank"><img src="https://storage.googleapis.com/oscon-tf-workshop-materials/images/word2vec_optimized.png" width="500"/></a>
 
 The script in this directory has been modified from the original to allow a mode that doesn't run the model training, but instead just restores the model from saved checkpoint info, then starts up an interactive shell to let you explore the results.
 (We'll do that below).
 
 ## Start the process of training your model
 
-First, as indicated in `word2vec_optimized.py`, download and unzip this file: `http://mattmahoney.net/dc/text8.zip`.
-[** TBD: can we use the reddit corpus instead? **]
+First, download and unzip [this file](https://storage.googleapis.com/oscon-tf-workshop-materials/processed_reddit_data/reddit_post_title_words.zip).
+
+This data comes from [reddit](https://www.reddit.com/), and contains words from post titles from the
+'news' and 'aww' subreddits over several months. Used with permission.
+
 Then, create a `saved_model` directory in which to store the saved model info. (You can put this directory whereever you like).
 
 Start the model training with the following command. In the flags, specify the location of the unzipped `text8` file, and the directory you just created in which you're going to save your model info.
 
 
 ```sh
-$ python word2vec_optimized.py --train_data=text8 --eval_data=questions-words.txt --save_path=/tmp --train=true --epochs_to_train=2
+$ python word2vec_optimized.py --train_data=reddit_post_title_words.txt --eval_data=questions-words.txt --save_path=/tmp --train=true --epochs_to_train=1
 ```
 
-Due to the workshop time contraints, we're just training for 2 epochs here. (This won't properly train the model).
+Due to the workshop time contraints, we're just training for 1 epoch here. (This won't properly train the model).
 Let's take a quick look at the code while it's running.
 
-[** Notes: do we run this on tensorkubes?  If so, how long does it take?
-If running locally, we won't have time to fully train it.  We will just need to tell them to ctl-c at some point. Then below, they use an already-generated model.
-Also: `word2vec_optimized.py` doesn't checkpoint regularly -- it just saves the model at the end.  Maybe we want to modify this version of the script to do that too, so that when they run training, they can look at the saver output.  **]
+Note: `questions-words.txt` is tailored towards the original example corpus, not the reddit one. In this case it doesn't matter, as the eval results won't impact the number of epochs we run.
+
+[** TBD: `word2vec_optimized.py` doesn't checkpoint regularly -- it just saves the model at the end.  Maybe we want to modify this version of the script to do that too.  **]
 
 ## Load and use the saved model results
 
@@ -39,28 +42,48 @@ We can save a graph's structure and values to disk -- both while it is training,
 
 `word2vec_optimized` shows how to restore graph variables from disk: we'll restore the model with checkpointed learned variables. (A later example will show how to load the graph structure from disk as well).
 
-Because you won't have time to fully train your model during this workshop, download pregenerated checkpoint data from an already-trained model [here](xxx).
-Then, create a `saved_model` directory in which to store the saved model info. (This example assumes a subdirectory of the current directory.)
+Because you won't have time to fully train your model during this workshop, download pregenerated model checkpoint data from an already-trained model [here](https://storage.googleapis.com/oscon-tf-workshop-materials/saved_word2vec_model.zip).
+Unzip it, which should create a `saved_word2vec_model` directory.
+In the directory, you should see some `model.ckpt*` files as well as a file named `checkpoint`.
 
-Unzip the [** xxx file **] into this directory.  You should see some `model.ckpt*`` files as well as a file named `checkpoint`.
-
-Then, run the following command, this time pointing to the directory in which you put the saved model info (instead of `/tmp` like you did above). Don't include the training data or the `--train=true` flag this time.
+Then, run the following command, this time pointing to the directory that contains the saved model info (instead of `/tmp` like you did above). Don't include the `--train=true` flag this time.
 
 ```sh
-$ python word2vec_optimized.py --eval_data=questions-words.txt --save_path=saved_model
+$ python word2vec_optimized.py --save_path=saved_word2vec_model --train_data=reddit_post_title_words.txt --eval_data=questions-words.txt
 ```
 
-Without the `--train` flag, the script builds the model graph, and then restores the saved model variables to it.
+Without the `--train` flag, the script builds the model graph, and then restores the saved model variables to it, then starts an interactive shell.
+
+Note: because of the way we're co-opting an existing example to do this, it's still necessary to pass in the training corpus, but this time it won't be used.
 
 ### Use the trained model to do word relationship analyses
 
-[** in interactive shell, with model loaded, run model.nearby() and model.analog() methods.  Talk through how we're running the graph to generate this info. They will come back to this concept when we have them generate embeddings. **]
+In the interactive shell, with the model loaded, play with the `model.analog()` and `model.nearby()` methods.
 
-### Use the trained model to get the learned word embeddings
+For example, try:
 
-[** use `word2vec_optimized_embeds.py`, which has a placeholder for where they should edit. **] 
+```
+model.analogy(b'cat', b'kitten', b'dog')
+```
+and
 
-[** tbd: **make this an exercise**: define most of the function, make them add the code that actually runs the graph to get a word embedding. The answer is here: `word2vec_optimized_embeds_answ.py`. **]
+```
+model.nearby([b'cat', b'octopus', b'president'])
+```
+
+We are evaluating a subpart of the learned model graph to emit these relationships.
+
+### Get the embedding vector for a given word
+
+We've modifed the original version of this example to add code that evaluates the learned word vector for a given word.
+
+Still in the interactive shell, try something like:
+
+```
+model.get_embed(b'cat')
+```
+
+Let's take a quick look at the `build_get_embed_graph()` and `get_embed()` methods.
 
 ## Coming up soon: using the learned embeddings
 

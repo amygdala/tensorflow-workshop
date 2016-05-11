@@ -1,56 +1,98 @@
 
-[** TBD. **]
 
-In slides, talk first about convolutional NNs.
-Will include showing tensorboard and summarywriter, as this example is well set up for it.
+# Using Convolutional Neural Networks for Text Classification
 
-Scripts are modifications of code from: https://github.com/dennybritz/cnn-text-classification-tf
+In this part of the workshop, we'll look at using a [convolutional NN for text classification](http://arxiv.org/abs/1408.5882).
+We'll also look more closely at TensorBoard's capabilities, and how to write the information used by TensorBoard during model training.
+
+The code in this section is modified from this example: [https://github.com/dennybritz/cnn-text-classification-tf](https://github.com/dennybritz/cnn-text-classification-tf), used with permission.
+See [this great accompanying tutorial](http://www.wildml.com/2015/12/implementing-a-cnn-for-text-classification-in-tensorflow/) (as well as [this related post](http://www.wildml.com/2015/11/understanding-convolutional-neural-networks-for-nlp/)) for more detail on this tensorflow model.
+
+There are two stages to this part of the workshop.
+
+This model includes a word-vector layer (that is, word embeddings, just as we encountered in the word2vec sections of the tutorial earlier).
+First, we'll train the `cnn-text-classification` model "from scratch".
+That is, we'll just initialize that embedding layer with a random uniform distribution.
+
+Next, we'll train the model by initializing that embedding layer with learned word embeddings.
+[There is evidence](http://arxiv.org/abs/1408.5882) that this can improve training and model performance.
+Specifically, we will use the word embeddings learned from running the [`word2vec_optimized`](word2vec_optimized) model.
+(In an earlier section, you started a training run to learn these embeddings, but we did not have time to let that training run for very long.  So here we'll just use pre-generated embeddings from a longer such run.)
+
+Then, we'll compare the training runs from the two variants on TensorBoard.
 
 ## Using convolutional NNs for text classification, and TensorBoard
 
-[** to be fleshed out **]
+We'll start the process of training the model, and then take look at the graph while that's running.
 
-- Start a training run that does not use the embeddings
-- In a separate terminal window, start up tensorboard
+### Download the training data
+
+Create a `data` subdirectory in this directory, and `cd` into it.
+Download the training corpus from [here](https://storage.googleapis.com/oscon-tf-workshop-materials/processed_reddit_data/news_aww/reddit_data.zip), and unzip it in the `data` directory.
+This data contains post titles from (a few months of) two reddit (https://www.reddit.com/) subreddits: 'news' and 'aww', used with permission.
+
+
+### Start training the model
+
+Start the training process like this:
+
+```sh
+$ ./train.py
+```
+
+This script does some in-memory data preprocessing that is a bit time-consuming for a dataset of the size that we are giving it. While things start up, we'll take a look at the code.
+
+
+### A look at the text-CNN code
+
+This is the TensorBoard-generated graph of the model (click for larger version):
+
+<a href="https://storage.googleapis.com/oscon-tf-workshop-materials/images/text-cnn-graph.png" target="_blank"><img src="https://storage.googleapis.com/oscon-tf-workshop-materials/images/text-cnn-graph.png" width="500"/></a>
+
+[** TBD:
+- Walk through how the graph is constructed at a high level.
+- Point out interesting tf ops (add code snippets to this readme?)
+- Walk through how the SummaryWriter is being used.
+- **]
+
+### Launch TensorBoard
+
+Once the training script has gone through its first checkpoint save, we can look at its progress in TensorBoard.
+
+In a separate terminal window, start up tensorboard. (Make sure that you've activated the conda environment in this new window).
 
 ```sh
 $ tensorboard --logdir=runs
 ```
 
-- Go back to the code.  Walk through how the graph is constructed at a high level.
-- Look at the graph in tensorboard. Show a bit re: how to navigate around it.
-- Go back to the code, walk through how the SummaryWriter is being used.
+We'll walk through what it's doing, and trace the logged events back to the `SummaryWriter` calls we looked at in the code.
 
 ## Using convolutional NNs for text classification, part II: using learned word embeddings
 
-[** to be fleshed out **]
+Go ahead and Ctl-C your running training session, but keep TensorBoard running in the other window.
 
-- stop the training run above, but keep tensorboard running
-- download the generated embeddings file (hopefully the reddit version)
-- start up another training run that uses the learned embeddings to initialized the embedding vectors.  Talk about why this is interesting. [Add screenshots from the results of my runs].
-- Look at the results in tensorboard after this second training run has been running for a while. The initial benefits of initializing with the learned embeddings should be quickly obvious.
+Next, let's initialize the embedding layer of this model with learned embeddings from the [`word2vec_optimized` model](../word2vec_optimized), learned using post title words from the same dataset that we're using here.
+Recall from that section that we modified the original `word2vec_optimized` example to let us retrieve the vector embedding for a given word.
+We used that capability to write all word embeddings to a file at the end of a training run.
 
-[** Notes:
+Download this [generated word embeddings file](https://storage.googleapis.com/oscon-tf-workshop-materials/learned_word_embeddings/reddit_embeds.zip) and unzip it.
+These word embeddings were generated via the [`word2vec_optimized`](../word2vec_optimized) model.
+The source data came from reddit (https://www.reddit.com/) post titles from the 'news' and 'aww' subreddits, used with permission.
 
-The graph for this model (click for larger version):
-
-<a href="https://storage.googleapis.com/oscon-tf-workshop-materials/images/text-cnn-graph.png" target="_blank"><img src="https://storage.googleapis.com/oscon-tf-workshop-materials/images/text-cnn-graph.png" width="300"/></a>
-
-
-Processed reddit data: 'news' & 'aww' subreddits [specifics to be added; some of these files are aggregations of others]:
-https://pantheon.corp.google.com/storage/browser/oscon-tf-workshop-materials/processed_reddit_data/news_aww/?project=oscon-tf-workshop
-
-Embeds generated from the 'text8' data: https://pantheon.corp.google.com/m/cloudstorage/b/aju-vtests2-oscon/o/all_embeddings.json
-
-Embeds generated from the reddit 'aww' and 'news' subreddit data: xxx
-
-**]
+Now, start up another training run that uses the learned embeddings to initialized the embedding vectors.
 
 ```sh
-$ tensorboard --logdir=runs
+$ ./train.py --embeds_file all_reddit_embeds.json
 ```
 
+[** look at the code that does this initialization, talk about why this is interesting. **]
 
-[** Look at SummaryWriter... consider exercise where they change the summary info. **]
 
-[** Add tensorboard screenshots **]
+Look at the results in TensorBoard after this second training run has been running for a little while. The initial benefits of initializing with the learned embeddings should be visible.
+You might need to reload to pick up the new run info.
+
+You should see something like the following, where the blue values are without use of the learned embeddings, and the green values are with the learned embeddings.
+(Click to enlarge. This shows the values from the 'dev test' set -- a similar effect is observed on the training set.
+
+<a href="https://storage.googleapis.com/oscon-tf-workshop-materials/images/summaries_dev_embeds3.png" target="_blank"><img src="https://storage.googleapis.com/oscon-tf-workshop-materials/images/summaries_dev_embeds3.png" width="500"/></a>
+

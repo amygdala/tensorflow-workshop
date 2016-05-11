@@ -26,8 +26,6 @@ import tensorflow as tf
 
 vocabulary_mapping = None
 vocabulary_inv = None
-#sequence_length_all = None
-
 
 def clean_str(string):
     """
@@ -52,44 +50,47 @@ def clean_str(string):
 
 
 def load_data_and_labels(
-        #cat1="./data/reddit/aww/subreddit_news",
-        #cat2="./data/reddit/aww/subreddit_aww"
-        cat1="./data/rt-polaritydata/rt-polarity.pos",
-        cat2="./data/rt-polaritydata/rt-polarity.neg"
+        cat1=None, cat2=None, x_text=None,
+        positive_examples=None, negative_examples=None
         ):
     """
     Loads two-category data from files, splits the data into words and generates
     labels. Returns split sentences and labels.
     """
-    # Load data from files
-    positive_examples = list(open(cat1, "r").readlines())
-    positive_examples = [s.strip() for s in positive_examples]
-    negative_examples = list(open(cat2, "r").readlines())
-    negative_examples = [s.strip() for s in negative_examples]
-    # Split by words
-    x_text = positive_examples + negative_examples
-    x_text = [clean_str(sent) for sent in x_text]
-    x_text = [s.split(" ") for s in x_text]
+    if not x_text or not positive_examples or not negative_examples:
+        # Load data from files
+        print("Loading data from {} and {}".format(cat1, cat2))
+        positive_examples = list(open(cat1, "r").readlines())
+        positive_examples = [s.strip() for s in positive_examples]
+        negative_examples = list(open(cat2, "r").readlines())
+        negative_examples = [s.strip() for s in negative_examples]
+        # Split by words
+        x_text = positive_examples + negative_examples
+        x_text = [clean_str(sent) for sent in x_text]
+        x_text = [s.split(" ") for s in x_text]
     # Generate labels
+    print("Generating labels...")
     positive_labels = [[0, 1] for _ in positive_examples]
     negative_labels = [[1, 0] for _ in negative_examples]
     y = np.concatenate([positive_labels, negative_labels], 0)
+    positive_examples = None
+    negative_examples = None
     return [x_text, y]
 
 
-# aju
+
 def build_vocab_mapping(run="", write_mapping=True,
-        #cat1="./data/reddit/aww/subreddit_news",
-        #cat2="./data/reddit/aww/subreddit_aww"
-        cat1="./data/rt-polaritydata/rt-polarity.pos",
-        cat2="./data/rt-polaritydata/rt-polarity.neg"
+        cat1=None, cat2=None
         ):
     """
-    Generate vocabulary mapping info, save it for later eval. This ensures that
-    the mapping used for the eval is the same.
+    Generate vocabulary mapping info, write it to disk for later eval.
+    This ensures that the mapping used for the eval is the same.
     """
     global vocabulary_mapping
     global vocabulary_inv
+
+    print("Building the vocabulary mapping. " +
+          "This will take a while for large datasets.")
     # Load data from files
     positive_examples = list(open(cat1, "r").readlines())
     positive_examples = [s.strip() for s in positive_examples]
@@ -97,14 +98,20 @@ def build_vocab_mapping(run="", write_mapping=True,
     negative_examples = [s.strip() for s in negative_examples]
     # Split by words
     x_text = positive_examples + negative_examples
+    print("cleaning...")
     x_text = [clean_str(sent) for sent in x_text]
+    print("splitting...")
     x_text = [s.split(" ") for s in x_text]
+    print("building indexes...")
+    padded_sentences = pad_sentences(x_text)
     vocabulary_mapping, vocabulary_inv = build_vocab(
-        pad_sentences(x_text))
+        padded_sentences)
     vocab_file = "vocab{}.json".format(run)
     if write_mapping:
+        print("writing vocab file {}".format(vocab_file))
         with open(vocab_file, "w") as f:
             f.write(json.dumps(vocabulary_mapping))
+    return [x_text, positive_examples, negative_examples, padded_sentences]
 
 
 def pad_sentences(sentences, padding_word="<PAD/>",
@@ -114,18 +121,17 @@ def pad_sentences(sentences, padding_word="<PAD/>",
     the longest sentence and a given max sentence length.
     Returns padded sentences.
     """
-    #global sequence_length_all
     global vocabulary_mapping
 
     sequence_length = max(len(x) for x in sentences)
-    # aju - try capping sentence length to reduce amount of padding necessary
-    # overall.
-    print("setting seq length to min of %s and %s" % (sequence_length, max_sent_length))
+    # cap sentence length
+    print("setting seq length to min of {} and {}".format(
+        sequence_length, max_sent_length))
     sequence_length = min(sequence_length, max_sent_length)
-    print("capped longest seq length: %s" % sequence_length)
+    print("capped longest seq length: {}".format(sequence_length))
     padded_sentences = []
     for i in range(len(sentences)):
-        # aju - truncate as necessary
+        # truncate as necessary
         sentence = sentences[i][:sequence_length]
         num_padding = sequence_length - len(sentence)
         new_sentence = sentence + [padding_word] * num_padding
@@ -138,8 +144,8 @@ def build_vocab(sentences, max_vocab=30000):
     Builds a vocabulary mapping from word to index based on the sentences.
     Returns vocabulary mapping and inverse vocabulary mapping.
     """
-    # aju - cap vocabulary
-    # Build vocabulary
+
+    # Build vocabulary. Cap to a max.
     word_counts = Counter(itertools.chain(*sentences))
     # Mapping from index to word. Use the 'max_vocab' most common.
     vocabulary_inv = [x[0] for x in word_counts.most_common(max_vocab)]
@@ -148,7 +154,7 @@ def build_vocab(sentences, max_vocab=30000):
     vocabulary = {x: i for i, x in enumerate(vocabulary_inv)}
     return [vocabulary, vocabulary_inv]
 
-# aju
+
 def get_embeddings(vocab_size, embedding_size, emb_file):  # expected sizes
     """..."""
     global vocabulary_mapping
@@ -192,8 +198,8 @@ def build_input_data(sentences, labels, vocabulary):
     Maps sentencs and labels to vectors based on a vocabulary.
     """
 
-    # aju - with reduced vocab, need to account for word not present in
-    # vocab -- what if I just use the padding word?
+    # With capped vocab, need to account for word not present in
+    # vocab. Using the padding word.
     # TODO -- pass padding word in as an arg
     padding_word="<PAD/>"
     pad_idx = vocabulary[padding_word]
@@ -202,32 +208,38 @@ def build_input_data(sentences, labels, vocabulary):
     return [x, y]
 
 
-def load_data(run="", eval=False, vocab_file=None):
+def load_data(run="", cat1=None, cat2=None,
+    eval=False, vocab_file=None):
     """
     Loads and preprocessed data for the MR dataset.
     Returns input vectors, labels, vocabulary, and inverse vocabulary.
     """
     global vocabulary_mapping
     global vocabulary_inv
+    x_text = None
+    positive_examples = None
+    negative_examples = None
+    padded_sentences = None
 
     print("eval mode: {}".format(eval))
     print("vocab file: {}".format(vocab_file))
     # Load and preprocess data
-    # aju
-    if eval:
-        #build_vocab_mapping(write_mapping=False)
+    if eval:  # in eval mode, use the generated vocab mapping.
         print("loading generated vocab mapping")
         with open(vocab_file, "r") as f:
             mapping_line = f.readline()
             vocabulary_mapping = json.loads(mapping_line)
-        #sentences, labels = load_data_and_labels()
     else:
-        build_vocab_mapping(run=run)
-    print("loading training data")
-    sentences, labels = load_data_and_labels()
-    sentences_padded = pad_sentences(sentences)
-    # vocabulary, vocabulary_inv = build_vocab(sentences_padded)
-    x, y = build_input_data(sentences_padded, labels, vocabulary_mapping)
+        x_text, positive_examples, negative_examples, padded_sentences = build_vocab_mapping(
+            run=run, cat1=cat1, cat2=cat2)
+    print("building training data structures")
+    sentences, labels = load_data_and_labels(cat1=cat1, cat2=cat2,
+        x_text=x_text, positive_examples=positive_examples,
+        negative_examples=negative_examples)
+    if not padded_sentences:
+        padded_sentences = pad_sentences(sentences)
+    print("Building input data...")
+    x, y = build_input_data(padded_sentences, labels, vocabulary_mapping)
     return [x, y, vocabulary_mapping, vocabulary_inv]
 
 
