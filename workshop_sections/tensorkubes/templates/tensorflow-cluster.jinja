@@ -64,6 +64,65 @@ spec:
                   configMapKeyRef:
                       name: tensorflow-cluster-config
                       key: clusterconfig
+{% if job['name'] == 'jupyter' %}
+          volumeMounts:
+            - name: tensorflow-logs
+              mountPath: /var/log/tensorflow
+        - name: jupyter-server
+          image: gcr.io/oscon-tf-workshop/jupyter-server
+          ports:
+            - name: jupyter
+              containerPort: 8888
+          env:
+            - name: PASSWORD
+              value: {{ job['password'] }}
+            - name: CLUSTER_CONFIG
+              valueFrom:
+                configMapKeyRef:
+                  name: tensorflow-cluster-config
+                  key: clusterconfig
+          volumeMounts:
+            - name: tensorflow-logs
+              mountPath: /var/log/tensorflow
+              readOnly: true
+            - name: notebooks
+              mountPath: /notebooks
+        - name: tensorboard-server
+          image: gcr.io/tensorflow/tensorflow:latest-devel
+          ports:
+            - name: tensorboard
+              containerPort: 6006
+          command:
+            - /tensorflow/bazel-bin/tensorflow/tensorboard/tensorboard
+            - --logdir=/var/log/tensorflow
+          volumeMounts:
+            - name: tensorflow-logs
+              mountPath: /var/log/tensorflow
+              readOnly: true
+      volumes:
+        - name: tensorflow-logs
+          gcePersistentDisk:
+            pdName: tensorflow-logs
+        - name: notebooks
+          gcePersistentDisk:
+            pdName: notebooks
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: jupyter-external
+  namespace: {{ NAMESPACE }}
+spec:
+  type: LoadBalancer
+  ports:
+    - name: jupyter
+      port: 8888
+    - name: tensorboard
+      port: 6006
+  selector:
+    job: {{ job['name'] }}
+    task: '{{ i }}'
+{% endif %}
 ---
 {% endfor %}
 {% endfor %}

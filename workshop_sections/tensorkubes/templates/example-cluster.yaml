@@ -9,6 +9,8 @@ resources:
         jobs:
             - name: ps
               num_tasks: 2
-            - name: workers
-              num_tasks: 3
-
+            - name: worker
+              num_tasks: 15
+            - name: jupyter
+              num_tasks: 1
+              password: 'a good password'

@@ -11,10 +11,12 @@ RUN echo 'export PATH=/opt/conda/bin:$PATH' > /etc/profile.d/conda.sh && \
 
 ENV PATH /opt/conda/bin:$PATH
 
-RUN conda install -c conda conda-env
-
 ADD environment.yml environment.yml
-RUN conda-env create environment.yml
+RUN conda env create environment.yml
+
+RUN /bin/bash -c "source activate tensorflow-conda-env"
+RUN python -m ipykernel install --user --name tensorflow-conda-env --display-name "Python 3"
+
 ADD jupyter_notebook_config.py /root/.jupyter/
 
 ENTRYPOINT ["/run_jupyter.sh"]
