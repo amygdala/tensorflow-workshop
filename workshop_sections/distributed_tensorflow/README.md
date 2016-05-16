@@ -7,23 +7,21 @@ Tensorflow provides a distributed runtime with runs servers that communicate wit
 
 ### Create a Kubernetes Cluster on Google Container Engine
 
-Follow the docs on [cloud.google.com](https://cloud.google.com/container-engine/docs/clusters/operations) to create a Kubernetes cluster. We recommend using the largest available machine type as this will increase performance. We also recommend you install the [Google Cloud SDK](https://cloud.google.com/sdk/) and follow the `gcloud` tab in the cluster creation instructions, since we will use `gcloud` later in these instructions.
+Follow the docs on [cloud.google.com](https://cloud.google.com/container-engine/docs/clusters/operations) to create a Kubernetes cluster. We recommend using the largest available machine type as this will increase performance. If you are on the free trial, the best cluster configuration available to you is likely (3 x `n1-highmem-8` nodes). We also recommend you install the [Google Cloud SDK](https://cloud.google.com/sdk/) and follow the `gcloud` tab in the cluster creation instructions, since we will use `gcloud` later in these instructions.
 
 ### Deploying a Tensorflow Cluster and Jupyter notebook server into your cluster
 
-This repository comes prepackaged with a template for distributed tensorflow clusters and jupyter notebooks. This templating is based on a simplified version of [Helm](https://github.com/kubernetes/helm) a package manager for Kubernetes.
+This repository comes prepackaged with a template for distributed tensorflow clusters and jupyter notebooks. This templating use a simplified version of the [Helm Chart](https://github.com/kubernetes/helm) template format, a package manager for Kubernetes.
 
 To create the necessary objects in your cluster simply write a small config file to describe what you want your cluster to look like. Tensorflow divides its server instances into groups called `jobs` each of which have a number of identical `tasks`. So you must specify a number of jobs, each with a name and the number of tasks it should run. The jupyter server also requires you to specify a password.
 
-You can check out the example config [here](templates/config.yaml).
+You can check out the example config [here](templates/example-cluster.yaml).
 
-To render your config run
+To render your config run (in your current conda environment)
 
 ```
-virtualenv ~/envs/oscon-tf-workshop
-source ~/envs/oscon-tf-workshop/bin/activate
+conda install PyYaml jinja2
 cd templates/
-pip install requirements.txt
 python render.py --config my-config.yaml --out rendered.yaml
 ```
 
@@ -39,10 +37,10 @@ Then, To get the IP for your Jupyter server, you can run
 gcloud compute forwarding-rules list
 ```
 
-and use the listed `IP_ADDRESS`.
+and use the listed `IP_ADDRESS` to navigate to your Jupyter server. A Tensorboard server is also available at `IP_ADDRESS:6006`
 
 
-For more detailed explanation of distributed tensorflow, check out [the tensorflow docs](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/g3doc/how_tos/distributed/index.md). When you need to specify a tensorflow cluster config, you can use the provided environment variable as follows:
+For more detailed explanation of distributed tensorflow, check out [the tensorflow docs](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/g3doc/how_tos/distributed/index.md).
 
 ### Running the example
 
