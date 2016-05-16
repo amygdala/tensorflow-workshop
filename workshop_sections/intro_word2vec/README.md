@@ -23,7 +23,6 @@ $ python word2vec_basic_summaries.py
 
 The TensorFlow repo includes a nice Jupyter notebook version of this same model (without the addition of the code that writes the summary info).
 
-[** TBD: Maybe change info. Will we end up pointing them to our own version of this notebook instead of the udacity one? **]
 
 ```sh
 $ cd <tensorflow>/tensorflow/examples/udacity
