@@ -17,10 +17,11 @@ imports:
 resources:
   - type: tensorflow-cluster
     properties:
-        image: gcr.io/oscon-tf-workshop/tf-worker
-        namespace: tensorflow
+        worker-image: gcr.io/google-samples/tf-k8s-worker
         ps: 2
-        worker: 15
+        worker: 16
         master: 1
+        use-gce-pd: true
         jupyter-config:
             password: 'a good password'
+            server-image: gcr.io/google-samples/tf-jupyter-server

@@ -205,23 +205,23 @@ with graph.as_default():
             train_ops.append(
                 tf.train.GradientDescentOptimizer(0.1).minimize(
                     loss, global_step=global_step))
-            # Compute the cosine similarity between minibatch examples
-            # and the embeddings
-            norm = tf.sqrt(tf.reduce_sum(
-                tf.square(embeddings), 1, keep_dims=True))
-            normalized_embeddings = embeddings / norm
-            valid_embeddings = tf.nn.embedding_lookup(
-                normalized_embeddings, valid_dataset)
-            similarity = tf.matmul(
-                valid_embeddings, normalized_embeddings, transpose_b=True)
-            summaries.append(
-                tf.scalar_summary('loss-{}'.format(i), loss))
 
     with tf.device(master_device):
         optimizer = tf.group(*train_ops)
         summary_op = tf.merge_summary(summaries)
         init_op = tf.initialize_all_variables()
         losses_sum = tf.add_n(losses)
+        # Compute the cosine similarity between minibatch examples
+        # and the embeddings
+        norm = tf.sqrt(tf.reduce_sum(
+            tf.square(embeddings[0]), 1, keep_dims=True))
+        normalized_embeddings = embeddings / norm
+        valid_embeddings = tf.nn.embedding_lookup(
+            normalized_embeddings, valid_dataset)
+        similarity = tf.matmul(
+            valid_embeddings, normalized_embeddings, transpose_b=True)
+        summaries.append(
+            tf.scalar_summary('loss-{}'.format(i), loss))
 
 
 # Step 5: Begin training.

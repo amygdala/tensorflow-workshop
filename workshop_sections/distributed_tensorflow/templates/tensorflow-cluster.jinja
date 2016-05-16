@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-{% set SERVER_IMAGE = properties['image'] or 'gcr.io/oscon-tf-workshop/tf-worker:latest' %}
+{% set SERVER_IMAGE = properties['worker-image'] or 'gcr.io/google-samples/tf-worker:latest' %}
 {% set NAMESPACE = properties['namespace'] or 'default' %}
 kind: ConfigMap
 apiVersion: v1
@@ -79,7 +79,7 @@ spec:
                       key: clusterconfig
 {% if job_type == 'master' %}
         - name: jupyter-server
-          image: gcr.io/oscon-tf-workshop/jupyter-server
+          image: {{ properties['jupyter-config']['server-image'] }}
           args:
             - "--notebook-dir=u'/notebooks'"
             - "--port=80"
@@ -113,11 +113,21 @@ spec:
               readOnly: true
       volumes:
         - name: tensorflow-logs
+          {% if properties['use-gce-pd'] %}
           gcePersistentDisk:
             pdName: tensorflow-logs
+          {% else %}
+          hostPath:
+            path: /var/logs/tensorflow
+          {% endif %}
         - name: notebooks
+          {% if properties['use-gce-pd'] %}
           gcePersistentDisk:
             pdName: notebooks
+          {% else %}
+          hostPath:
+            path: /var/logs/jupyter
+          {% endif %}
 ---
 kind: Service
 apiVersion: v1
