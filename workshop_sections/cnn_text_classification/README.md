@@ -45,7 +45,7 @@ This script does some in-memory data preprocessing that is a bit time-consuming 
 
 ### A look at the text-CNN code
 
-This is the TensorBoard-generated graph of the model (click for larger version):
+This is the TensorBoard-generated graph of the model (click for larger version). In TensorBoard, many of these nodes expand.
 
 <a href="https://storage.googleapis.com/oscon-tf-workshop-materials/images/text-cnn-graph.png" target="_blank"><img src="https://storage.googleapis.com/oscon-tf-workshop-materials/images/text-cnn-graph.png" width="500"/></a>
 
@@ -88,8 +88,7 @@ Now, start up another training run that uses the learned embeddings to initializ
 $ ./train.py --embeds_file all_reddit_embeds.json
 ```
 
-[** look at the code that does this initialization, talk about why this is interesting. **]
-
+We'll take a quick look at the code that does this initialization.
 
 Look at the results in TensorBoard after this second training run has been running for a little while. The initial benefits of initializing with the learned embeddings should be visible.
 You might need to reload to pick up the new run info.

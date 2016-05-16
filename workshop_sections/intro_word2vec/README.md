@@ -34,9 +34,7 @@ Step through its setup and graph definition steps until you reach the training s
 
 ## The word2vec_basic model graph
 
-While the model is training, we'll walk through the code, look at how its graph is constructed, what it does, and why that is interesting.
-
-<a href="https://storage.googleapis.com/oscon-tf-workshop-materials/images/word2vec_basic.png" target="_blank"><img src="https://storage.googleapis.com/oscon-tf-workshop-materials/images/word2vec_basic.png" width="500"/></a>
+While the model is training, we'll walk through the code, and look at how its graph is constructed.
 
 This example picks a random set of words from the top 100 most frequent, and periodically outputs the 'nearby' results for those words.  You can watch the set for each word becoming more accurate (mostly :) as the training continues. To get really impressive results, you'll need to run for more than the default number of steps.
 
@@ -52,13 +50,17 @@ In your projection plot, you should see similar words clustered close to each ot
 
 ### Take a look at TensorBoard
 
-If you ran the command line version, which writes some information to TensorBoard, you can start it up like this to take a look:
+If you ran the command line version of this exercise, which writes some summary information for TensorBoard, then start it up as follows while the training is running, pointing it to the directory in which the summaries were written.  Make sure you activate your conda environment in this shell window as well.
 
 ```sh
-$ tensorboard tensorboard --logdir=/tmp/word2vec_basic/summaries
+$ tensorboard --logdir=/tmp/word2vec_basic/summaries
 ```
 
-We will dive into more detail on TensorBoard in a later section of the workshop.
+Then visit `http://localhost:6006/`.
+
+<a href="https://storage.googleapis.com/oscon-tf-workshop-materials/images/tensorboard_word2vec_basic.png" target="_blank"><img src="https://storage.googleapis.com/oscon-tf-workshop-materials/images/tensorboard_word2vec_basic.png" width="500"/></a>
+
+We will look at TensorBoard again in a later section of the workshop.
 
 ## Excercise: find the 'nearby' words for a specific given word
 
