@@ -2,7 +2,8 @@
 # TensorFlow workshop materials
 
 This repo contains materials for use in a TensorFlow workshop.
-The accompanying slides are [here](xxx).
+The accompanying slides are
+[here](https://speakerdeck.com/juliaferraioli/diving-into-machine-learning-with-tensorflow).
 
 Contributions are not currently accepted.  This is not an official Google product.
 
