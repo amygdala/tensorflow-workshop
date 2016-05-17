@@ -38,17 +38,9 @@ While the model is training, we'll walk through the code, and look at how its gr
 
 This example picks a random set of words from the top 100 most frequent, and periodically outputs the 'nearby' results for those words.  You can watch the set for each word becoming more accurate (mostly :) as the training continues. To get really impressive results, you'll need to run for more than the default number of steps.
 
-## Look at the results
-
-After the training is finished, the script will map the model's learned word vectors into a 2D space, and plot the results using `matplotlib` in conjunction with an `sklearn` library called
-[TSNE](https://lvdmaaten.github.io/tsne/).
-It will write the plot to an image file named `tsne.png` in the same directory.
-
-<a href="https://amy-jo.storage.googleapis.com/images/tf-workshop/tsne.png" target="_blank"><img src="https://amy-jo.storage.googleapis.com/images/tf-workshop/tsne.png" width="500"/></a>
-
-In your projection plot, you should see similar words clustered close to each other.
-
 ### Take a look at TensorBoard
+
+[Tensorboard](https://www.tensorflow.org/versions/r0.8/how_tos/summaries_and_tensorboard/index.html) is a suite of visualization tools that help make it easier to understand, debug, and optimize TensorFlow programs.
 
 If you ran the command line version of this exercise, which writes some summary information for TensorBoard, then start it up as follows while the training is running, pointing it to the directory in which the summaries were written.  Make sure you activate your conda environment in this shell window as well.
 
@@ -62,11 +54,21 @@ Then visit `http://localhost:6006/`.
 
 We will look at TensorBoard again in a later section of the workshop.
 
+## Look at the results
+
+After the training is finished, the script will map the model's learned word vectors into a 2D space, and plot the results using `matplotlib` in conjunction with an `sklearn` library called
+[TSNE](https://lvdmaaten.github.io/tsne/).
+It will write the plot to an image file named `tsne.png` in the same directory.
+
+<a href="https://amy-jo.storage.googleapis.com/images/tf-workshop/tsne.png" target="_blank"><img src="https://amy-jo.storage.googleapis.com/images/tf-workshop/tsne.png" width="500"/></a>
+
+In your projection plot, you should see similar words clustered close to each other.
+
 ## Excercise: find the 'nearby' words for a specific given word
 
 See if you can figure out how to modify the [`word2vec_basic_summaries.py`](word2vec_basic_summaries.py) code to evaluate and output the 'nearby' set for a specific word too.
 
-E.g., picking "government" as the word will give a result like this (after about 500K training steps):
+E.g., picking "government" as the word may give a result like this (after about 500K training steps):
 
 ```
 Nearest to b'government': b'governments', b'leadership', b'regime', b'crown', b'rule', b'leaders', b'parliament', b'elections',
