@@ -9,6 +9,12 @@ Tensorflow provides a distributed runtime with runs servers that communicate wit
 
 Follow the docs on [cloud.google.com](https://cloud.google.com/container-engine/docs/clusters/operations) to create a Kubernetes cluster. We recommend using the largest available machine type as this will increase performance. If you are on the free trial, the best cluster configuration available to you is likely (3 x `n1-highmem-8` nodes). We also recommend you install the [Google Cloud SDK](https://cloud.google.com/sdk/) and follow the `gcloud` tab in the cluster creation instructions, since we will use `gcloud` later in these instructions.
 
+After you have created a cluster, you can use `gcloud` to authenticate to your Kubernetes master
+
+```
+gcloud container clusters <CLUSTER_NAME> get-credentials
+```
+
 ### Deploying a Tensorflow Cluster and Jupyter notebook server into your cluster
 
 This repository comes prepackaged with a template for distributed tensorflow clusters and jupyter notebooks. This templating use a simplified version of the [Helm Chart](https://github.com/kubernetes/helm) template format, a package manager for Kubernetes.
