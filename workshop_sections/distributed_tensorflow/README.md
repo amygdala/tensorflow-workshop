@@ -15,7 +15,7 @@ This repository comes prepackaged with a template for distributed tensorflow clu
 
 To create the necessary objects in your cluster simply write a small config file to describe what you want your cluster to look like. Tensorflow divides its server instances into groups called `jobs` each of which have a number of identical `tasks`. So you must specify a number of jobs, each with a name and the number of tasks it should run. The jupyter server also requires you to specify a password.
 
-You can check out the example config [here](templates/example-cluster.yaml).
+You can check out the example config [here](templates/example-cluster.yaml). The only necessary modification will be your own `password` for the Jupyter server.
 
 To render your config run (in your current conda environment)
 
@@ -34,14 +34,14 @@ kubectl create -f rendered.yaml
 Then, To get the IP for your Jupyter server, you can run
 
 ```
-gcloud compute forwarding-rules list
+kubectl get services jupyter-external
 ```
 
-and use the listed `IP_ADDRESS` to navigate to your Jupyter server. A Tensorboard server is also available at `IP_ADDRESS:6006`
+and use the listed `EXTERNAL_IP` to navigate to your Jupyter server. A Tensorboard server is also available at `EXTERNAL_IP:6006`
 
 
 For more detailed explanation of distributed tensorflow, check out [the tensorflow docs](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/g3doc/how_tos/distributed/index.md).
 
 ### Running the example
 
-Simply upload intro_word2vec_destributed.ipynb to your Jupyter server, and run through it.
+Simply upload `intro_word2vec_destributed.ipynb` to your Jupyter server, and run through it.

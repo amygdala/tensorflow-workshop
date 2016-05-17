@@ -21,7 +21,7 @@ resources:
         ps: 2
         worker: 16
         master: 1
-        use-gce-pd: true
+        use-gce-pd: false
         jupyter-config:
             password: 'a good password'
             server-image: gcr.io/google-samples/tf-jupyter-server
