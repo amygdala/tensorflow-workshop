@@ -25,7 +25,11 @@ Start the model training with the following command. In the flags, specify the l
 
 
 ```sh
-$ python word2vec_optimized.py --train_data=reddit_post_title_words.txt --eval_data=questions-words.txt --save_path=/tmp/word2vec_optimized --train=true --epochs_to_train=1
+$ python word2vec_optimized.py --train_data=reddit_post_title_words.txt \
+                               --eval_data=questions-words.txt \
+                               --save_path=/tmp/word2vec_optimized \
+                               --train=true \
+                               --epochs_to_train=1
 ```
 
 Due to the workshop time contraints, we're just training for 1 epoch here. (This won't properly train the model).
@@ -46,7 +50,9 @@ In the directory, you should see some `model.ckpt*` files as well as a file name
 Then, run the following command, this time pointing to the directory that contains the saved model info (instead of `/tmp` like you did above). Don't include the `--train=true` flag this time.
 
 ```sh
-$ python word2vec_optimized.py --save_path=saved_word2vec_model --train_data=reddit_post_title_words.txt --eval_data=questions-words.txt
+$ python word2vec_optimized.py --save_path=saved_word2vec_model \
+                               --train_data=reddit_post_title_words.txt \
+                               --eval_data=questions-words.txt
 ```
 
 Without the `--train` flag, the script builds the model graph, and then restores the saved model variables to it, then starts an interactive shell.
