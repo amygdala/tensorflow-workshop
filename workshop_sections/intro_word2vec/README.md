@@ -1,14 +1,14 @@
 
 # Introducing word2vec
 
-In this section, we'll take a look at the ['basic' variant of word2vec](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/examples/tutorials/word2vec/word2vec_basic.py) used for [this Tensorflow tutorial](https://www.tensorflow.org/versions/r0.8/tutorials/word2vec/index.html#vector-representations-of-words).
+In this section, we'll take a look at the ['basic' variant of word2vec](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/examples/tutorials/word2vec/word2vec_basic.py) used for [this TensorFlow tutorial](https://www.tensorflow.org/versions/r0.8/tutorials/word2vec/index.html#vector-representations-of-words).
 
-We'll launch the training process, then while that is running, we'll look at how this graph is constructed, and what it does.
+We'll launch the training process, then while that is running, we'll look at how this graph is constructed, and what it does. In the process we'll introduce [Tensorboard](https://www.tensorflow.org/versions/r0.8/how_tos/summaries_and_tensorboard/index.html).
 
 ## Start the process of training the model
 
 First, confirm that you can import `matplotlib` and `sklearn`, as in the installation instructions.
-Then, start training the model. You can do this in two different ways: from the command line, and from a Jupyter notebook.
+Then, start training the model. You can do this in two different ways: from the command line, and from a [Jupyter](http://jupyter.org/) notebook.
 
 ### Training from the command line
 
@@ -21,7 +21,8 @@ $ python word2vec_basic_summaries.py
 
 ## (Alternately) train from a Jupyter notebook.
 
-[** TBD: Maybe change info. Will we end up pointing them to our own version of this notebook instead of the udacity one? **]
+The TensorFlow repo includes a nice Jupyter notebook version of this same model (without the addition of the code that writes the summary info).
+
 
 ```sh
 $ cd <tensorflow>/tensorflow/examples/udacity
@@ -31,15 +32,27 @@ $ jupyter notebook
 Then select the `5_word2vec` notebook from the list.
 Step through its setup and graph definition steps until you reach the training step, and start it running.
 
-[** TBD: add pointer to more detail on using notebooks? **]
-
 ## The word2vec_basic model graph
 
-While the model is training, we'll walk through the code, look at how its graph is constructed, what it does, and why that is interesting.
-
-<a href="https://storage.googleapis.com/oscon-tf-workshop-materials/images/word2vec_basic.png" target="_blank"><img src="https://storage.googleapis.com/oscon-tf-workshop-materials/images/word2vec_basic.png" width="500"/></a>
+While the model is training, we'll walk through the code, and look at how its graph is constructed.
 
 This example picks a random set of words from the top 100 most frequent, and periodically outputs the 'nearby' results for those words.  You can watch the set for each word becoming more accurate (mostly :) as the training continues. To get really impressive results, you'll need to run for more than the default number of steps.
+
+### Take a look at TensorBoard
+
+[Tensorboard](https://www.tensorflow.org/versions/r0.8/how_tos/summaries_and_tensorboard/index.html) is a suite of visualization tools that help make it easier to understand, debug, and optimize TensorFlow programs.
+
+If you ran the command line version of this exercise, which writes some summary information for TensorBoard, then start it up as follows while the training is running, pointing it to the directory in which the summaries were written.  Make sure you activate your conda environment in this shell window as well.
+
+```sh
+$ tensorboard --logdir=/tmp/word2vec_basic/summaries
+```
+
+Then visit `http://localhost:6006/`.
+
+<a href="https://storage.googleapis.com/oscon-tf-workshop-materials/images/tensorboard_word2vec_basic.png" target="_blank"><img src="https://storage.googleapis.com/oscon-tf-workshop-materials/images/tensorboard_word2vec_basic.png" width="500"/></a>
+
+We will look at TensorBoard again in a later section of the workshop.
 
 ## Look at the results
 
@@ -51,21 +64,11 @@ It will write the plot to an image file named `tsne.png` in the same directory.
 
 In your projection plot, you should see similar words clustered close to each other.
 
-### Take a look at TensorBoard
-
-If you ran the command line version, which writes some information to TensorBoard, you can start it up like this to take a look:
-
-```sh
-$ tensorboard tensorboard --logdir=/tmp/word2vec_basic/summaries
-```
-
-We will dive into more detail on TensorBoard in a later section of the workshop.
-
-## Excercise: find the 'nearby' words for a specific given word
+## Exercise: find the 'nearby' words for a specific given word
 
 See if you can figure out how to modify the [`word2vec_basic_summaries.py`](word2vec_basic_summaries.py) code to evaluate and output the 'nearby' set for a specific word too.
 
-E.g., picking "government" as the word will give a result like this (after about 500K training steps):
+E.g., picking "government" as the word may give a result like this (after about 500K training steps):
 
 ```
 Nearest to b'government': b'governments', b'leadership', b'regime', b'crown', b'rule', b'leaders', b'parliament', b'elections',

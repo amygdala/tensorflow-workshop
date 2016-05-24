@@ -2,11 +2,11 @@
 
 # Using Convolutional Neural Networks for Text Classification
 
-In this part of the workshop, we'll look at using a [convolutional NN for text classification](http://arxiv.org/abs/1408.5882).
+In this part of the workshop, we'll look at using a [convolutional NN ](http://arxiv.org/abs/1408.5882) [for text classification](http://arxiv.org/abs/1504.01255).
 We'll also look more closely at TensorBoard's capabilities, and how to write the information used by TensorBoard during model training.
 
 The code in this section is modified from this example: [https://github.com/dennybritz/cnn-text-classification-tf](https://github.com/dennybritz/cnn-text-classification-tf), used with permission.
-See [this great accompanying tutorial](http://www.wildml.com/2015/12/implementing-a-cnn-for-text-classification-in-tensorflow/) (as well as [this related post](http://www.wildml.com/2015/11/understanding-convolutional-neural-networks-for-nlp/)) for more detail on this tensorflow model.
+See [this great accompanying tutorial](http://www.wildml.com/2015/12/implementing-a-cnn-for-text-classification-in-tensorflow/) (as well as [this related post](http://www.wildml.com/2015/11/understanding-convolutional-neural-networks-for-nlp/)) for more detail on this tensorflow model as well as the general approach of using CNNs for text classification.
 
 There are two stages to this part of the workshop.
 
@@ -45,27 +45,30 @@ This script does some in-memory data preprocessing that is a bit time-consuming 
 
 ### A look at the text-CNN code
 
-This is the TensorBoard-generated graph of the model (click for larger version):
+This is the TensorBoard-generated graph of the model (click for larger version). In TensorBoard, many of these nodes expand.
 
 <a href="https://storage.googleapis.com/oscon-tf-workshop-materials/images/text-cnn-graph.png" target="_blank"><img src="https://storage.googleapis.com/oscon-tf-workshop-materials/images/text-cnn-graph.png" width="500"/></a>
 
-[** TBD:
-- Walk through how the graph is constructed at a high level.
-- Point out interesting tf ops (add code snippets to this readme?)
-- Walk through how the SummaryWriter is being used.
-- **]
+We'll walk through the code and look at how the graph is constructed, and point out some of the TensorFlow ops of interest. Note the sections for the embedding layer, the convolution and max-pooling layers, and dropout.
+Note also the use of `tf.name_scope()`,  which allows hierarchical names for operations.
+
+We'll also take a look at how the SummaryWriter is being used-- this lets us track progress using TensorBoard.
 
 ### Launch TensorBoard
 
 Once the training script has gone through its first checkpoint save, we can look at its progress in TensorBoard.
 
-In a separate terminal window, start up tensorboard. (Make sure that you've activated the conda environment in this new window).
+In a separate terminal window, start up Tensorboard. (Make sure that you've activated your conda environment in this new window).
 
 ```sh
 $ tensorboard --logdir=runs
 ```
 
 We'll walk through what it's doing, and trace the logged events back to the `SummaryWriter` calls we looked at in the code.
+
+### Loading and using a trained model
+
+We won't have time to go into details during our workshop, but take a look at [`eval.py`](eval.py) for an example of how saved model graph and variable information can be loaded and restored.  In this case, `eval.py` uses the most recent checkpoint data from a given training run to restore that model and use it for prediction. As part of this process, it needs to also access some graph nodes by name.
 
 ## Using convolutional NNs for text classification, part II: using learned word embeddings
 
@@ -85,8 +88,7 @@ Now, start up another training run that uses the learned embeddings to initializ
 $ ./train.py --embeds_file all_reddit_embeds.json
 ```
 
-[** look at the code that does this initialization, talk about why this is interesting. **]
-
+We'll take a quick look at the code that does this initialization.
 
 Look at the results in TensorBoard after this second training run has been running for a little while. The initial benefits of initializing with the learned embeddings should be visible.
 You might need to reload to pick up the new run info.

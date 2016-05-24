@@ -14,44 +14,47 @@
 # ==============================================================================
 
 import numpy as np
+
 import tensorflow as tf
 
 
 graph = tf.Graph()
-m1 = np.array([[1.,2.], [3.,4.], [5.,6.], [7., 8.]], dtype=np.float32)
+m1 = np.array([[1., 2.], [3., 4.], [5., 6.], [7., 8.]], dtype=np.float32)
 
 with graph.as_default():
 
-  # Input data.
-  m1_input = tf.placeholder(tf.int32, shape=[4,2])
+    # Input data.
+    m1_input = tf.placeholder(tf.float32, shape=[4, 2])
 
-  # Ops and variables pinned to the CPU because of missing GPU implementation
-  with tf.device('/cpu:0'):
+    # Ops and variables pinned to the CPU because of missing GPU implementation
+    with tf.device('/cpu:0'):
 
-    m2 = tf.Variable(
-        tf.random_uniform([2,3], -1.0, 1.0))
+        m2 = tf.Variable(tf.random_uniform([2, 3], -1.0, 1.0))
 
-    m3 = tf.matmul(m1, m2)
+        m3 = tf.matmul(m1_input, m2)
 
-    # This is an identity op with the side effect of printing data when
-    # evaluating.
-    m3 = tf.Print(m3, [m3], message="m3 is: ")
+        # This is an identity op with the side effect of printing data when
+        # evaluating.
+        m3 = tf.Print(m3, [m3], message="m3 is: ")
 
-    m4 = tf.add(m3, m3)
+        m4 = tf.add(m3, m3)
 
-    # Add variable initializer.
-    init = tf.initialize_all_variables()
+        # Add variable initializer.
+        init = tf.initialize_all_variables()
 
 with tf.Session(graph=graph) as session:
-  # We must initialize all variables before we use them.
-  init.run()
-  print("Initialized")
+    # We must initialize all variables before we use them.
+    init.run()
+    print("Initialized")
 
-  print("m2: {}".format(m2))
-  print("eval m2: {}".format(m2.eval()))
+    print("m2: {}".format(m2))
+    print("eval m2: {}".format(m2.eval()))
+    # The following will error, because it depends on m1_input, which won't
+    # be initialized.
+    # print("eval m3: {}".format(m3.eval()))
 
-  feed_dict = {m1_input: m1}
+    feed_dict = {m1_input: m1}
 
-  result1, result2 = session.run([m4, m3], feed_dict=feed_dict)
+    result1, result2 = session.run([m4, m3], feed_dict=feed_dict)
 
-  print("\nresult1: {}, result2 {}".format(result1, result2))
+    print("\nresult1: {}, result2 {}".format(result1, result2))

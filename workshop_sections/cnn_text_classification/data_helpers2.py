@@ -16,16 +16,18 @@
 # This file is a modification of the code here:
 # https://github.com/dennybritz/cnn-text-classification-tf
 
-import numpy as np
-import re
-import itertools
 from collections import Counter
-
+import itertools
 import json
+import re
+
+import numpy as np
+
 import tensorflow as tf
 
 vocabulary_mapping = None
 vocabulary_inv = None
+
 
 def clean_str(string):
     """
@@ -54,8 +56,8 @@ def load_data_and_labels(
         positive_examples=None, negative_examples=None
         ):
     """
-    Loads two-category data from files, splits the data into words and generates
-    labels. Returns split sentences and labels.
+    Loads two-category data from files, splits the data into words and
+    generates labels. Returns split sentences and labels.
     """
     if not x_text or not positive_examples or not negative_examples:
         # Load data from files
@@ -78,10 +80,9 @@ def load_data_and_labels(
     return [x_text, y]
 
 
-
 def build_vocab_mapping(run="", write_mapping=True,
-        cat1=None, cat2=None
-        ):
+                        cat1=None, cat2=None
+                        ):
     """
     Generate vocabulary mapping info, write it to disk for later eval.
     This ensures that the mapping used for the eval is the same.
@@ -115,7 +116,7 @@ def build_vocab_mapping(run="", write_mapping=True,
 
 
 def pad_sentences(sentences, padding_word="<PAD/>",
-        max_sent_length=60):
+                  max_sent_length=60):
     """
     Pads all sentences to the same length. The length is defined by the min of
     the longest sentence and a given max sentence length.
@@ -160,7 +161,7 @@ def get_embeddings(vocab_size, embedding_size, emb_file):  # expected sizes
     global vocabulary_mapping
     # create a matrix of the right size
     embeddings = np.random.uniform(
-        -1.0,1.0,size=(vocab_size, embedding_size)).astype('float32')
+        -1.0, 1.0, size=(vocab_size, embedding_size)).astype('float32')
     # get the vocabulary mapping info
     if not vocabulary_mapping:
         # should have already generated the vocab mapping
@@ -182,7 +183,8 @@ def get_embeddings(vocab_size, embedding_size, emb_file):  # expected sizes
                     emb = edict[key][0]
                     if len(emb) != embedding_size:
                         print(
-                            "embedding size mismatch for word {}: {} vs {}".format(
+                            "embedding size mismatch for word {}: " +
+                            "{} vs {}".format(
                                 key, embedding_size, len(emb)))
                         return None
                     vocab_idx = vocabulary[key]
@@ -201,15 +203,16 @@ def build_input_data(sentences, labels, vocabulary):
     # With capped vocab, need to account for word not present in
     # vocab. Using the padding word.
     # TODO -- pass padding word in as an arg
-    padding_word="<PAD/>"
+    padding_word = "<PAD/>"
     pad_idx = vocabulary[padding_word]
-    x = np.array([[vocabulary.get(word, pad_idx) for word in sentence] for sentence in sentences])
+    x = np.array(
+        [[vocabulary.get(word, pad_idx) for word in sentence] for sentence in sentences])
     y = np.array(labels)
     return [x, y]
 
 
 def load_data(run="", cat1=None, cat2=None,
-    eval=False, vocab_file=None):
+              eval=False, vocab_file=None):
     """
     Loads and preprocessed data for the MR dataset.
     Returns input vectors, labels, vocabulary, and inverse vocabulary.
@@ -233,7 +236,8 @@ def load_data(run="", cat1=None, cat2=None,
         x_text, positive_examples, negative_examples, padded_sentences = build_vocab_mapping(
             run=run, cat1=cat1, cat2=cat2)
     print("building training data structures")
-    sentences, labels = load_data_and_labels(cat1=cat1, cat2=cat2,
+    sentences, labels = load_data_and_labels(
+        cat1=cat1, cat2=cat2,
         x_text=x_text, positive_examples=positive_examples,
         negative_examples=negative_examples)
     if not padded_sentences:

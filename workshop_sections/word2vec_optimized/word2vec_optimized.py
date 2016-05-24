@@ -37,11 +37,11 @@ import sys
 import threading
 import time
 
+import numpy as np
+
 from six.moves import xrange  # pylint: disable=redefined-builtin
 
-import numpy as np
 import tensorflow as tf
-
 from tensorflow.models.embedding import gen_word2vec as word2vec
 
 flags = tf.app.flags
@@ -187,7 +187,8 @@ class Word2Vec(object):
                                            min_count=opts.min_count,
                                            subsample=opts.subsample)
     (opts.vocab_words, opts.vocab_counts,
-     opts.words_per_epoch) = self._session.run([words, counts, words_per_epoch])
+        opts.words_per_epoch) = self._session.run(
+        [words, counts, words_per_epoch])
     opts.vocab_size = len(opts.vocab_words)
     print("Data file: ", opts.train_data)
     print("Vocab size: ", opts.vocab_size - 1, " + UNK")
@@ -398,12 +399,10 @@ class Word2Vec(object):
       for (neighbor, distance) in zip(idx[i, :num], vals[i, :num]):
         print("%-20s %6.4f" % (self._id2word[neighbor], distance))
 
-
   # We've added this to the original example. It will let us interactively
   # retrieve the embedding (word vector) for a given word.
   def build_get_embed_graph(self):
     """Build a graph structure to generate an embedding."""
-    opts = self._options
 
     word_a = tf.placeholder(dtype=tf.int32)  # [N]
     # Normalized word embeddings of shape [vocab_size, emb_dim].
@@ -411,7 +410,6 @@ class Word2Vec(object):
     self._a_emb = tf.gather(nemb, word_a)  # a's embeddings
     # Node in the construct graph to run
     self._word_a = word_a
-
 
   def get_embed(self, word):
     """Get the embedding for a given word."""
@@ -428,7 +426,6 @@ class Word2Vec(object):
       })
       return emb
 
-
   # Time-consuming operation when run serially.
   def build_embeddings_index(self, oput_fname):
     """Output the learned embeddings for all words in the vocubulary."""
@@ -436,7 +433,7 @@ class Word2Vec(object):
       for word in self._word2id.keys():
         embed = {}
         emb = self.get_embed(word)
-        if emb != None:
+        if emb is not None:
           embed[word.decode('utf-8')] = emb.tolist()
           f2.write(json.dumps(embed) + '\n')
 

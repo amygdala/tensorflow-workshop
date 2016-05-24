@@ -20,8 +20,8 @@ from __future__ import print_function
 import collections
 import math
 import os
-import time
 import random
+import time
 import zipfile
 
 import numpy as np
@@ -31,6 +31,7 @@ import tensorflow as tf
 
 # Step 1: Download the data.
 url = 'http://mattmahoney.net/dc/'
+
 
 def maybe_download(filename, expected_bytes):
   """Download a file if not present, and make sure it's the right size."""
@@ -60,6 +61,7 @@ print('Data size', len(words))
 
 # Step 2: Build the dictionary and replace rare words with UNK token.
 vocabulary_size = 50000
+
 
 def build_dataset(words):
   count = [['UNK', -1]]
@@ -95,14 +97,14 @@ def generate_batch(batch_size, num_skips, skip_window):
   assert num_skips <= 2 * skip_window
   batch = np.ndarray(shape=(batch_size), dtype=np.int32)
   labels = np.ndarray(shape=(batch_size, 1), dtype=np.int32)
-  span = 2 * skip_window + 1 # [ skip_window target skip_window ]
+  span = 2 * skip_window + 1  # [ skip_window target skip_window ]
   buffer = collections.deque(maxlen=span)
   for _ in range(span):
     buffer.append(data[data_index])
     data_index = (data_index + 1) % len(data)
   for i in range(batch_size // num_skips):
     target = skip_window  # target label at the center of the buffer
-    targets_to_avoid = [ skip_window ]
+    targets_to_avoid = [skip_window]
     for j in range(num_skips):
       while target in targets_to_avoid:
         target = random.randint(0, span - 1)
@@ -116,7 +118,7 @@ def generate_batch(batch_size, num_skips, skip_window):
 batch, labels = generate_batch(batch_size=8, num_skips=2, skip_window=1)
 for i in range(8):
   print(batch[i], reverse_dictionary[batch[i]],
-      '->', labels[i, 0], reverse_dictionary[labels[i, 0]])
+        '->', labels[i, 0], reverse_dictionary[labels[i, 0]])
 
 # Step 4: Build and train a skip-gram model.
 
@@ -194,29 +196,30 @@ with tf.Session(graph=graph) as session:
   # $ tensorboard --logdir=/tmp/word2vec_basic/summaries
   # Tensorflow assumes this directory already exists, so we need to create it.
   timestamp = str(int(time.time()))
-  if not os.path.exists(
-      os.path.join("/tmp/word2vec_basic", "summaries", timestamp)):
-      os.makedirs(os.path.join("/tmp/word2vec_basic", "summaries", timestamp))
+  if not os.path.exists(os.path.join("/tmp/word2vec_basic",
+                                     "summaries", timestamp)):
+    os.makedirs(os.path.join("/tmp/word2vec_basic", "summaries", timestamp))
   # Create the SummaryWriter
   train_summary_writer = tf.train.SummaryWriter(
-    os.path.join("/tmp/word2vec_basic", "summaries", timestamp), session.graph)
+      os.path.join(
+          "/tmp/word2vec_basic", "summaries", timestamp), session.graph)
 
   average_loss = 0
   for step in xrange(num_steps):
     batch_inputs, batch_labels = generate_batch(
         batch_size, num_skips, skip_window)
-    feed_dict = {train_inputs : batch_inputs, train_labels : batch_labels}
+    feed_dict = {train_inputs: batch_inputs, train_labels: batch_labels}
 
     # We perform one update step by evaluating the optimizer op (including it
     # in the list of returned values for session.run()
     # Also evaluate the training summary op.
-    _, loss_val, tsummary = session.run([optimizer, loss, train_summary_op],
+    _, loss_val, tsummary = session.run(
+        [optimizer, loss, train_summary_op],
         feed_dict=feed_dict)
     average_loss += loss_val
     # Write the evaluated summary info to the SummaryWriter. This info will
     # then show up in the TensorBoard events.
     train_summary_writer.add_summary(tsummary, step)
-
 
     if step % 2000 == 0:
       if step > 0:
@@ -230,8 +233,8 @@ with tf.Session(graph=graph) as session:
       sim = similarity.eval()
       for i in xrange(valid_size):
         valid_word = reverse_dictionary[valid_examples[i]]
-        top_k = 8 # number of nearest neighbors
-        nearest = (-sim[i, :]).argsort()[1:top_k+1]
+        top_k = 8  # number of nearest neighbors
+        nearest = (-sim[i, :]).argsort()[1:top_k + 1]
         log_str = "Nearest to %s:" % valid_word
         for k in xrange(top_k):
           close_word = reverse_dictionary[nearest[k]]
@@ -239,13 +242,13 @@ with tf.Session(graph=graph) as session:
         print(log_str)
   final_embeddings = normalized_embeddings.eval()
 
-# Step 6: Visualize the embeddings.
 
+# Step 6: Visualize the embeddings.
 def plot_with_labels(low_dim_embs, labels, filename='tsne.png'):
   assert low_dim_embs.shape[0] >= len(labels), "More labels than embeddings"
-  plt.figure(figsize=(18, 18))  #in inches
+  plt.figure(figsize=(18, 18))  # in inches
   for i, label in enumerate(labels):
-    x, y = low_dim_embs[i,:]
+    x, y = low_dim_embs[i, :]
     plt.scatter(x, y)
     plt.annotate(label,
                  xy=(x, y),
@@ -262,7 +265,7 @@ try:
 
   tsne = TSNE(perplexity=30, n_components=2, init='pca', n_iter=5000)
   plot_only = 500
-  low_dim_embs = tsne.fit_transform(final_embeddings[:plot_only,:])
+  low_dim_embs = tsne.fit_transform(final_embeddings[:plot_only, :])
   labels = [reverse_dictionary[i] for i in xrange(plot_only)]
   plot_with_labels(low_dim_embs, labels)
 
