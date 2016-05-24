@@ -11,18 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-FROM gcr.io/tensorflow/tensorflow:latest-devel
 
-RUN pip install --upgrade pip
-RUN apt-get update
-RUN apt-get install -y python-scipy
-RUN pip install sklearn
+import zipfile
+from six.moves import urllib
 
-ADD download_git_repo.py download_git_repo.py
+url = "https://github.com/amygdala/tensorflow-workshop/archive/master.zip"
+filename, _ = urllib.request.urlretrieve(url, "tensorflow-workshop.zip")
+zip = zipfile.ZipFile(filename)
+zip.extractall()
 
-# TensorBoard
-EXPOSE 6006
-# IPython
-EXPOSE 8888
 
-CMD ["sh", "-c", "python download_git_repo.py ; /bin/bash"]

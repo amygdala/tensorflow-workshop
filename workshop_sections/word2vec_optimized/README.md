@@ -25,10 +25,13 @@ Start the model training with the following command. In the flags, specify the l
 
 
 ```sh
-$ python word2vec_optimized.py --train_data=reddit_post_title_words.txt --eval_data=questions-words.txt --save_path=/tmp/word2vec_optimized --train=true --epochs_to_train=1
+$ python word2vec_optimized.py --train_data=reddit_post_title_words.txt \
+    --eval_data=questions-words.txt \
+    --save_path=/tmp/word2vec_optimized \
+    --train=true --epochs_to_train=1
 ```
 
-Due to the workshop time contraints, we're just training for 1 epoch here. (This won't properly train the model).
+Due to the workshop time constraints, we're just training for 1 epoch here. (This won't properly train the model).
 If we have time, we'll take a quick look at the code while it's running.
 
 Note: `questions-words.txt` is tailored towards the original example corpus, not the reddit one. In this case it doesn't matter, as the eval results won't impact the number of epochs we run.
@@ -46,7 +49,9 @@ In the directory, you should see some `model.ckpt*` files as well as a file name
 Then, run the following command, this time pointing to the directory that contains the saved model info (instead of `/tmp` like you did above). Don't include the `--train=true` flag this time.
 
 ```sh
-$ python word2vec_optimized.py --save_path=saved_word2vec_model --train_data=reddit_post_title_words.txt --eval_data=questions-words.txt
+$ python word2vec_optimized.py --save_path=saved_word2vec_model \
+    --train_data=reddit_post_title_words.txt \
+    --eval_data=questions-words.txt
 ```
 
 Without the `--train` flag, the script builds the model graph, and then restores the saved model variables to it, then starts an interactive shell.
@@ -72,7 +77,7 @@ We are evaluating a subpart of the learned model graph to emit these relationshi
 
 ### Get the embedding vector for a given word
 
-We've modifed the original version of this example to add code that evaluates the learned word vector for a given word.
+We've modified the original version of this example to add code that evaluates the learned word vector for a given word.
 
 Still in the interactive shell, try something like:
 
