@@ -58,7 +58,7 @@ We'll also take a look at how the SummaryWriter is being used-- this lets us tra
 
 Once the training script has gone through its first checkpoint save, we can look at its progress in TensorBoard.
 
-In a separate terminal window, start up tensorboard. (Make sure that you've activated your conda environment in this new window).
+In a separate terminal window, start up Tensorboard. (Make sure that you've activated your conda environment in this new window).
 
 ```sh
 $ tensorboard --logdir=runs

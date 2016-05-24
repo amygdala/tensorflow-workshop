@@ -1,14 +1,14 @@
 
 # Introducing word2vec
 
-In this section, we'll take a look at the ['basic' variant of word2vec](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/examples/tutorials/word2vec/word2vec_basic.py) used for [this Tensorflow tutorial](https://www.tensorflow.org/versions/r0.8/tutorials/word2vec/index.html#vector-representations-of-words).
+In this section, we'll take a look at the ['basic' variant of word2vec](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/examples/tutorials/word2vec/word2vec_basic.py) used for [this TensorFlow tutorial](https://www.tensorflow.org/versions/r0.8/tutorials/word2vec/index.html#vector-representations-of-words).
 
-We'll launch the training process, then while that is running, we'll look at how this graph is constructed, and what it does.
+We'll launch the training process, then while that is running, we'll look at how this graph is constructed, and what it does. In the process we'll introduce [Tensorboard](https://www.tensorflow.org/versions/r0.8/how_tos/summaries_and_tensorboard/index.html).
 
 ## Start the process of training the model
 
 First, confirm that you can import `matplotlib` and `sklearn`, as in the installation instructions.
-Then, start training the model. You can do this in two different ways: from the command line, and from a Jupyter notebook.
+Then, start training the model. You can do this in two different ways: from the command line, and from a [Jupyter](http://jupyter.org/) notebook.
 
 ### Training from the command line
 
@@ -64,7 +64,7 @@ It will write the plot to an image file named `tsne.png` in the same directory.
 
 In your projection plot, you should see similar words clustered close to each other.
 
-## Excercise: find the 'nearby' words for a specific given word
+## Exercise: find the 'nearby' words for a specific given word
 
 See if you can figure out how to modify the [`word2vec_basic_summaries.py`](word2vec_basic_summaries.py) code to evaluate and output the 'nearby' set for a specific word too.
 
