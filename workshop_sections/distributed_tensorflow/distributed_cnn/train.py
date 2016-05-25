@@ -100,7 +100,7 @@ print("Train/Dev split: {:d}/{:d}".format(len(y_train), len(y_dev)))
 # ==================================================
 
 with tf.Graph().as_default():
-    cluster_config = ast.literal_eval(os.environ['CLUSTER_CONFG'])
+    cluster_config = ast.literal_eval(os.environ['CLUSTER_CONFIG'])
 
     wtensor = data_helpers.get_embeddings(
         FLAGS.vocab_size, FLAGS.embedding_size, FLAGS.embeds_file)
