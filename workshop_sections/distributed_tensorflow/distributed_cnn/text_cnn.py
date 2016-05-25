@@ -18,74 +18,76 @@
 
 import tensorflow as tf
 
-import data_helpers2 as data_helpers
-
-
 class DistributedTextCNN(object):
     """
     A CNN for text classification.
     Uses an embedding layer, followed by a convolutional, max-pooling
     and softmax layer.
     """
-    def __init__(self, sequence_length, num_classes, vocab_size,
-                 embedding_size, filter_sizes, num_filters, cluster_def,
-                 l2_reg_lambda=0.0, embeds_file=None):
+    def __init__(self, sequence_length, num_classes, vocab_size, embedding_size,
+                 filter_sizes, num_filters, cluster_def,
+                 l2_reg_lambda=0.0, wtensor=None, worker_job='worker',
+                 param_server_job='ps', master_device='/job:worker/task:0'):
 
         # Placeholders for input, output and dropout
-        self.num_workers = len(cluster_def['workers'])
-        self.num_param_servers = len(cluster_def['ps'])
-        self.input_x_minibatches = tf.split(
-            0,
-            self.num_workers,
-            tf.placeholder(tf.int32, [None, sequence_length], name="input_x")
-        )
-        self.input_y_minibatches = tf.split(
-            0,
-            self.num_workers,
-            tf.placeholder(tf.float32, [None, num_classes], name="input_y")
-        )
-        self.dropout_keep_prob = tf.placeholder(
-            tf.float32, name="dropout_keep_prob")
+
+        workers = ['/job:{}/task:{}'.format(worker_job, i)
+                   for i in range(len(cluster_def[worker_job]))]
+        param_servers = ['/job:{}/task:{}'.format(param_server_job, i)
+                         for i in range(len(cluster_def[param_server_job]))]
+
+        if wtensor is None:
+            wtensor = tf.random_uniform([vocab_size, embedding_size], -1.0, 1.0)
+
+        with tf.device(master_device):
+            self.input_x = tf.placeholder(tf.int32, [None, sequence_length], name="input_x")
+            input_x_minibatches = tf.split(0, len(workers), self.input_x)
+            self.input_y =  tf.placeholder(tf.float32, [None, num_classes], name="input_y")
+            input_y_minibatches = tf.split(0, len(workers))
+            self.dropout_keep_prob = tf.placeholder(tf.float32, name="dropout_keep_prob")
 
         # Keeping track of l2 regularization loss (optional)
         l2_loss = tf.constant(0.0)
 
-        with tf.device('/job:master/task:0'):
-            wtensor = data_helpers.get_embeddings(
-                vocab_size, embedding_size, embeds_file)
+        with tf.device(param_servers[0]):
+            self.global_step = tf.Variable(0, name="global_step", trainable=False)
 
-        self.embeddings = []
-        for i in len(range(self.num_param_servers)):
-            with tf.device('/job:ps/tasks:{}'.format(i)):
-                self.embeddings.append(tf.Variable(wtensor, name="W"))
+        embeddings = []
+        for param_server in param_servers:
+            with tf.device(param_server):
+                embeddings.append(tf.Variable(wtensor, name="W"))
 
-        pooled_outputs = []
+        filter_weights = []
+        filter_biases = []
         for i, filter_size in enumerate(filter_sizes):
-            with tf.device(tf.train.replica_device_setter(self.cluster_def)):
+            with tf.device(param_servers[i % len(param_servers)]):
                 filter_shape = [filter_size, embedding_size, 1, num_filters]
                 # Convolution Layer
-                W = tf.Variable(
-                    tf.truncated_normal(filter_shape, stddev=0.1), name="W")
-                b = tf.Variable(
-                    tf.constant(0.1, shape=[num_filters]), name="b")
+                filter_weights.append(tf.Variable(
+                    tf.truncated_normal(filter_shape, stddev=0.1), name="W"))
+                filter_biases.append(tf.Variable(
+                    tf.constant(0.1, shape=[num_filters]), name="b"))
 
-            for j in range(self.num_workers)[i::len(filter_size)]:
-                with tf.device('/job:worker/task:{}'.format(i)):
-                    embedded_chars = tf.nn.embedding_lookup(
-                        self.embeddings, self.input_x_minibatches[0])
-                    embedded_chars_expanded = tf.expand_dims(embedded_chars, -1)
-
+        losses = []
+        accuracies = []
+        for j, worker in enumerate(workers):
+            with tf.device(worker):
+                embedded_chars = tf.nn.embedding_lookup(
+                    embeddings, input_x_minibatches[j])
+                embedded_chars_expanded = tf.expand_dims(embedded_chars, -1)
+                pooled_outputs = []
+                for i, filter_size in enumerate(filter_sizes):
                     # Create a convolution + maxpool layer for each filter size
                     with tf.name_scope("conv-maxpool-%s" % filter_size):
                         conv = tf.nn.conv2d(
                             embedded_chars_expanded,
-                            W,
+                            filter_weights[i],
                             strides=[1, 1, 1, 1],
                             padding="VALID",
                             name="conv"
                         )
                         # Apply nonlinearity
-                        h = tf.nn.relu(tf.nn.bias_add(conv, b), name="relu")
+                        h = tf.nn.relu(tf.nn.bias_add(conv, filter_biases[i]), name="relu")
                         # Maxpooling over the outputs
                         pooled = tf.nn.max_pool(
                             h,
@@ -96,37 +98,40 @@ class DistributedTextCNN(object):
                         )
                         pooled_outputs.append(pooled)
 
-        # Combine all the pooled features
-        num_filters_total = num_filters * len(filter_sizes)
-        self.h_pool = tf.concat(3, pooled_outputs)
-        self.h_pool_flat = tf.reshape(self.h_pool, [-1, num_filters_total])
+                # Combine all the pooled features
+                num_filters_total = num_filters * len(filter_sizes)
+                h_pool = tf.concat(3, pooled_outputs)
+                h_pool_flat = tf.reshape(h_pool, [-1, num_filters_total])
 
-        # Add dropout
-        with tf.name_scope("dropout"):
-            self.h_drop = tf.nn.dropout(
-                self.h_pool_flat, self.dropout_keep_prob)
+                # Add dropout
+                with tf.name_scope("dropout"):
+                    h_drop = tf.nn.dropout(
+                        h_pool_flat, self.dropout_keep_prob)
 
-        # Final (unnormalized) scores and predictions
-        with tf.name_scope("output"):
-            W = tf.get_variable(
-                "W",
-                shape=[num_filters_total, num_classes],
-                initializer=tf.contrib.layers.xavier_initializer())
-            b = tf.Variable(tf.constant(0.1, shape=[num_classes]), name="b")
-            l2_loss += tf.nn.l2_loss(W)
-            l2_loss += tf.nn.l2_loss(b)
-            self.scores = tf.nn.xw_plus_b(self.h_drop, W, b, name="scores")
-            self.predictions = tf.argmax(self.scores, 1, name="predictions")
+                # Final (unnormalized) scores and predictions
+                with tf.name_scope("output"):
+                    W = tf.get_variable(
+                        "W",
+                        shape=[num_filters_total, num_classes],
+                        initializer=tf.contrib.layers.xavier_initializer())
+                    b = tf.Variable(tf.constant(0.1, shape=[num_classes]), name="b")
+                    l2_loss += tf.nn.l2_loss(W)
+                    l2_loss += tf.nn.l2_loss(b)
+                    scores = tf.nn.xw_plus_b(h_drop, W, b, name="scores")
+                    predictions = tf.argmax(scores, 1, name="predictions")
 
-        # CalculateMean cross-entropy loss
-        with tf.name_scope("loss"):
-            losses = tf.nn.softmax_cross_entropy_with_logits(
-                self.scores, self.input_y)
-            self.loss = tf.reduce_mean(losses) + l2_reg_lambda * l2_loss
+                # CalculateMean cross-entropy loss
+                with tf.name_scope("loss"):
+                    loss = tf.nn.softmax_cross_entropy_with_logits(scores, input_y_minibatches[j])
+                    losses.append(tf.reduce_mean(loss) + l2_reg_lambda * l2_loss)
 
-        # Accuracy
-        with tf.name_scope("accuracy"):
-            correct_predictions = tf.equal(
-                self.predictions, tf.argmax(self.input_y, 1))
-            self.accuracy = tf.reduce_mean(
-                tf.cast(correct_predictions, "float"), name="accuracy")
+                # Accuracy
+                with tf.name_scope("accuracy"):
+                    correct_predictions = tf.equal(predictions, tf.argmax(input_y_minibatches[j], 1))
+                    accuracies.append(tf.reduce_mean(
+                        tf.cast(correct_predictions, "float"), name="accuracy"))
+
+        with tf.device(master_device):
+            self.loss = tf.add_n(losses) / tf.convert_to_tensor(len(workers))
+            self.accuracy = tf.add_n(accuracies) / tf.convert_to_tensor(len(workers))
+

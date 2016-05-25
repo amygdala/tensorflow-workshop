@@ -17,6 +17,7 @@
 # This file is a modification of the code here:
 # https://github.com/dennybritz/cnn-text-classification-tf
 
+import ast
 import datetime
 import os
 import time
@@ -62,6 +63,8 @@ tf.flags.DEFINE_boolean(
     "log_device_placement", False, "Log placement of ops on devices")
 tf.flags.DEFINE_string(
     "embeds_file", None, "File containing learned word embeddings")
+tf.flags.DEFINE_string(
+    "master_device", "/job:worker/task:0", "Device that will run once per cluster ops")
 
 FLAGS = tf.flags.FLAGS
 FLAGS._parse_flags()
@@ -97,11 +100,16 @@ print("Train/Dev split: {:d}/{:d}".format(len(y_train), len(y_dev)))
 # ==================================================
 
 with tf.Graph().as_default():
+    cluster_config = ast.literal_eval(os.environ['CLUSTER_CONFG'])
+
+    wtensor = data_helpers.get_embeddings(
+        FLAGS.vocab_size, FLAGS.embedding_size, FLAGS.embeds_file)
+
     session_conf = tf.ConfigProto(
         allow_soft_placement=FLAGS.allow_soft_placement,
         log_device_placement=FLAGS.log_device_placement)
-    sess = tf.Session(config=session_conf)
-    with sess.as_default():
+
+    with tf.Session(FLAGS.master_device, config=session_conf) as sess:
         cnn = TextCNN(
             sequence_length=x_train.shape[1],
             num_classes=2,
@@ -110,14 +118,14 @@ with tf.Graph().as_default():
             filter_sizes=list(map(int, FLAGS.filter_sizes.split(","))),
             num_filters=FLAGS.num_filters,
             l2_reg_lambda=FLAGS.l2_reg_lambda,
-            embeds_file=FLAGS.embeds_file)
+            embeds_file=FLAGS.embeds_file,
+            master_device=FLAGS.master_device
+        )
 
         # Define Training procedure
-        global_step = tf.Variable(0, name="global_step", trainable=False)
         optimizer = tf.train.AdamOptimizer(1e-3)
         grads_and_vars = optimizer.compute_gradients(cnn.loss)
-        train_op = optimizer.apply_gradients(
-            grads_and_vars, global_step=global_step)
+        train_op = optimizer.apply_gradients(grads_and_vars, global_step=cnn.global_step)
 
         # Keep track of gradient values and sparsity (optional)
         grad_summaries = []
@@ -172,7 +180,7 @@ with tf.Graph().as_default():
                          cnn.dropout_keep_prob: FLAGS.dropout_keep_prob
                          }
             _, step, summaries, loss, accuracy = sess.run(
-                [train_op, global_step, train_summary_op,
+                [train_op, cnn.global_step, train_summary_op,
                     cnn.loss, cnn.accuracy],
                 feed_dict)
             time_str = datetime.datetime.now().isoformat()
@@ -189,10 +197,9 @@ with tf.Graph().as_default():
             """
             feed_dict = {cnn.input_x: x_batch,
                          cnn.input_y: y_batch,
-                         cnn.dropout_keep_prob: 1.0
-                         }
+                         cnn.dropout_keep_prob: 1.0}
             step, summaries, loss, accuracy = sess.run(
-                [global_step, dev_summary_op, cnn.loss, cnn.accuracy],
+                [cnn.global_step, dev_summary_op, cnn.loss, cnn.accuracy],
                 feed_dict)
             time_str = datetime.datetime.now().isoformat()
             print("{}: step {}, loss {:g}, acc {:g}".format(
@@ -209,7 +216,7 @@ with tf.Graph().as_default():
         for batch in batches:
             x_batch, y_batch = zip(*batch)
             train_step(x_batch, y_batch)
-            current_step = tf.train.global_step(sess, global_step)
+            current_step = tf.train.global_step(sess, cnn.global_step)
             if current_step % FLAGS.evaluate_every == 0:
                 print("\nEvaluation:")
                 dev_step(x_dev, y_dev, writer=dev_summary_writer)
