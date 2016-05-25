@@ -136,6 +136,6 @@ class DistributedTextCNN(object):
                         tf.cast(correct_predictions, "float"), name="accuracy"))
 
         with tf.device(master_device):
-            self.loss = tf.add_n(losses) / tf.convert_to_tensor(len(workers), type=tf.float32)
-            self.accuracy = tf.add_n(accuracies) / tf.convert_to_tensor(len(workers), type=tf.float32)
+            self.loss = tf.add_n(losses) / tf.convert_to_tensor(len(workers), dtype=tf.float32)
+            self.accuracy = tf.add_n(accuracies) / tf.convert_to_tensor(len(workers), dtype=tf.float32)
 
