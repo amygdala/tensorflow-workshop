@@ -61,14 +61,23 @@ class DistributedTextCNN(object):
         filter_weights = []
         filter_biases = []
         for i, filter_size in enumerate(filter_sizes):
-            with tf.device(param_servers[i % len(param_servers)]):
-                with tf.name_scope("conv-maxpool-%s".format(filter_size)):
-                    filter_shape = [filter_size, embedding_size, 1, num_filters]
-                    # Convolution Layer
-                    filter_weights.append(tf.Variable(
-                        tf.truncated_normal(filter_shape, stddev=0.1), name="W"))
-                    filter_biases.append(tf.Variable(
-                        tf.constant(0.1, shape=[num_filters]), name="b"))
+            with tf.device(param_servers[i % len(param_servers)]),\
+                 tf.name_scope("conv-maxpool-%s".format(filter_size)):
+                filter_shape = [filter_size, embedding_size, 1, num_filters]
+                # Convolution Layer
+                filter_weights.append(tf.Variable(
+                    tf.truncated_normal(filter_shape, stddev=0.1), name="W"))
+                filter_biases.append(tf.Variable(
+                    tf.constant(0.1, shape=[num_filters]), name="b"))
+
+        num_filters_total = num_filters * len(filter_sizes)
+        with tf.device(tf.train.replica_device_setter(cluster_def)), tf.name_scope("output"):
+            # Final (unnormalized) scores and predictions
+            output_weight = tf.get_variable(
+                "W",
+                shape=[num_filters_total, num_classes],
+                initializer=tf.contrib.layers.xavier_initializer())
+            output_biases = tf.Variable(tf.constant(0.1, shape=[num_classes]), name="b")
 
         losses = []
         accuracies = []
@@ -101,7 +110,6 @@ class DistributedTextCNN(object):
                         pooled_outputs.append(pooled)
 
                 # Combine all the pooled features
-                num_filters_total = num_filters * len(filter_sizes)
                 h_pool = tf.concat(3, pooled_outputs)
                 h_pool_flat = tf.reshape(h_pool, [-1, num_filters_total])
 
@@ -110,16 +118,10 @@ class DistributedTextCNN(object):
                     h_drop = tf.nn.dropout(
                         h_pool_flat, self.dropout_keep_prob)
 
-                # Final (unnormalized) scores and predictions
                 with tf.name_scope("output"):
-                    W = tf.get_variable(
-                        "W",
-                        shape=[num_filters_total, num_classes],
-                        initializer=tf.contrib.layers.xavier_initializer())
-                    b = tf.Variable(tf.constant(0.1, shape=[num_classes]), name="b")
-                    l2_loss += tf.nn.l2_loss(W)
-                    l2_loss += tf.nn.l2_loss(b)
-                    scores = tf.nn.xw_plus_b(h_drop, W, b, name="scores")
+                    l2_loss += tf.nn.l2_loss(output_weight)
+                    l2_loss += tf.nn.l2_loss(output_biases)
+                    scores = tf.nn.xw_plus_b(h_drop, output_weight, output_biases, name="scores")
                     predictions = tf.argmax(scores, 1, name="predictions")
 
                 # CalculateMean cross-entropy loss
