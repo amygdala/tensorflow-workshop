@@ -103,7 +103,7 @@ with tf.Graph().as_default():
     cluster_config = ast.literal_eval(os.environ['CLUSTER_CONFIG'])
 
     wtensor = data_helpers.get_embeddings(
-        len(vocabulary), FLAGS.embedding_size, FLAGS.embeds_file)
+        len(vocabulary), FLAGS.embedding_dim, FLAGS.embeds_file)
 
     session_conf = tf.ConfigProto(
         allow_soft_placement=FLAGS.allow_soft_placement,
