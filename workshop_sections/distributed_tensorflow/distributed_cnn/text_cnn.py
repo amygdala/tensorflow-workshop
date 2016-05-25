@@ -55,7 +55,7 @@ class DistributedTextCNN(object):
 
         embeddings = []
         for param_server in param_servers:
-            with tf.device(param_server):
+            with tf.device(param_server), tf.name_scope("embedding"):
                 embeddings.append(tf.Variable(wtensor, name="W"))
 
         filter_weights = []
