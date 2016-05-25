@@ -62,12 +62,13 @@ class DistributedTextCNN(object):
         filter_biases = []
         for i, filter_size in enumerate(filter_sizes):
             with tf.device(param_servers[i % len(param_servers)]):
-                filter_shape = [filter_size, embedding_size, 1, num_filters]
-                # Convolution Layer
-                filter_weights.append(tf.Variable(
-                    tf.truncated_normal(filter_shape, stddev=0.1), name="W"))
-                filter_biases.append(tf.Variable(
-                    tf.constant(0.1, shape=[num_filters]), name="b"))
+                with tf.name_scope("conv-maxpool-%s".format(filter_size)):
+                    filter_shape = [filter_size, embedding_size, 1, num_filters]
+                    # Convolution Layer
+                    filter_weights.append(tf.Variable(
+                        tf.truncated_normal(filter_shape, stddev=0.1), name="W"))
+                    filter_biases.append(tf.Variable(
+                        tf.constant(0.1, shape=[num_filters]), name="b"))
 
         losses = []
         accuracies = []
