@@ -62,7 +62,7 @@ class DistributedTextCNN(object):
         filter_biases = []
         for i, filter_size in enumerate(filter_sizes):
             with tf.device(param_servers[i % len(param_servers)]),\
-                 tf.name_scope("conv-maxpool-%s".format(filter_size)):
+                 tf.name_scope("conv-maxpool-{}".format(filter_size)):
                 filter_shape = [filter_size, embedding_size, 1, num_filters]
                 # Convolution Layer
                 filter_weights.append(tf.Variable(
@@ -89,7 +89,7 @@ class DistributedTextCNN(object):
                 pooled_outputs = []
                 for i, filter_size in enumerate(filter_sizes):
                     # Create a convolution + maxpool layer for each filter size
-                    with tf.name_scope("conv-maxpool-%s" % filter_size):
+                    with tf.name_scope("conv-maxpool-{}".format(filter_size)):
                         conv = tf.nn.conv2d(
                             embedded_chars_expanded,
                             filter_weights[i],
