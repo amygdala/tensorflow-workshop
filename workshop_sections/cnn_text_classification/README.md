@@ -64,7 +64,14 @@ In a separate terminal window, start up Tensorboard. (Make sure that you've acti
 $ tensorboard --logdir=runs
 ```
 
-We'll walk through what it's doing, and trace the logged events back to the `SummaryWriter` calls we looked at in the code.
+Note: if you're starting TensorBoard within a docker container, and you're using `docker-machine`, run
+
+```sh
+$ docker-machine ip
+```
+(outside the container) to find the IP address to use in your browser.  Otherwise, you should be able to bring up TensorBoard on `http://localhost:6006/`.
+
+We'll walk through the information TensorBoard is providing, and trace the logged events back to the `SummaryWriter` calls we looked at in the code.
 
 ### Loading and using a trained model
 

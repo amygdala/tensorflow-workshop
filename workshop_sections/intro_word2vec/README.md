@@ -48,7 +48,12 @@ If you ran the command line version of this exercise, which writes some summary 
 $ tensorboard --logdir=/tmp/word2vec_basic/summaries
 ```
 
-Then visit `http://localhost:6006/`.
+Note: if you're starting TensorBoard within a docker container, and you're using `docker-machine`, run
+
+```sh
+$ docker-machine ip
+```
+(outside the container) to find the IP address to use in your browser.  Otherwise, you should be able to bring up TensorBoard on `http://localhost:6006/`.
 
 <a href="https://storage.googleapis.com/oscon-tf-workshop-materials/images/tensorboard_word2vec_basic.png" target="_blank"><img src="https://storage.googleapis.com/oscon-tf-workshop-materials/images/tensorboard_word2vec_basic.png" width="500"/></a>
 
