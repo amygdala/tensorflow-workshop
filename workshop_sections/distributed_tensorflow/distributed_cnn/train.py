@@ -115,15 +115,16 @@ with tf.Graph().as_default():
         log_device_placement=FLAGS.log_device_placement)
 
 
-
     with tf.Session(master_address, config=session_conf) as sess:
         cnn = DistributedTextCNN(
-            sequence_length=x_train.shape[1],
-            num_classes=2,
-            vocab_size=len(vocabulary),
-            embedding_size=FLAGS.embedding_dim,
-            filter_sizes=list(map(int, FLAGS.filter_sizes.split(","))),
-            num_filters=FLAGS.num_filters,
+            x_train.shape[1],
+            2,
+            len(vocabulary),
+            FLAGS.embedding_dim,
+            list(map(int, FLAGS.filter_sizes.split(","))),
+            FLAGS.num_filters,
+            cluster_config,
+            wtensor=wtensor,
             l2_reg_lambda=FLAGS.l2_reg_lambda,
             master_device=master_device
         )
