@@ -71,7 +71,7 @@ class DistributedTextCNN(object):
                     tf.constant(0.1, shape=[num_filters]), name="b"))
 
         num_filters_total = num_filters * len(filter_sizes)
-        with tf.device(tf.train.replica_device_setter(cluster_def)), tf.name_scope("output"):
+        with tf.device(param_servers[0]), tf.name_scope("output"):
             # Final (unnormalized) scores and predictions
             output_weight = tf.get_variable(
                 "W",
