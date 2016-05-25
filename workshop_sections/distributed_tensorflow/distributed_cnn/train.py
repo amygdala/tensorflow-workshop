@@ -125,7 +125,6 @@ with tf.Graph().as_default():
             filter_sizes=list(map(int, FLAGS.filter_sizes.split(","))),
             num_filters=FLAGS.num_filters,
             l2_reg_lambda=FLAGS.l2_reg_lambda,
-            embeds_file=FLAGS.embeds_file,
             master_device=master_device
         )
 
