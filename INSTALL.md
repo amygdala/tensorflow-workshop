@@ -1,19 +1,23 @@
 
 # Installation instructions for the TensorFlow workshop
 
-## Install Conda + Python 3 to use as your local virtual environment
+You can set up for the workshop in two different ways -- installing the necessary packages into a virtual environment, or running a docker container.
+
+## Virtual environment-based installation
+
+### Install Conda + Python 3 to use as your local virtual environment
 
 Anaconda is a Python distribution that includes a large number of standard numeric and scientific computing packages. Anaconda uses a package manager called "conda" that has its own environment system similar to Virtualenv.
 
 Install the version of Conda that **uses Python 3.5** by default.  Follow the instructions [here](https://www.continuum.io/downloads).  The [miniconda version](http://conda.pydata.org/miniconda.html) should suffice.
 
-## Install TensorFlow into a Conda environment
+### Install TensorFlow into a Conda environment
 
 Follow the instructions [on the TensorFlow site](https://www.tensorflow.org/versions/r0.8/get_started/os_setup.html#anaconda-environment-installation) to create a Conda environment, *activate* it, and use pip to install TensorFlow within it.  When following these instructions, be sure to use the Python 3 variant for both environment creation and in grabbing the TensorFlow .whl file.
 
 Remember to activate this environment in all the terminal windows you use during this workshop.
 
-## Install some Python packages
+### Install some Python packages
 
 With your conda environment activated, install the following packages:
 
@@ -25,6 +29,55 @@ $ conda install matplotlib
 $ conda install jupyter
 ```
 
+## Docker-based installation
+
+We're also providing a [Docker](https://www.docker.com/) container image with all the necessary libraries included, for you to download.
+To use it, you'll need to have [Docker installed](https://docs.docker.com/engine/installation/).
+
+### Download the container image
+
+Once Docker is installed and running, download the workshop image:
+
+```sh
+$ docker pull gcr.io/google-samples/tf-workshop:v1
+```
+
+[Here's the Dockerfile](https://github.com/amygdala/tensorflow-workshop/tree/master/workshop_image) used to build this image.
+
+### Create a directory to hold data files needed by the workshop
+
+Create a directory (called, say, `workshop-data`) to mount as a volume when you start up the docker container.  This will let you download data files into that directory, to make them accessible to the running container.
+
+### Run the container
+
+Once you've downloaded the container image, you can run it like this:
+
+```sh
+$ docker run -v `pwd`/workshop-data:/workshop-data -it \
+    -p 6006:6006 -p 8888:8888 gcr.io/google-samples/tf-workshop:v1
+```
+
+Edit the path to the directory you're mounting as appropriate. The first component of the `-v` arg is the local directory, and the second component is where you want to mount it in your running container.
+
+### Restarting the container later
+
+If you later exit your container and then want to restart it again, you can find the container ID by running:
+
+```sh
+$ docker ps -a
+```
+
+Then, run:
+
+```sh
+$ docker start <container_id>
+```
+
+(`docker ps` should then show it running). Once the workshop container is running again, you can exec back into it like this:
+
+```sh
+$ docker exec -it <container_id> bash
+```
 
 ## Download data files for the workshop exercises
 
@@ -36,6 +89,8 @@ https://storage.googleapis.com/oscon-tf-workshop-materials/processed_reddit_data
 https://storage.googleapis.com/oscon-tf-workshop-materials/learned_word_embeddings/reddit_embeds.zip
 
 (Thanks to [reddit](https://www.reddit.com/), for allowing us to use some post data for a training corpus.)
+
+If you're running the Docker image, and have mounted a data directory as a volume (as described above), then copy the downloads into that directory so that they're accessible inside the container.
 
 
 ## Optional: Clone/Download the TensorFlow repo from GitHub
