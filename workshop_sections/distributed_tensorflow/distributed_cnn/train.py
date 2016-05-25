@@ -21,6 +21,7 @@ import ast
 import datetime
 import os
 import time
+import re
 
 import data_helpers2 as data_helpers
 
@@ -64,7 +65,7 @@ tf.flags.DEFINE_boolean(
 tf.flags.DEFINE_string(
     "embeds_file", None, "File containing learned word embeddings")
 tf.flags.DEFINE_string(
-    "master_device", "/job:worker/task:0", "Device that will run once per cluster ops")
+    "master_job", "worker", "Run once per cluster ops on task 0 of this job")
 
 FLAGS = tf.flags.FLAGS
 FLAGS._parse_flags()
@@ -76,6 +77,10 @@ print("")
 
 # Data Preparation
 # ==================================================
+
+cluster_config = ast.literal_eval(os.environ['CLUSTER_CONFIG'])
+master_device = '/job:{}/task:0'.format(FLAGS.master_job)
+master_address = 'grpc://{}'.format(cluster_config[FLAGS.master_job][0])
 
 # Load data
 print("Loading data...")
@@ -96,11 +101,11 @@ print("(Capped) Vocabulary Size: {:d}".format(len(vocabulary)))
 print("Train/Dev split: {:d}/{:d}".format(len(y_train), len(y_dev)))
 
 
+
 # Training
 # ==================================================
 
 with tf.Graph().as_default():
-    cluster_config = ast.literal_eval(os.environ['CLUSTER_CONFIG'])
 
     wtensor = data_helpers.get_embeddings(
         len(vocabulary), FLAGS.embedding_dim, FLAGS.embeds_file)
@@ -109,7 +114,9 @@ with tf.Graph().as_default():
         allow_soft_placement=FLAGS.allow_soft_placement,
         log_device_placement=FLAGS.log_device_placement)
 
-    with tf.Session(FLAGS.master_device, config=session_conf) as sess:
+
+
+    with tf.Session(master_address, config=session_conf) as sess:
         cnn = DistributedTextCNN(
             sequence_length=x_train.shape[1],
             num_classes=2,
@@ -119,7 +126,7 @@ with tf.Graph().as_default():
             num_filters=FLAGS.num_filters,
             l2_reg_lambda=FLAGS.l2_reg_lambda,
             embeds_file=FLAGS.embeds_file,
-            master_device=FLAGS.master_device
+            master_device=master_device
         )
 
         # Define Training procedure
