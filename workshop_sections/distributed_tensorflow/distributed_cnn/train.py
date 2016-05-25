@@ -28,7 +28,7 @@ import numpy as np
 
 import tensorflow as tf
 
-from text_cnn import TextCNN
+from text_cnn import DistributedTextCNN
 
 # Parameters
 # ==================================================
@@ -110,7 +110,7 @@ with tf.Graph().as_default():
         log_device_placement=FLAGS.log_device_placement)
 
     with tf.Session(FLAGS.master_device, config=session_conf) as sess:
-        cnn = TextCNN(
+        cnn = DistributedTextCNN(
             sequence_length=x_train.shape[1],
             num_classes=2,
             vocab_size=len(vocabulary),

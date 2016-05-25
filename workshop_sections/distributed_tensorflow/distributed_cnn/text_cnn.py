@@ -18,6 +18,7 @@
 
 import tensorflow as tf
 
+
 class DistributedTextCNN(object):
     """
     A CNN for text classification.
