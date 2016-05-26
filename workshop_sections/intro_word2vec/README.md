@@ -21,15 +21,21 @@ $ python word2vec_basic_summaries.py
 
 ## (Alternately) train from a Jupyter notebook.
 
-The TensorFlow repo includes a nice Jupyter notebook version of this same model (without the addition of the code that writes the summary info).
+Instead of running the command-line script, you can use a Jupyter (iPython) notebook in the same directory.
 
 
 ```sh
-$ cd <tensorflow>/tensorflow/examples/udacity
 $ jupyter notebook
 ```
 
-Then select the `5_word2vec` notebook from the list.
+Note: if you're starting Jupyter within a docker container, and you're using `docker-machine`, run
+
+```sh
+$ docker-machine ip
+```
+(outside the container) to find the IP address to use in your browser.  Otherwise, you should be able to bring up Jupyter on `http://localhost:8888/`.
+
+Then select the `word2vec_basic_summaries.ipynb` notebook from the displayed list in the browser.
 Step through its setup and graph definition steps until you reach the training step, and start it running.
 
 ## The word2vec_basic model graph
@@ -42,13 +48,13 @@ This example picks a random set of words from the top 100 most frequent, and per
 
 [Tensorboard](https://www.tensorflow.org/versions/r0.8/how_tos/summaries_and_tensorboard/index.html) is a suite of visualization tools that help make it easier to understand, debug, and optimize TensorFlow programs.
 
-If you ran the command line version of this exercise, which writes some summary information for TensorBoard, then start it up as follows while the training is running, pointing it to the directory in which the summaries were written.  Make sure you activate your conda environment in this shell window as well.
+Start it up as follows while the training is running (or after it's done), pointing it to the directory in which the summaries were written.  If you're using the virtual environment, make sure you activate your conda environment in this shell window as well.
 
 ```sh
 $ tensorboard --logdir=/tmp/word2vec_basic/summaries
 ```
 
-Note: if you're starting TensorBoard within a docker container, and you're using `docker-machine`, run
+Note: similarly to running Jupyter, if you're starting TensorBoard within a docker container, and you're using `docker-machine`, run
 
 ```sh
 $ docker-machine ip
