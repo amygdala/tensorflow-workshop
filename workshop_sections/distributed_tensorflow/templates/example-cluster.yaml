@@ -12,16 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 imports:
-    - name: tensorflow-cluster
-      path: tensorflow-cluster.jinja
+  - name: tensorflow-cluster
+    path: tensorflow-cluster.jinja
+  - name: pd
+    path: local-pd.jinja
 resources:
+  - type: pd
+    properties:
+        name: pd1
+        capacity: 20Gi
+  - type: pd
+    properties:
+        name: pd2
+        capacity: 20Gi
   - type: tensorflow-cluster
     properties:
         worker-image: gcr.io/google-samples/tf-k8s-worker
-        ps: 2
-        worker: 16
-        master: 1
-        use-gce-pd: false
+        jobs:
+            ps: 2
+            worker: 32
+            master: 1
         jupyter-config:
-            password: 'a good password'
+            secret-name: jupyter
             server-image: gcr.io/google-samples/tf-jupyter-server

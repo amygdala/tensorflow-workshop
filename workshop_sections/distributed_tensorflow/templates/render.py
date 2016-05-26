@@ -42,7 +42,7 @@ def main(config_name, out):
         out = config_name + '.rendered.yaml'
 
     with open(out, 'w') as out_file:
-        out_file.write('---\n'.join(resources))
+        out_file.write('\n---\n'.join(resources))
 
 
 if __name__ == '__main__':

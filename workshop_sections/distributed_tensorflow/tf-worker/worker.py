@@ -38,6 +38,6 @@ def main(job_name, task_id, cluster_def):
 
 
 if __name__ == '__main__':
-    this_job_name, this_task_id, _ = POD_NAME.split('-')
+    this_job_name, this_task_id, _ = POD_NAME.split('-', 2)
     cluster_def = ast.literal_eval(CLUSTER_CONFIG)
     main(this_job_name, int(this_task_id), cluster_def)

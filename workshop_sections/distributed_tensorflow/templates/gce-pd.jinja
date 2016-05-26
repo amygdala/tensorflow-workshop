@@ -1,0 +1,15 @@
+{% set NAMESPACE = properties['namespace'] or 'default' %}
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: {{ properties['name'] }}
+  namespace: {{ NAMESPACE }}
+spec:
+    capacity:
+        storage: {{ properties['capacity'] }}
+    gcePersistentDisk:
+        pdName: {{ properties['name'] }}
+    accessModes:
+        - ReadWriteOnce
+        - ReadOnlyMany
+    persistentVolumeReclaimPolicy: Retain

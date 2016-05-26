@@ -21,17 +21,42 @@ metadata:
 data:
     clusterconfig: >
         {
-            {% for job_type in ['ps', 'worker', 'master'] %}
+            {% for job_type, num_tasks in properties['jobs'].iteritems() %}
             "{{ job_type }}": [
-                {% for i in range(properties[job_type]) %}
+                {% for i in range(num_tasks) %}
                 "{{ job_type }}-{{ i }}.{{ NAMESPACE }}.svc.cluster.local:8080",
                 {% endfor %}
             ],
             {% endfor %}
         }
 ---
-{% for job_type in ['ps', 'worker', 'master'] %}
-{% for i in range(properties[job_type]) %}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: tensorflow-logs
+  namespace: {{ NAMESPACE }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 10Gi
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: notebooks
+  namespace: {{ NAMESPACE }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+{% for job_type, num_tasks in properties['jobs'].iteritems() %}
+{% for i in range(num_tasks) %}
 kind: Service
 apiVersion: v1
 metadata:
@@ -45,16 +70,17 @@ spec:
     job: {{ job_type }}
     task: '{{ i }}'
 ---
-kind: ReplicationController
-apiVersion: v1
+kind: Deployment
+apiVersion: extensions/v1beta1
 metadata:
   name: {{ job_type }}-{{ i }}
   namespace: {{ NAMESPACE }}
 spec:
   replicas: 1
   selector:
-    job: {{ job_type }}
-    task: '{{ i }}'
+    matchLabels:
+      job: {{ job_type }}
+      task: '{{ i }}'
   template:
     metadata:
       labels:
@@ -88,7 +114,10 @@ spec:
               containerPort: 80
           env:
             - name: PASSWORD
-              value: {{ properties['jupyter-config']['password'] }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ properties['jupyter-config']['secret-name'] }}
+                  key: password
             - name: CLUSTER_CONFIG
               valueFrom:
                 configMapKeyRef:
@@ -113,21 +142,11 @@ spec:
               readOnly: true
       volumes:
         - name: tensorflow-logs
-          {% if properties['use-gce-pd'] %}
-          gcePersistentDisk:
-            pdName: tensorflow-logs
-          {% else %}
-          hostPath:
-            path: /var/logs/tensorflow
-          {% endif %}
+          persistentVolumeClaim:
+            claimName: tensorflow-logs
         - name: notebooks
-          {% if properties['use-gce-pd'] %}
-          gcePersistentDisk:
-            pdName: notebooks
-          {% else %}
-          hostPath:
-            path: /var/logs/jupyter
-          {% endif %}
+          persistentVolumeClaim:
+            claimName: notebooks
 ---
 kind: Service
 apiVersion: v1

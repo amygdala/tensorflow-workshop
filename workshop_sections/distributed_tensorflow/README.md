@@ -17,21 +17,15 @@ gcloud container clusters <CLUSTER_NAME> get-credentials
 
 ### Deploying a Tensorflow Cluster and Jupyter notebook server into your cluster
 
-This repository comes prepackaged with a template for distributed tensorflow clusters and jupyter notebooks. This templating use a simplified version of the [Helm Chart](https://github.com/kubernetes/helm) template format, a package manager for Kubernetes.
+This repository comes prepackaged with [a template](templates/tensorflow-cluster.jinja) for distributed tensorflow clusters accessible through jupyter notebooks. This templating use a simplified version of the [Helm Chart](https://github.com/kubernetes/helm) template format, a package manager for Kubernetes.
 
-To create the necessary objects in your cluster simply write a small config file to describe what you want your cluster to look like. Tensorflow divides its server instances into groups called `jobs` each of which have a number of identical `tasks`. So you must specify a number of jobs, each with a name and the number of tasks it should run. The jupyter server also requires you to specify a password.
-
-You can check out the example config [here](templates/example-cluster.yaml). The only necessary modification will be your own `password` for the Jupyter server.
-
-To render your config run (in your current conda environment)
+We have also provided a [rendered.yaml](templates/rendered.yaml) which configures the provided cluster template with sensible defaults. To get started you simply need to create a [Kubernetes secret](http://kubernetes.io/docs/user-guide/secrets/) to serve as your jupyter password:
 
 ```
-conda install PyYaml jinja2
-cd templates/
-python render.py --config my-config.yaml --out rendered.yaml
+kubectl create secret generic jupyter --from-literal=password=[INSERT YOUR PASSWORD]
 ```
 
-Then to deploy your cluster
+Then deploy the rendered config to your cluster:
 
 ```
 kubectl create -f rendered.yaml
@@ -44,9 +38,6 @@ kubectl get services jupyter-external
 ```
 
 and use the listed `EXTERNAL_IP` to navigate to your Jupyter server. A Tensorboard server is also available at `EXTERNAL_IP:6006`
-
-
-For more detailed explanation of distributed tensorflow, check out [the tensorflow docs](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/g3doc/how_tos/distributed/index.md).
 
 ### Running the example
 
