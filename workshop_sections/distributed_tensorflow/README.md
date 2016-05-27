@@ -9,10 +9,10 @@ Tensorflow provides a distributed runtime with runs servers that communicate wit
 
 Follow the docs on [cloud.google.com](https://cloud.google.com/container-engine/docs/clusters/operations) to create a Kubernetes cluster. We recommend using the largest available machine type as this will increase performance. If you are on the free trial, the best cluster configuration available to you is likely (3 x `n1-highmem-8` nodes). We also recommend you install the [Google Cloud SDK](https://cloud.google.com/sdk/) and follow the `gcloud` tab in the cluster creation instructions, since we will use `gcloud` later in these instructions.
 
-After you have created a cluster, you can use `gcloud` to authenticate to your Kubernetes master
+After you have created a cluster, you can use `gcloud` to authenticate to your Kubernetes master.
 
-```
-gcloud container clusters <CLUSTER_NAME> get-credentials
+```sh
+$ gcloud container clusters get-credentials <CLUSTER_NAME>
 ```
 
 ### Deploying a Tensorflow Cluster and Jupyter notebook server into your cluster
@@ -25,20 +25,33 @@ We have also provided a [rendered.yaml](templates/rendered.yaml) which configure
 kubectl create secret generic jupyter --from-literal=password=[INSERT YOUR PASSWORD]
 ```
 
-Then deploy the rendered config to your cluster:
+Then cd to the `templates` subdirectory, and deploy the rendered config to your cluster:
 
-```
-kubectl create -f rendered.yaml
-```
-
-Then, To get the IP for your Jupyter server, you can run
-
-```
-kubectl get services jupyter-external
+```sh
+$ kubectl create -f rendered.yaml
 ```
 
-and use the listed `EXTERNAL_IP` to navigate to your Jupyter server. A Tensorboard server is also available at `EXTERNAL_IP:6006`
+Then, to get the IP for your Jupyter server, you can run:
+
+```sh
+$ kubectl get services jupyter-external
+```
+
+and use the listed `EXTERNAL_IP` to navigate to your Jupyter server. It may take a few minutes for the external IP address to appear.
+
+A Tensorboard server is also available at `EXTERNAL_IP:6006`
 
 ### Running the example
 
 Simply upload `intro_word2vec_destributed.ipynb` to your Jupyter server, and run through it.
+
+### Cleanup
+
+You can take down all your Kubernetes deployed pods and services by running:
+
+```sh
+$ kubectl create -f rendered.yaml
+```
+
+Then, if you want to take down your Kubernetes (Container Engine) cluster altogether, you can delete it from
+the [Google Cloud Platform Console](https://console.cloud.google.com).
