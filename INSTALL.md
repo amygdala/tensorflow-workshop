@@ -32,7 +32,8 @@ $ conda install jupyter
 ## Docker-based installation
 
 We're also providing a [Docker](https://www.docker.com/) container image with all the necessary libraries included, for you to download.
-To use it, you'll need to have [Docker installed](https://docs.docker.com/engine/installation/).
+
+To use it, you'll need to have [Docker installed](https://docs.docker.com/engine/installation/). To run some of the examples, you'll likely need to configure it with at least 4GB of memory.
 
 ### Download the container image
 
