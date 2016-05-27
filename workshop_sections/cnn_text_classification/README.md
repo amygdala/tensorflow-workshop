@@ -37,7 +37,7 @@ This data contains post titles from (a few months of) two reddit (https://www.re
 Start the training process like this:
 
 ```sh
-$ ./train.py
+$ python train.py
 ```
 
 This script does some in-memory data preprocessing that is a bit time-consuming for a dataset of the size that we are giving it. While things start up, we'll take a look at the code.
@@ -92,7 +92,7 @@ The source data came from reddit (https://www.reddit.com/) post titles from the 
 Now, start up another training run that uses the learned embeddings to initialized the embedding vectors.
 
 ```sh
-$ ./train.py --embeds_file all_reddit_embeds.json
+$ python train.py --embeds_file all_reddit_embeds.json
 ```
 
 We'll take a quick look at the code that does this initialization.
