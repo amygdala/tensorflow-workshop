@@ -30,7 +30,7 @@ resources:
         worker-image: gcr.io/google-samples/tf-k8s-worker
         jobs:
             ps: 2
-            worker: 32
+            worker: 8
             master: 1
         jupyter-config:
             secret-name: jupyter

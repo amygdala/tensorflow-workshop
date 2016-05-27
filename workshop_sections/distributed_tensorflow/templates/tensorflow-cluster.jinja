@@ -104,7 +104,10 @@ spec:
                       name: tensorflow-cluster-config
                       key: clusterconfig
 {% if job_type == 'master' %}
-        - name: jupyter-server
+          resources:
+            requests:
+              cpu: 1
+        - name: jupter-server
           image: {{ properties['jupyter-config']['server-image'] }}
           args:
             - "--notebook-dir=u'/notebooks'"
