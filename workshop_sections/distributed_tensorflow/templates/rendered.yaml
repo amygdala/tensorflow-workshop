@@ -52,6 +52,8 @@ data:
             "ps": [
                 "ps-0.default.svc.cluster.local:8080",
                 "ps-1.default.svc.cluster.local:8080",
+                "ps-2.default.svc.cluster.local:8080",
+                "ps-3.default.svc.cluster.local:8080",
             ],
             "worker": [
                 "worker-0.default.svc.cluster.local:8080",
@@ -169,6 +171,100 @@ spec:
       labels:
         job: ps
         task: '1'
+    spec:
+      containers:
+        - name: tf-grpc-server
+          image: gcr.io/google-samples/tf-k8s-worker
+          ports:
+            - name: grpc-server
+              containerPort: 8080
+          env:
+            - name: POD_NAME
+              valueFrom:
+                  fieldRef:
+                      fieldPath: metadata.name
+            - name: CLUSTER_CONFIG
+              valueFrom:
+                  configMapKeyRef:
+                      name: tensorflow-cluster-config
+                      key: clusterconfig
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: ps-2
+  namespace: default
+spec:
+  ports:
+    - port: 8080
+      name: grpc-server
+  selector:
+    job: ps
+    task: '2'
+---
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: ps-2
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      job: ps
+      task: '2'
+  template:
+    metadata:
+      labels:
+        job: ps
+        task: '2'
+    spec:
+      containers:
+        - name: tf-grpc-server
+          image: gcr.io/google-samples/tf-k8s-worker
+          ports:
+            - name: grpc-server
+              containerPort: 8080
+          env:
+            - name: POD_NAME
+              valueFrom:
+                  fieldRef:
+                      fieldPath: metadata.name
+            - name: CLUSTER_CONFIG
+              valueFrom:
+                  configMapKeyRef:
+                      name: tensorflow-cluster-config
+                      key: clusterconfig
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: ps-3
+  namespace: default
+spec:
+  ports:
+    - port: 8080
+      name: grpc-server
+  selector:
+    job: ps
+    task: '3'
+---
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: ps-3
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      job: ps
+      task: '3'
+  template:
+    metadata:
+      labels:
+        job: ps
+        task: '3'
     spec:
       containers:
         - name: tf-grpc-server
@@ -612,7 +708,7 @@ spec:
           resources:
             requests:
               cpu: 1
-        - name: jupter-server
+        - name: jupyter-server
           image: gcr.io/google-samples/tf-jupyter-server
           args:
             - "--notebook-dir=u'/notebooks'"
