@@ -50,7 +50,7 @@ Simply upload `intro_word2vec_destributed.ipynb` to your Jupyter server, and run
 You can take down all your Kubernetes deployed pods and services by running:
 
 ```sh
-$ kubectl create -f rendered.yaml
+$ kubectl delete -f rendered.yaml
 ```
 
 Then, if you want to take down your Kubernetes (Container Engine) cluster altogether, you can delete it from
