@@ -3,7 +3,7 @@
 
 This repo contains materials for use in a TensorFlow workshop.
 The accompanying slides are
-[here](https://speakerdeck.com/juliaferraioli/diving-into-machine-learning-with-tensorflow).
+[here](https://storage.googleapis.com/amy-jo/talks/tf-workshop.pdf).
 
 Contributions are not currently accepted.  This is not an official Google product.
 
