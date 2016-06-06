@@ -44,7 +44,7 @@ tf.flags.DEFINE_integer(
 tf.flags.DEFINE_float(
     "dropout_keep_prob", 0.5, "Dropout keep probability (default: 0.5)")
 tf.flags.DEFINE_float(
-    "l2_reg_lambda", 0.0, "L2 regularizaion lambda (default: 0.0)")
+    "l2_reg_lambda", 0.0, "L2 regularization lambda (default: 0.0)")
 
 # Training parameters
 tf.flags.DEFINE_integer("batch_size", 64, "Batch Size (default: 64)")
