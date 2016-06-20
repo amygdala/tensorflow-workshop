@@ -13,3 +13,16 @@ spec:
         - ReadWriteOnce
         - ReadOnlyMany
     persistentVolumeReclaimPolicy: Retain
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ properties['name'] }}
+  namespace: {{ NAMESPACE }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: {{ properties['capacity'] }}

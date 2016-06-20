@@ -30,31 +30,6 @@ data:
             {% endfor %}
         }
 ---
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  name: tensorflow-logs
-  namespace: {{ NAMESPACE }}
-spec:
-  accessModes:
-    - ReadWriteOnce
-    - ReadOnlyMany
-  resources:
-    requests:
-      storage: 10Gi
----
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  name: notebooks
-  namespace: {{ NAMESPACE }}
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 10Gi
----
 {% for job_type, num_tasks in properties['jobs'].iteritems() %}
 {% for i in range(num_tasks) %}
 kind: Service
@@ -103,10 +78,23 @@ spec:
                   configMapKeyRef:
                       name: tensorflow-cluster-config
                       key: clusterconfig
-{% if job_type == 'master' %}
+{% if job_type == 'ps' %}
+          volumeMounts:
+            - name: checkpoints
+              mountPath: /var/log/tensorflow/checkpoints
+              readOnly: True
+      volumes:
+        - name: checkpoints
+          persistentVolumeClaim:
+            claimName: {{ properties['checkpoints-pvc'] }}
+            readOnly: True
+{% elif job_type == 'master' %}
           resources:
             requests:
               cpu: 1
+          volumeMounts:
+            - name: checkpoints
+              mountPath: /var/log/tensorflow/checkpoints
         - name: jupter-server
           image: {{ properties['jupyter-config']['server-image'] }}
           args:
@@ -128,9 +116,11 @@ spec:
                   key: clusterconfig
           volumeMounts:
             - name: tensorflow-logs
-              mountPath: /var/log/tensorflow
+              mountPath: /var/log/tensorflow/summaries
             - name: notebooks
               mountPath: /notebooks
+            - name: checkpoints
+              mountPath: /var/log/tensorflow/checkpoints
         - name: tensorboard-server
           image: gcr.io/tensorflow/tensorflow:latest-devel
           ports:
@@ -142,14 +132,17 @@ spec:
           volumeMounts:
             - name: tensorflow-logs
               mountPath: /var/log/tensorflow
-              readOnly: true
+              readOnly: True
       volumes:
         - name: tensorflow-logs
           persistentVolumeClaim:
-            claimName: tensorflow-logs
+            claimName: {{ properties['summary-pvc'] }}
         - name: notebooks
           persistentVolumeClaim:
-            claimName: notebooks
+            claimName: {{ properties['notebooks-pvc'] }}
+        - name: checkpoints
+          persistentVolumeClaim:
+            claimName: {{ properties['checkpoints-pvc'] }}
 ---
 kind: Service
 apiVersion: v1

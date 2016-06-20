@@ -12,19 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 imports:
-  - name: tensorflow-cluster
-    path: tensorflow-cluster.jinja
+  - name: pd
+    path: gce-pd.jinja
 resources:
-  - type: tensorflow-cluster
+  - type: pd
     properties:
-        worker-image: gcr.io/google-samples/tf-k8s-worker
-        jobs:
-            master: 1
-            ps: 4
-            worker: 8
-        jupyter-config:
-            secret-name: jupyter
-            server-image: gcr.io/google-samples/tf-jupyter-server
-        summary-pvc: tensorflow-logs
-        notebooks-pvc: notebooks
-        checkpoints-pvc: checkpoints
+        name: notebooks
+        capacity: 20Gi
+  - type: pd
+    properties:
+        name: tensorflow-logs
+        capacity: 100Gi
+  - type: pd
+    properties:
+        name: checkpoints
+        capacity: 100Gi
+
