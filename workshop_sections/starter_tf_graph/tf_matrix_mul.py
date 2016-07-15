@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Copyright 2016 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,19 +27,16 @@ with graph.as_default():
     # Input data.
     m1_input = tf.placeholder(tf.float32, shape=[4, 2])
 
-    # Ops and variables pinned to the CPU because of missing GPU implementation
-    with tf.device('/cpu:0'):
+    m2 = tf.Variable(tf.random_uniform([2, 3], -1.0, 1.0))
 
-        m2 = tf.Variable(tf.random_uniform([2, 3], -1.0, 1.0))
+    m3 = tf.matmul(m1_input, m2)
 
-        m3 = tf.matmul(m1_input, m2)
+    # This is an identity op with the side effect of printing data when
+    # evaluating.
+    m3 = tf.Print(m3, [m3], message="m3 is: ")
 
-        # This is an identity op with the side effect of printing data when
-        # evaluating.
-        m3 = tf.Print(m3, [m3], message="m3 is: ")
-
-        # Add variable initializer.
-        init = tf.initialize_all_variables()
+    # Add variable initializer.
+    init = tf.initialize_all_variables()
 
 with tf.Session(graph=graph) as session:
     # We must initialize all variables before we use them.
