@@ -28,8 +28,8 @@ We'll start the process of training the model, and then take look at the graph w
 ### Download the training data
 
 Create a `data` subdirectory in this directory, and `cd` into it.
-Download the training corpus from [here](https://storage.googleapis.com/oscon-tf-workshop-materials/processed_reddit_data/news_aww/prepared_data.zip), and unzip it in the `data` directory.
-This data contains post titles from (a few months of) two reddit (https://www.reddit.com/) subreddits: 'news' and 'aww', used with permission.
+Download the training corpus from [here](https://storage.googleapis.com/oscon-tf-workshop-materials/processed_reddit_data/news_aww/prepared_data.tar.gz), and unzip it in the `data` directory. This data contains preprocessed numpy arrays generated from the data [here](https://storage.googleapis.com/oscon-tf-workshop-materials/processed_reddit_data/news_aww/reddit_data.zip).
+This data contains post titles from (a few months of) two reddit (https://www.reddit.com/) subreddits: 'news' and 'aww', used with permission. It's processed using the script in `data_helpers2.py`.
 
 
 ### Start training the model
@@ -37,11 +37,9 @@ This data contains post titles from (a few months of) two reddit (https://www.re
 Start the training process like this:
 
 ```sh
-$ python train.py
+$ python train.py --output-dir <Directory to write checkpoints and summaries> --data-file <.npz datafile with numpy arrays "sentences" and "labels"> --vocab-file <json file with vocabulary mapping>
 ```
-
-This script does some in-memory data preprocessing that is a bit time-consuming for a dataset of the size that we are giving it. While things start up, we'll take a look at the code.
-
+If you are running inside a Docker container make sure these directories and files are located inside a volume, so that you can keep the data after your container exits.
 
 ### A look at the text-CNN code
 
