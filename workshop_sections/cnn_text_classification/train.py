@@ -59,11 +59,11 @@ tf.flags.DEFINE_integer(
 tf.flags.DEFINE_string(
     "embeds_file", None, "File containing learned word embeddings")
 tf.flags.DEFINE_string(
-    "data_file", "/data/prepared_training_data.npz", "File containing npz file with \"sentences\" and \"labels\" arrays")
+    "data_file", "/var/tensorflow/data/prepared_training_data.npz", "File containing npz file with \"sentences\" and \"labels\" arrays")
 tf.flags.DEFINE_string(
-    "output_dir", "/output", "Path to the directory in which to write checkpoints, outputs, and summaries")
+    "output_dir", "/var/tensorflow/output", "Path to the directory in which to write checkpoints, outputs, and summaries")
 tf.flags.DEFINE_string(
-    "vocab_file", "/data/vocabpregen.json", "JSON File with work -> index mappings")
+    "vocab_file", "/var/tensorflow/data/vocabpregen.json", "JSON File with work -> index mappings")
 
 FLAGS = tf.flags.FLAGS
 FLAGS._parse_flags()
