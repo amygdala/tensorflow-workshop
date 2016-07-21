@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-{% set SERVER_IMAGE = properties['worker-image'] or 'gcr.io/google-samples/tf-worker:latest' %}
+{% set TENSORFLOW_IMAGE = properties['tensorflow-image'] or 'gcr.io/tensorflow/tensorflow' %}
 {% set NAMESPACE = properties['namespace'] or 'default' %}
 kind: ConfigMap
 apiVersion: v1
@@ -29,31 +29,6 @@ data:
             ],
             {% endfor %}
         }
----
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  name: tensorflow-logs
-  namespace: {{ NAMESPACE }}
-spec:
-  accessModes:
-    - ReadWriteOnce
-    - ReadOnlyMany
-  resources:
-    requests:
-      storage: 10Gi
----
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  name: notebooks
-  namespace: {{ NAMESPACE }}
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 10Gi
 ---
 {% for job_type, num_tasks in properties['jobs'].iteritems() %}
 {% for i in range(num_tasks) %}
@@ -89,7 +64,7 @@ spec:
     spec:
       containers:
         - name: tf-grpc-server
-          image: {{ SERVER_IMAGE }}
+          image: {{ TENSORFLOW_IMAGE }}
           ports:
             - name: grpc-server
               containerPort: 8080
@@ -103,70 +78,13 @@ spec:
                   configMapKeyRef:
                       name: tensorflow-cluster-config
                       key: clusterconfig
-{% if job_type == 'master' %}
-          resources:
-            requests:
-              cpu: 1
-        - name: jupter-server
-          image: {{ properties['jupyter-config']['server-image'] }}
-          args:
-            - "--notebook-dir=u'/notebooks'"
-            - "--port=80"
-          ports:
-            - name: jupyter
-              containerPort: 80
-          env:
-            - name: PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ properties['jupyter-config']['secret-name'] }}
-                  key: password
-            - name: CLUSTER_CONFIG
-              valueFrom:
-                configMapKeyRef:
-                  name: tensorflow-cluster-config
-                  key: clusterconfig
           volumeMounts:
-            - name: tensorflow-logs
-              mountPath: /var/log/tensorflow
-            - name: notebooks
-              mountPath: /notebooks
-        - name: tensorboard-server
-          image: gcr.io/tensorflow/tensorflow:latest-devel
-          ports:
-            - name: tensorboard
-              containerPort: 6006
-          command:
-            - /tensorflow/bazel-bin/tensorflow/tensorboard/tensorboard
-            - --logdir=/var/log/tensorflow
-          volumeMounts:
-            - name: tensorflow-logs
-              mountPath: /var/log/tensorflow
-              readOnly: true
+            - name: tensorflow-fs
+              mountPath: {{ properties['filesystem']['mount-path'] }}
       volumes:
-        - name: tensorflow-logs
+        - name: tensorflow-fs
           persistentVolumeClaim:
-            claimName: tensorflow-logs
-        - name: notebooks
-          persistentVolumeClaim:
-            claimName: notebooks
----
-kind: Service
-apiVersion: v1
-metadata:
-  name: jupyter-external
-  namespace: {{ NAMESPACE }}
-spec:
-  type: LoadBalancer
-  ports:
-    - name: jupyter
-      port: 80
-    - name: tensorboard
-      port: 6006
-  selector:
-    job: {{ job_type }}
-    task: '{{ i }}'
-{% endif %}
+            claimName: {{ properties['filesystem']['pvc'] }}
 ---
 {% endfor %}
 {% endfor %}

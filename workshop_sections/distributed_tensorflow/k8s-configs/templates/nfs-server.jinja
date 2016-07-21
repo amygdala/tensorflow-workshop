@@ -1,0 +1,50 @@
+{% set NAMESPACE = properties['namespace'] or 'default' %}
+{% set PDNAME = properties['pd-name'] or properties['name'] %}
+{% set NFSIMAGE = properties['nfs-image'] or  'gcr.io/google-samples/nfs-server:1.1' %}
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ properties['name'] }}
+spec:
+  ports:
+    - name: nfs
+      port: 2049
+    - name: mountd
+      port: 20048
+    - name: rpcbind
+      port: 111
+  selector:
+    role: {{ properties['name'] }}
+---
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: {{ properties['name'] }}
+spec:
+  replicas: 1
+  selector:
+    role: {{ properties['name'] }}
+  template:
+    metadata:
+      labels:
+        role: {{ properties['name'] }}
+    spec:
+      containers:
+      - name: {{ properties['name'] }}
+        image: {{ NFSIMAGE }}
+        ports:
+          - name: nfs
+            containerPort: 2049
+          - name: mountd
+            containerPort: 20048
+          - name: rpcbind
+            containerPort: 111
+        securityContext:
+          privileged: true
+        volumeMounts:
+          - mountPath: /exports
+            name: mypvc
+      volumes:
+        - name: mypvc
+          persistentVolumeClaim:
+            claimName: {{ properties['backend-pvc'] }}

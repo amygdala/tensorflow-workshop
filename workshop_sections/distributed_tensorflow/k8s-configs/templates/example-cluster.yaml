@@ -14,24 +14,13 @@
 imports:
   - name: tensorflow-cluster
     path: tensorflow-cluster.jinja
-  - name: pd
-    path: local-pd.jinja
 resources:
-  - type: pd
-    properties:
-        name: pd1
-        capacity: 20Gi
-  - type: pd
-    properties:
-        name: pd2
-        capacity: 20Gi
   - type: tensorflow-cluster
     properties:
-        worker-image: gcr.io/google-samples/tf-k8s-worker
+        tensorflow-image: gcr.io/google-samples/tf-worker-example:latest
         jobs:
-            master: 1
-            ps: 4
-            worker: 8
-        jupyter-config:
-            secret-name: jupyter
-            server-image: gcr.io/google-samples/tf-jupyter-server
+            ps: 8
+            worker: 16
+        filesystem:
+            pvc: tensorflow-fs
+            mount-path: /var/tensorflow

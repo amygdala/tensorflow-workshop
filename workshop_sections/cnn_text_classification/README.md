@@ -28,7 +28,7 @@ We'll start the process of training the model, and then take look at the graph w
 ### Download the training data
 
 Create a `data` subdirectory in this directory, and `cd` into it.
-Download the training corpus from [here](https://storage.googleapis.com/oscon-tf-workshop-materials/processed_reddit_data/news_aww/reddit_data.zip), and unzip it in the `data` directory.
+Download the training corpus from [here](https://storage.googleapis.com/oscon-tf-workshop-materials/processed_reddit_data/news_aww/prepared_data.zip), and unzip it in the `data` directory.
 This data contains post titles from (a few months of) two reddit (https://www.reddit.com/) subreddits: 'news' and 'aww', used with permission.
 
 

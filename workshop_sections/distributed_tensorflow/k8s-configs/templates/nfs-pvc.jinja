@@ -1,0 +1,26 @@
+{% set NAMESPACE = properties['namespace'] or 'default' %}
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: {{ properties['name'] }}
+  namespace: {{ NAMESPACE }}
+spec:
+    capacity:
+        storage: {{ properties['capacity'] }}
+    accessModes:
+        - ReadWriteMany
+    nfs:
+        server: {{ properties['ip'] }}
+        path: "/exports"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ properties['name'] }}
+  namespace: {{ NAMESPACE }}
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: {{ properties['capacity'] }}

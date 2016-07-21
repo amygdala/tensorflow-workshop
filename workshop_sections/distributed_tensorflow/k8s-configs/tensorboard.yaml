@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tensorboard
+spec:
+  ports:
+    - port: 80
+      targetPort: tensorboard
+  selector:
+    tensorflow: tensorboard
+  type: LoadBalancer
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    tensorflow: tensorboard
+  name: tensorboard
+spec:
+  selector:
+    matchLabels:
+      tensorflow: tensorboard
+  template:
+    metadata:
+      labels:
+        tensorflow: tensorboard
+    spec:
+      containers:
+        - name: tensorboard-server
+          image: tensorflow/tensorflow:nightly
+          command: ["tensorboard", "--logdir", "/var/tensorflow/output"]
+          ports:
+            - name: tensorboard
+              containerPort: 6006
+          volumeMounts:
+            - name: tensorflow-fs
+              mountPath: /var/tensorflow
+      volumes:
+        - name: tensorflow-fs
+          persistentVolumeClaim:
+            claimName: tensorflow-fs
