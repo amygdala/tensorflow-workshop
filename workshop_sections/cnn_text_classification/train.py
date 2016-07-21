@@ -1,4 +1,3 @@
-#! /usr/bin/env python
 # Copyright 2016 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,6 +19,7 @@
 import datetime
 import os
 import time
+import json
 
 import data_helpers2 as data_helpers
 
@@ -56,12 +56,14 @@ tf.flags.DEFINE_integer(
 tf.flags.DEFINE_integer(
     "checkpoint_every", 100, "Save model after this many steps (default: 100)")
 # Misc Parameters
-tf.flags.DEFINE_boolean(
-    "allow_soft_placement", True, "Allow device soft device placement")
-tf.flags.DEFINE_boolean(
-    "log_device_placement", False, "Log placement of ops on devices")
 tf.flags.DEFINE_string(
     "embeds_file", None, "File containing learned word embeddings")
+tf.flags.DEFINE_string(
+    "data_file", "/data/prepared_training_data.npz", "File containing npz file with \"sentences\" and \"labels\" arrays")
+tf.flags.DEFINE_string(
+    "output_dir", "/output", "Path to the directory in which to write checkpoints, outputs, and summaries")
+tf.flags.DEFINE_string(
+    "vocab_file", "/data/vocabpregen.json", "JSON File with work -> index mappings")
 
 FLAGS = tf.flags.FLAGS
 FLAGS._parse_flags()
@@ -70,15 +72,17 @@ for attr, value in sorted(FLAGS.__flags.items()):
     print("{}={}".format(attr.upper(), value))
 print("")
 
-
 # Data Preparation
 # ==================================================
-
-# Load data
 print("Loading data...")
-timestamp = str(int(time.time()))  # will use this for the run dir
-x, y, vocabulary, vocabulary_inv = data_helpers.load_data(
-    run=timestamp, cat1="./data/subreddit_news", cat2="./data/subreddit_aww")
+data = np.load(FLAGS.data_file)
+x = data["sentences"]
+y = data["labels"]
+
+print("Load vocabulary")
+with open(FLAGS.vocab_file) as vocab_file:
+    vocabulary = json.load(vocab_file)
+
 # Randomly shuffle data
 np.random.seed(10)
 shuffle_indices = np.random.permutation(np.arange(len(y)))
@@ -89,134 +93,79 @@ y_shuffled = y[shuffle_indices]
 dev_size = 1000
 x_train, x_dev = x_shuffled[:-dev_size], x_shuffled[-dev_size:]
 y_train, y_dev = y_shuffled[:-dev_size], y_shuffled[-dev_size:]
-print("(Capped) Vocabulary Size: {:d}".format(len(vocabulary)))
 print("Train/Dev split: {:d}/{:d}".format(len(y_train), len(y_dev)))
 
+# just for epoch counting
+num_batches_per_epoch = int(len(x_train)/FLAGS.batch_size) + 1
+
+batches = enumerate(data_helpers.batch_iter(
+    list(zip(x_train, y_train)), FLAGS.batch_size, FLAGS.num_epochs))
 
 # Training
 # ==================================================
+batch_num = 0
 
-with tf.Graph().as_default():
-    session_conf = tf.ConfigProto(
-        allow_soft_placement=FLAGS.allow_soft_placement,
-        log_device_placement=FLAGS.log_device_placement)
-    sess = tf.Session(config=session_conf)
-    with sess.as_default():
-        cnn = TextCNN(
-            sequence_length=x_train.shape[1],
-            num_classes=2,
-            vocab_size=len(vocabulary),
-            embedding_size=FLAGS.embedding_dim,
-            filter_sizes=list(map(int, FLAGS.filter_sizes.split(","))),
-            num_filters=FLAGS.num_filters,
-            l2_reg_lambda=FLAGS.l2_reg_lambda,
-            embeds_file=FLAGS.embeds_file)
+# Output directory for models and summaries
+out_dir = os.path.abspath(os.path.join(
+    FLAGS.output_dir, "runs", str(int(time.time()))))
 
-        # Define Training procedure
-        global_step = tf.Variable(0, name="global_step", trainable=False)
-        optimizer = tf.train.AdamOptimizer(1e-3)
-        grads_and_vars = optimizer.compute_gradients(cnn.loss)
-        train_op = optimizer.apply_gradients(
-            grads_and_vars, global_step=global_step)
+if not os.path.exists(out_dir):
+    os.makedirs(out_dir)
 
-        # Keep track of gradient values and sparsity (optional)
-        grad_summaries = []
-        for g, v in grads_and_vars:
-            if g is not None:
-                grad_hist_summary = tf.histogram_summary(
-                    "{}/grad/hist".format(v.name), g)
-                sparsity_summary = tf.scalar_summary(
-                    "{}/grad/sparsity".format(v.name), tf.nn.zero_fraction(g))
-                grad_summaries.append(grad_hist_summary)
-                grad_summaries.append(sparsity_summary)
-        grad_summaries_merged = tf.merge_summary(grad_summaries)
+print("Writing to {}\n".format(out_dir))
 
-        # Output directory for models and summaries
-        out_dir = os.path.abspath(os.path.join(
-            os.path.curdir, "runs", timestamp))
-        print("Writing to {}\n".format(out_dir))
+graph = tf.Graph()
 
-        # Summaries for loss and accuracy
-        loss_summary = tf.scalar_summary("loss", cnn.loss)
-        acc_summary = tf.scalar_summary("accuracy", cnn.accuracy)
+with graph.as_default():
+    cnn = TextCNN(
+        sequence_length=x_train.shape[1],
+        num_classes=2,
+        vocab_size=len(vocabulary),
+        embedding_size=FLAGS.embedding_dim,
+        filter_sizes=list(map(int, FLAGS.filter_sizes.split(","))),
+        num_filters=FLAGS.num_filters,
+        l2_reg_lambda=FLAGS.l2_reg_lambda,
+        embeds_file=FLAGS.embeds_file)
 
-        # Train Summaries
-        train_summary_op = tf.merge_summary(
-            [loss_summary, acc_summary, grad_summaries_merged])
-        train_summary_dir = os.path.join(out_dir, "summaries", "train")
-        train_summary_writer = tf.train.SummaryWriter(
-            train_summary_dir, sess.graph)
+    def feed_fn():
+        batch_num, batch = next(batches)
+        print("Processing batch number: {}".format(batch_num))
+        x_batch, y_batch = zip(*batch)
+        return {
+            cnn.input_x: x_batch,
+            cnn.input_y: y_batch,
+            cnn.dropout_keep_prob: FLAGS.dropout_keep_prob
+        }
 
-        # Dev summaries
-        dev_summary_op = tf.merge_summary([loss_summary, acc_summary])
-        dev_summary_dir = os.path.join(out_dir, "summaries", "dev")
-        dev_summary_writer = tf.train.SummaryWriter(dev_summary_dir, sess.graph)
 
-        # Checkpoint directory. Tensorflow assumes this directory already
-        # exists, so we need to create it.
-        checkpoint_dir = os.path.abspath(os.path.join(out_dir, "checkpoints"))
-        checkpoint_prefix = os.path.join(checkpoint_dir, "model")
-        if not os.path.exists(checkpoint_dir):
-            os.makedirs(checkpoint_dir)
-        saver = tf.train.Saver(tf.all_variables())
+    # Define Training procedure
+    global_step = tf.Variable(0, name="global_step", trainable=False)
+    optimizer = tf.train.AdamOptimizer(1e-3)
+    grads_and_vars = optimizer.compute_gradients(cnn.loss)
+    train_op = optimizer.apply_gradients(grads_and_vars, global_step=global_step)
 
-        # Initialize all variables
-        sess.run(tf.initialize_all_variables())
+    # Keep track of gradient values and sparsity (optional)
+    for g, v in grads_and_vars:
+        if g is not None:
+            grad_hist_summary = tf.histogram_summary(
+                "{}/grad/hist".format(v.name), g)
+            sparsity_summary = tf.scalar_summary(
+                "{}/grad/sparsity".format(v.name), tf.nn.zero_fraction(g))
 
-        def train_step(x_batch, y_batch):
-            """
-            A single training step
-            """
-            feed_dict = {cnn.input_x: x_batch,
-                         cnn.input_y: y_batch,
-                         cnn.dropout_keep_prob: FLAGS.dropout_keep_prob
-                         }
-            _, step, summaries, loss, accuracy = sess.run(
-                [train_op, global_step, train_summary_op,
-                    cnn.loss, cnn.accuracy],
-                feed_dict)
-            time_str = datetime.datetime.now().isoformat()
-            # write fewer training summaries, to keep events file from
-            # growing so big.
-            if step % (FLAGS.evaluate_every / 2) == 0:
-                print("{}: step {}, loss {:g}, acc {:g}".format(
-                    time_str, step, loss, accuracy))
-                train_summary_writer.add_summary(summaries, step)
 
-        def dev_step(x_batch, y_batch, writer=None):
-            """
-            Evaluates model on a dev set
-            """
-            feed_dict = {cnn.input_x: x_batch,
-                         cnn.input_y: y_batch,
-                         cnn.dropout_keep_prob: 1.0
-                         }
-            step, summaries, loss, accuracy = sess.run(
-                [global_step, dev_summary_op, cnn.loss, cnn.accuracy],
-                feed_dict)
-            time_str = datetime.datetime.now().isoformat()
-            print("{}: step {}, loss {:g}, acc {:g}".format(
-                time_str, step, loss, accuracy))
-            if writer:
-                writer.add_summary(summaries, step)
+    # Summaries for loss and accuracy
+    loss_summary = tf.scalar_summary("loss", cnn.loss)
+    acc_summary = tf.scalar_summary("accuracy", cnn.accuracy)
 
-        # just for epoch counting
-        num_batches_per_epoch = int(len(x_train)/FLAGS.batch_size) + 1
-        # Generate batches
-        batches = data_helpers.batch_iter(
-            list(zip(x_train, y_train)), FLAGS.batch_size, FLAGS.num_epochs)
-        # Training loop. For each batch...
-        for batch in batches:
-            x_batch, y_batch = zip(*batch)
-            train_step(x_batch, y_batch)
-            current_step = tf.train.global_step(sess, global_step)
-            if current_step % FLAGS.evaluate_every == 0:
-                print("\nEvaluation:")
-                dev_step(x_dev, y_dev, writer=dev_summary_writer)
-                print("Epoch: {}".format(
-                    int(current_step / num_batches_per_epoch)))
-                print("")
-            if current_step % FLAGS.checkpoint_every == 0:
-                path = saver.save(
-                    sess, checkpoint_prefix, global_step=current_step)
-                print("Saved model checkpoint to {}\n".format(path))
+
+
+tf.contrib.learn.train(
+    graph,
+    out_dir,
+    train_op,
+    cnn.loss,
+    feed_fn=feed_fn,
+    supervisor_save_model_secs=60,
+    supervisor_save_summaries_steps=5,
+    steps=num_batches_per_epoch*FLAGS.num_epochs
+)
