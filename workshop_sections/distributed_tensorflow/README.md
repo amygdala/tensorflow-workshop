@@ -33,7 +33,7 @@ Tensorflow requires a distributed file system to checkpoint images. In this work
 
 #### Load the workshop data onto your NFS Server
 
-Use `kubectl create -f load_data.yaml` to load the workshop data into your NFS server in the `/data` directory.
+Use `kubectl create -f k8s-configs/load_data.yaml` to load the workshop data into your NFS server in the `/data` directory.
 
 #### Create a Tensorboard Server
 
