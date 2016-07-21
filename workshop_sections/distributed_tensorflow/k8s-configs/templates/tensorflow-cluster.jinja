@@ -1,0 +1,90 @@
+# Copyright 2016 Google Inc. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+{% set TENSORFLOW_IMAGE = properties['tensorflow-image'] or 'gcr.io/tensorflow/tensorflow' %}
+{% set NAMESPACE = properties['namespace'] or 'default' %}
+kind: ConfigMap
+apiVersion: v1
+metadata:
+    name: tensorflow-cluster-config
+    namespace: {{ NAMESPACE }}
+data:
+    clusterconfig: >
+        {
+            {% for job_type, num_tasks in properties['jobs'].iteritems() %}
+            "{{ job_type }}": [
+                {% for i in range(num_tasks) %}
+                "{{ job_type }}-{{ i }}.{{ NAMESPACE }}.svc.cluster.local:8080",
+                {% endfor %}
+            ],
+            {% endfor %}
+        }
+---
+{% for job_type, num_tasks in properties['jobs'].iteritems() %}
+{% for i in range(num_tasks) %}
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ job_type }}-{{ i }}
+  namespace: {{ NAMESPACE }}
+spec:
+  ports:
+    - port: 8080
+      name: grpc-server
+  selector:
+    job: {{ job_type }}
+    task: '{{ i }}'
+---
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: {{ job_type }}-{{ i }}
+  namespace: {{ NAMESPACE }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      job: {{ job_type }}
+      task: '{{ i }}'
+  template:
+    metadata:
+      labels:
+        job: {{ job_type }}
+        task: '{{ i }}'
+    spec:
+      containers:
+        - name: tf-grpc-server
+          image: {{ TENSORFLOW_IMAGE }}
+          ports:
+            - name: grpc-server
+              containerPort: 8080
+          env:
+            - name: POD_NAME
+              valueFrom:
+                  fieldRef:
+                      fieldPath: metadata.name
+            - name: CLUSTER_CONFIG
+              valueFrom:
+                  configMapKeyRef:
+                      name: tensorflow-cluster-config
+                      key: clusterconfig
+          volumeMounts:
+            - name: tensorflow-fs
+              mountPath: {{ properties['filesystem']['mount-path'] }}
+      volumes:
+        - name: tensorflow-fs
+          persistentVolumeClaim:
+            claimName: {{ properties['filesystem']['pvc'] }}
+---
+{% endfor %}
+{% endfor %}
