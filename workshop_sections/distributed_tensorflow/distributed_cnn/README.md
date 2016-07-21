@@ -37,7 +37,7 @@ This data contains post titles from (a few months of) two reddit (https://www.re
 Start the training process like this:
 
 ```sh
-$ ./train.py
+$ python train.py
 ```
 
 This script does some in-memory data preprocessing that is a bit time-consuming for a dataset of the size that we are giving it. While things start up, we'll take a look at the code.
@@ -58,13 +58,20 @@ We'll also take a look at how the SummaryWriter is being used-- this lets us tra
 
 Once the training script has gone through its first checkpoint save, we can look at its progress in TensorBoard.
 
-In a separate terminal window, start up tensorboard. (Make sure that you've activated your conda environment in this new window).
+In a separate terminal window, start up Tensorboard. (Make sure that you've activated your conda environment in this new window).
 
 ```sh
 $ tensorboard --logdir=runs
 ```
 
-We'll walk through what it's doing, and trace the logged events back to the `SummaryWriter` calls we looked at in the code.
+Note: if you're starting TensorBoard within a docker container, and you're using `docker-machine`, run
+
+```sh
+$ docker-machine ip
+```
+(outside the container) to find the IP address to use in your browser.  Otherwise, you should be able to bring up TensorBoard on `http://localhost:6006/`.
+
+We'll walk through the information TensorBoard is providing, and trace the logged events back to the `SummaryWriter` calls we looked at in the code.
 
 ### Loading and using a trained model
 
@@ -85,7 +92,7 @@ The source data came from reddit (https://www.reddit.com/) post titles from the 
 Now, start up another training run that uses the learned embeddings to initialized the embedding vectors.
 
 ```sh
-$ ./train.py --embeds_file all_reddit_embeds.json
+$ python train.py --embeds_file all_reddit_embeds.json
 ```
 
 We'll take a quick look at the code that does this initialization.

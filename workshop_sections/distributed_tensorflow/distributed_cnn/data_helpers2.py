@@ -87,8 +87,6 @@ def build_vocab_mapping(run="", write_mapping=True,
     Generate vocabulary mapping info, write it to disk for later eval.
     This ensures that the mapping used for the eval is the same.
     """
-    global vocabulary_mapping
-    global vocabulary_inv
 
     print("Building the vocabulary mapping. " +
           "This will take a while for large datasets.")
@@ -112,7 +110,7 @@ def build_vocab_mapping(run="", write_mapping=True,
         print("writing vocab file {}".format(vocab_file))
         with open(vocab_file, "w") as f:
             f.write(json.dumps(vocabulary_mapping))
-    return [x_text, positive_examples, negative_examples, padded_sentences]
+    return [x_text, positive_examples, negative_examples, padded_sentences, vocabulary_mapping, vocabulary_inv]
 
 
 def pad_sentences(sentences, padding_word="<PAD/>",
@@ -122,8 +120,6 @@ def pad_sentences(sentences, padding_word="<PAD/>",
     the longest sentence and a given max sentence length.
     Returns padded sentences.
     """
-    global vocabulary_mapping
-
     sequence_length = max(len(x) for x in sentences)
     # cap sentence length
     print("setting seq length to min of {} and {}".format(
@@ -158,7 +154,6 @@ def build_vocab(sentences, max_vocab=30000):
 
 def get_embeddings(vocab_size, embedding_size, emb_file):  # expected sizes
     """..."""
-    global vocabulary_mapping
     # create a matrix of the right size
     embeddings = np.random.uniform(
         -1.0, 1.0, size=(vocab_size, embedding_size)).astype('float32')
@@ -217,8 +212,6 @@ def load_data(run="", cat1=None, cat2=None,
     Loads and preprocessed data for the MR dataset.
     Returns input vectors, labels, vocabulary, and inverse vocabulary.
     """
-    global vocabulary_mapping
-    global vocabulary_inv
     x_text = None
     positive_examples = None
     negative_examples = None
@@ -233,7 +226,7 @@ def load_data(run="", cat1=None, cat2=None,
             mapping_line = f.readline()
             vocabulary_mapping = json.loads(mapping_line)
     else:
-        x_text, positive_examples, negative_examples, padded_sentences = build_vocab_mapping(
+        x_text, positive_examples, negative_examples, padded_sentences, vocabulary_mapping, vocabulary_inv = build_vocab_mapping(
             run=run, cat1=cat1, cat2=cat2)
     print("building training data structures")
     sentences, labels = load_data_and_labels(

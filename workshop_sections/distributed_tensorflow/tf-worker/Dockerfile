@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/tensorflow/tensorflow:latest-devel
+FROM tensorflow/tensorflow:r0.9
 ADD worker.py worker.py
 CMD ["python", "worker.py"]
