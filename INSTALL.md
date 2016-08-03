@@ -1,7 +1,10 @@
 
 # Installation instructions for the TensorFlow workshop
 
-You can set up for the workshop in two different ways -- installing the necessary packages into a virtual environment, or running a docker container.
+You can set up for the workshop in two different, mutually-exclusive ways:
+
+- [Running a docker container (recommended)](#docker-based-installation).
+- [Installing the necessary packages into a virtual environment](#virtual-environment-based-installation).
 
 ## Docker-based installation
 
@@ -55,6 +58,8 @@ $ docker exec -it <container_id> bash
 ```
 
 ## Virtual environment-based installation
+
+These steps are not necessary if you have already completed the instructions for running the Docker image.
 
 ### Install Conda + Python 3 to use as your local virtual environment
 
