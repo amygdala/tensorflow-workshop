@@ -64,7 +64,12 @@ def run_dnn_classifier():
     classifier = tf.contrib.learn.DNNClassifier(
         feature_columns=feature_columns, n_classes=10,
         hidden_units=[128, 32],
-        optimizer=tf.train.AdamOptimizer(),
+        # After you've done a training run with optimizer learning rate 0.1,
+        # change it to 0.5 and run the training again.  Use TensorBoard to take
+        # a look at the difference.  You can see both runs by pointing it to the
+        # parent model directory, which by default is:
+        #   tensorboard --logdir=/tmp/tfmodels/mnist_tflearn
+        optimizer=tf.train.ProximalAdagradOptimizer(learning_rate=0.1),
         model_dir=ARGFLAGS.model_dir
         )
     classifier.fit(data_sets.train.images,
