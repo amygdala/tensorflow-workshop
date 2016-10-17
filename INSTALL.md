@@ -31,7 +31,7 @@ Create a directory (called, say, `workshop-data`) to mount as a volume when you 
 Once you've downloaded the container image, you can run it like this:
 
 ```sh
-$ docker run -v `pwd`/workshop-data:/workshop-data -it \
+$ docker run -v `pwd`/workshop-data:/root/tensorflow-workshop-master/workshop-data -it \
     -p 6006:6006 -p 8888:8888 gcr.io/google-samples/tf-workshop:v3
 ```
 
@@ -61,7 +61,7 @@ $ docker exec -it <container_id> bash
 
 (These steps are not necessary if you have already completed the instructions for running the Docker image.)
 
-We highly recommend that you use a virtual environment for your TensorFlow installation rather than a direct install onto your machine.  The instructions below walk you thorough a `conda` install, but a `virtualenv` environment should work as well. The instructions specify using `conda` with Python 3, but Python 2.7 should also work.
+We highly recommend that you use a virtual environment for your TensorFlow installation rather than a direct install onto your machine.  The instructions below walk you thorough a `conda` install, but a `virtualenv` environment should work as well. The instructions specify using Python 3, but Python 2.7 is also okay.
 
 ### Install Conda + Python 3 to use as your local virtual environment
 
@@ -73,7 +73,9 @@ Install the version of Conda that uses Python 3.5 by default.  Follow the instru
 
 Follow the instructions [on the TensorFlow site](https://www.tensorflow.org/versions/r0.11/get_started/os_setup.html#anaconda-installation) to create a Conda environment, *activate* it, and then use [conda-forge](https://www.tensorflow.org/versions/r0.11/get_started/os_setup.html#using-conda) to install TensorFlow within it.
 
-If you'd prefer to use virtualenv, see [these instructions on the TensorFlow site](https://www.tensorflow.org/versions/r0.11/get_started/os_setup.html#virtualenv-installation) instead.
+**Note**: as of this writing, `conda-forge` installs TensorFlow 0.10. That is fine for this workshop. If you'd prefer to install 0.11, follow the ["using pip" section](https://www.tensorflow.org/versions/r0.11/get_started/os_setup.html#using-pip) instead.
+
+If you'd prefer to use virtualenv, see [these instructions](https://www.tensorflow.org/versions/r0.11/get_started/os_setup.html#virtualenv-installation) instead.
 
 Remember to activate your environment in all the terminal windows you use during this workshop.
 
