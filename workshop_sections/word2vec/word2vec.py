@@ -1,4 +1,4 @@
-# Copyright 2015 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2016 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -16,13 +16,15 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import argparse
 import math
 
 import nltk
 import numpy as np
 import tensorflow as tf
 from tensorflow.contrib.learn import ModeKeys
+
+
+GCS_SKIPGRAMS = 'gs://oscon-tf-workshop-materials/skipgrams.tfrecord.pb2'
 
 
 def make_model_fn(num_partitions=1,
@@ -59,9 +61,9 @@ def make_model_fn(num_partitions=1,
             dtype=tf.float32
         )
 
-      predictions, loss, train_op = (None, None, None)
+      predictions, loss, train_op = ({}, None, None)
       # tf.contrib.learn.Estimator.fit adds an addition dimension to input
-      target_words_squeezed = tf.squeeze(target_words)
+      target_words_squeezed = tf.squeeze(target_words, squeeze_dims=[1])
 
       if mode in [ModeKeys.TRAIN, ModeKeys.EVAL]:
         embedded = tf.nn.embedding_lookup(embeddings, target_words_squeezed)
@@ -74,6 +76,7 @@ def make_model_fn(num_partitions=1,
             num_sampled,
             vocab_size
         ))
+        tf.scalar_summary('loss', loss)
 
       if mode == ModeKeys.TRAIN:
         train_op = tf.train.GradientDescentOptimizer(learning_rate).minimize(
@@ -88,7 +91,8 @@ def make_model_fn(num_partitions=1,
             normalized_embeddings, target_words_squeezed)
         similarity = tf.matmul(
             valid_embeddings, normalized_embeddings, transpose_b=True)
-        _, predictions = tf.nn.top_k(similarity, sorted=False, k=num_sim)
+        predictions['values'], predictions['predictions'] = tf.nn.top_k(
+            similarity, sorted=True, k=num_sim)
 
       return predictions, loss, train_op
   return _make_model
@@ -98,6 +102,7 @@ def _rolling_window(a, window):
   shape = a.shape[:-1] + (a.shape[-1] - window + 1, window)
   strides = a.strides + (a.strides[-1],)
   return np.lib.stride_tricks.as_strided(a, shape=shape, strides=strides)
+
 
 
 def to_skipgrams(window, skip_window, num_skips):
@@ -114,7 +119,7 @@ def generate_batches(word_indices, num_skips=2, skip_window=1):
 
   span_windows = _rolling_window(word_indices, span)
   batches = np.apply_along_axis(
-      to_skipgrams, 0, span_windows, skip_window, num_skips)
+    to_skipgrams, 1, span_windows, skip_window, num_skips)
   # Separate targets and contexts
   batches_sep = np.reshape(batches, (-1, 2, num_skips))
   # Gather targets and contexts
@@ -124,27 +129,27 @@ def generate_batches(word_indices, num_skips=2, skip_window=1):
   return batches_squashed[0], batches_squashed[1]
 
 
-def input_from_numpy(string, vocab_size=2 ** 15):
+def build_string_index(string, vocab_size=2 ** 15):
   word_array = np.array(nltk.word_tokenize(string))
 
   unique, inverse, counts = np.unique(
-      word_array, return_inverse=True, return_counts=True)
+    word_array, return_inverse=True, return_counts=True)
 
   max_index = len(unique) - 1
-  shuffle_idx = np.argsort(counts)
-  unique_sorted = unique[shuffle_idx][::-1]
+  sort_unique = np.argsort(counts)
+  shuffle_idx = np.searchsorted(counts[sort_unique], counts)
+  unique_sorted = unique[sort_unique][::-1]
 
-  unknown_index = np.argwhere(unique_sorted == 'UNK')
-  if unknown_index.size == 0 or unknown_index > vocab_size - 1:
-    unknown_index = vocab_size - 1
-    index = np.append(unique_sorted[:vocab_size - 1], 'UNK')
-  else:
-    index = unique_sorted[:vocab_size]
+  index = np.concatenate((np.array(['UNK']), unique_sorted[:vocab_size - 1]))
 
-  indices = max_index - shuffle_idx
-  indices[indices > (vocab_size - 1)] = unknown_index
+  indices = max_index - shuffle_idx + 1
+  indices = np.where(
+    indices > vocab_size - 1,
+    np.zeros(len(indices), dtype=np.int8),
+    indices
+  )
 
-  word_indices = indices[inverse].reshape(word_array.shape)
+  word_indices = indices[inverse]
   return index, word_indices
 
 
@@ -163,53 +168,19 @@ def input_from_files(filenames, batch_size, num_epochs=1):
               'context_words': tf.FixedLenFeature([batch_size], tf.int64)
           }
       )
-      return words['target_words'], words['context_words']
+      return tf.expand_dims(words['target_words'], 1), words['context_words']
   return _make_input_fn
 
-if __name__ == '__main__':
-  parser = argparse.ArgumentParser(description='Train word2vec embeddings')
-  parser.add_argument(
-      '--max-steps',
-      type=int,
-      default=100000,
-      help='The number of steps to run.'
-  )
-  parser.add_argument(
-      '--output-path',
-      help="""\
-      The path to which checkpoints and other outputs
-      should be saved. This can be either a local or GCS
-      path.\
-      """
-  )
-  parser.add_argument(
-      '--batch-size',
-      type=int,
-      default=2**10
-  )
-  parser.add_argument(
-      '--input-files',
-      nargs='+',
-      type=str,
-      help="""\
-      File or GCS paths to input data, which should be TFRecords with a
-      feature named "words"\
-      """
-  )
-  parser.add_argument(
-      '--vocab-size',
-      type=int,
-      default=2**16,
-      help="""\
-      Number of buckets to use for word embeddings.
-      Small vocab sizes may cause poor model behavior
-      due to hash collisions\
-      """
-  )
-  parser.add_argument(
-      '--embedding-size',
-      type=int,
-      default=2**7,
-      help='Size of the embedding to use for each word'
-  )
-  args = parser.parse_args()
+def write_batches_to_file(filename, batch_size, targets, contexts):
+  with tf.python_io.TFRecordWriter(filename) as writer:
+    for i in range(0, len(targets), batch_size):
+      writer.write(
+          tf.train.Example(features=tf.train.Features(feature={
+              'target_words': tf.train.Feature(
+                  int64_list=tf.train.Int64List(
+                      value=targets[i:i+batch_size])),
+              'context_words': tf.train.Feature(
+                  int64_list=tf.train.Int64List(
+                      value=contexts[i:i+batch_size]))
+          })).SerializeToString()
+      )
