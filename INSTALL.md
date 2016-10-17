@@ -89,9 +89,17 @@ $ conda install scipy
 $ pip install sklearn
 $ conda install matplotlib
 $ conda install jupyter
+$ conda install nltk
 ```
 
 (If you are using `virtualenv` instead of `conda`, install the packages using the equivalent `pip` commands instead).
+
+Then run:
+```
+$ python -c "import nltk; nltk.download('punkt')"
+```
+(This will give you the necessary corpuses for the [word2vec](workshop_sections/word2vec/README.md) lab).
+
 
 ## Optional: Clone/Download the TensorFlow repo from GitHub
 
