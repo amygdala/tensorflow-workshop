@@ -19,5 +19,3 @@ url = "https://github.com/amygdala/tensorflow-workshop/archive/master.zip"
 filename, _ = urllib.request.urlretrieve(url, "tensorflow-workshop.zip")
 zip = zipfile.ZipFile(filename)
 zip.extractall()
-
-
