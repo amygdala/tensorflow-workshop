@@ -24,7 +24,12 @@ import tensorflow as tf
 from tensorflow.contrib.learn import ModeKeys
 
 
-GCS_SKIPGRAMS = 'gs://oscon-tf-workshop-materials/skipgrams.tfrecord.pb2'
+GCS_SKIPGRAMS = [
+    'gs://oscon-tf-workshop-materials/skipgrams/shard-0.pb2',
+    'gs://oscon-tf-workshop-materials/skipgrams/shard-17007616.pb2',
+    'gs://oscon-tf-workshop-materials/skipgrams/shard-25511424.pb2',
+    'gs://oscon-tf-workshop-materials/skipgrams/shard-8503808.pb2',
+]
 
 
 def make_model_fn(num_partitions=1,
@@ -40,20 +45,19 @@ def make_model_fn(num_partitions=1,
                              partitioner=tf.fixed_size_partitioner(
                                  num_partitions)):
 
-        init = tf.truncated_normal_initializer(
-            stddev=1.0 / math.sqrt(embedding_size)
-        )
         embeddings = tf.get_variable(
             'embeddings',
             shape=[vocab_size, embedding_size],
             dtype=tf.float32,
-            initializer=init
+            initializer=tf.random_uniform_initializer(-1.0, 1.0)
         )
         nce_weights = tf.get_variable(
             'nce_weights',
             shape=[vocab_size, embedding_size],
             dtype=tf.float32,
-            initializer=init
+            initializer=tf.truncated_normal_initializer(
+                stddev=1.0 / math.sqrt(embedding_size)
+            )
         )
         nce_biases = tf.get_variable(
             'nce_biases',
@@ -171,16 +175,24 @@ def input_from_files(filenames, batch_size, num_epochs=1):
       return tf.expand_dims(words['target_words'], 1), words['context_words']
   return _make_input_fn
 
-def write_batches_to_file(filename, batch_size, targets, contexts):
-  with tf.python_io.TFRecordWriter(filename) as writer:
-    for i in range(0, len(targets), batch_size):
-      writer.write(
-          tf.train.Example(features=tf.train.Features(feature={
-              'target_words': tf.train.Feature(
-                  int64_list=tf.train.Int64List(
-                      value=targets[i:i+batch_size])),
-              'context_words': tf.train.Feature(
-                  int64_list=tf.train.Int64List(
-                      value=contexts[i:i+batch_size]))
-          })).SerializeToString()
-      )
+def write_batches_to_file(filename,
+                          batch_size,
+                          targets,
+                          contexts,
+                          num_shards=4):
+  
+  end = len(targets) - (len(targets) % batch_size)
+  shard_size = end // num_shards
+  for shard in range(0, end, end // num_shards):
+    with tf.python_io.TFRecordWriter('{}-{}.pb2'.format(filename, shard)) as writer:
+      for i in range(shard, shard+shard_size, batch_size):
+        writer.write(
+            tf.train.Example(features=tf.train.Features(feature={
+                'target_words': tf.train.Feature(
+                    int64_list=tf.train.Int64List(
+                        value=targets[i:i+batch_size])),
+                'context_words': tf.train.Feature(
+                    int64_list=tf.train.Int64List(
+                        value=contexts[i:i+batch_size]))
+            })).SerializeToString()
+        )
