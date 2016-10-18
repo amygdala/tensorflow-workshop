@@ -6,6 +6,8 @@ As part of the lab, we'll explore what [TensorBoard](https://www.tensorflow.org/
 
 It also includes a bonus demonstration of using a [LinearClassifier](https://www.tensorflow.org/versions/r0.11/api_docs/python/contrib.learn.html#LinearClassifier).
 
+## Running the example as a script
+
 The python script for this section is: [`mnist_tflearn.py`](./mnist_tflearn.py).
 Start the lab by running it like this:
 
@@ -15,7 +17,21 @@ $ python mnist_tflearn.py
 
 By default, it writes summary and model checkpoint info to a (timestamp-based) subdir of `/tmp/tfmodels/mnist_tflearn`.
 
-After the script runs, or while it's running, start up TensorBoard as follows in a new terminal window. (If you get a 'not found' error, make sure you've activated your virtual environment in that new window):
+## Running the example in a Jupyter notebook
+
+You can also run the example as a Jupyter (ipython) notebook.
+Start up the Jupyter server from this directory like this, if it's not already running:
+
+```shell
+$ jupyter notebook
+```
+
+When the server starts up, it may bring up a tab automatically in your browser. If not, visit
+`http://localhost:8888/`.  Then select `mnist_tflearn.ipynb`.
+
+## TensorBoard
+
+After the script/notebook runs, or while it's running, start up TensorBoard as follows in a new terminal window. (If you get a 'not found' error, make sure you've activated your virtual environment in that new window):
 
 ```shell
 $ tensorboard --logdir=/tmp/tfmodels/mnist_tflearn

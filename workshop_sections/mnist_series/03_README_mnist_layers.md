@@ -16,10 +16,26 @@ We'll start with a model graph that has only one hidden layer, then as part of t
 Start by looking at [`mnist_onehlayer.py`](./mnist_onehlayer.py).
 See if you can find where the 'hidden layer' part of the model graph is defined.
 
+## Running the example as a script
+
 Run this script like this:
 ```shell
 $ python mnist_onehlayer.py
 ```
+
+## Running the example in a Jupyter notebook
+
+You can also run the example as a Jupyter (ipython) notebook.
+Start up the Jupyter server from this directory like this, if it's not already running:
+
+```shell
+$ jupyter notebook
+```
+
+When the server starts up, it may bring up a tab automatically in your browser. If not, visit
+`http://localhost:8888/`.  Then select `mnist_onehlayer.ipynb`.
+
+## TensorBoard
 
 View the result in TensorBoard (refer to the previous lab if you forget how to start it up). You'll find the generated summary info under `/tmp/tfmodels/mnist_onehlayer`.
 If you have a TensorBoard server already running, kill the old one first. 
