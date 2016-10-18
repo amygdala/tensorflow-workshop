@@ -30,6 +30,7 @@ import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
 ARGFLAGS = None
+DATA_SETS = None
 
 # comment out for less info during the training runs.
 tf.logging.set_verbosity(tf.logging.INFO)
@@ -37,58 +38,68 @@ tf.logging.set_verbosity(tf.logging.INFO)
 
 def run_linear_classifier():
     """Run a linear classifier."""
-    # read in data, downloading first if necessary
-    print("Downloading and reading data sets...")
-    data_sets = input_data.read_data_sets(ARGFLAGS.data_dir)
+    global DATA_SETS
     feature_columns = tf.contrib.learn.infer_real_valued_columns_from_input(
-        data_sets.train.images)
+        DATA_SETS.train.images)
     classifier = tf.contrib.learn.LinearClassifier(
         feature_columns=feature_columns, n_classes=10)
-    classifier.fit(data_sets.train.images,
-                   data_sets.train.labels.astype(numpy.int64),
+    classifier.fit(DATA_SETS.train.images,
+                   DATA_SETS.train.labels.astype(numpy.int64),
                    batch_size=100, steps=10000)
 
     # Evaluate accuracy.
     accuracy_score = classifier.evaluate(
-        data_sets.test.images,
-        data_sets.test.labels.astype(numpy.int64))['accuracy']
+        DATA_SETS.test.images,
+        DATA_SETS.test.labels.astype(numpy.int64))['accuracy']
     print('Linear Classifier Accuracy: {0:f}'.format(accuracy_score))
 
 
-def run_dnn_classifier():
+def define_and_run_dnn_classifier():
     """Run a DNN classifier."""
-    # read in data, downloading first if necessary
-    data_sets = input_data.read_data_sets(ARGFLAGS.data_dir)
+    global DATA_SETS
     feature_columns = tf.contrib.learn.infer_real_valued_columns_from_input(
-        data_sets.train.images)
+        DATA_SETS.train.images)
     classifier = tf.contrib.learn.DNNClassifier(
         feature_columns=feature_columns, n_classes=10,
         hidden_units=[128, 32],
         # After you've done a training run with optimizer learning rate 0.1,
         # change it to 0.5 and run the training again.  Use TensorBoard to take
-        # a look at the difference.  You can see both runs by pointing it to the
-        # parent model directory, which by default is:
+        # a look at the difference.  You can see both runs by pointing it to
+        # the parent model directory, which by default is:
         #   tensorboard --logdir=/tmp/tfmodels/mnist_tflearn
         optimizer=tf.train.ProximalAdagradOptimizer(learning_rate=0.1),
         model_dir=ARGFLAGS.model_dir
         )
-    classifier.fit(data_sets.train.images,
-                   data_sets.train.labels.astype(numpy.int64),
+    classifier.fit(DATA_SETS.train.images,
+                   DATA_SETS.train.labels.astype(numpy.int64),
                    batch_size=100, max_steps=ARGFLAGS.num_steps)
+    print("Finished running the training via the fit() method")
+    return classifier
 
-    # Evaluate accuracy.
+
+def eval_dnn_classifier(classifier):
+    # Evaluate classifier accuracy.
+    global DATA_SETS
     accuracy_score = classifier.evaluate(
-        data_sets.test.images,
-        data_sets.test.labels.astype(numpy.int64))['accuracy']
+        DATA_SETS.test.images,
+        DATA_SETS.test.labels.astype(numpy.int64))['accuracy']
     print('DNN Classifier Accuracy: {0:f}'.format(accuracy_score))
 
 
 def main(_):
 
+    # read in data, downloading first if necessary
+    global DATA_SETS
+    print("Downloading and reading data sets...")
+    DATA_SETS = input_data.read_data_sets(ARGFLAGS.data_dir)
+
     # print("\n-----Running linear classifier...")
     # run_linear_classifier()
+
     print("\n---- Running DNN classifier...")
-    run_dnn_classifier()
+    classifier = define_and_run_dnn_classifier()
+    print("\n---Evaluating DNN classifier accuracy...")
+    eval_dnn_classifier(classifier)
 
 
 if __name__ == '__main__':
