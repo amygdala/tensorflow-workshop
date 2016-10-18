@@ -120,8 +120,8 @@ For example, predicting the 5 most common known words:
 index[word2vec_model.predict(x=np.array(range(1, 6)))['predictions']]
 ```
 
-Or predicting a specific word:
+Or predicting a specific word, like:
 
 ```
-index[word2vec_model.predict(x=np.where(index == 'cat')[0])['predictions']]
+index[word2vec_model.predict(x=np.where(index == 'son')[0])['predictions']]
 ```
