@@ -11,12 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-FROM tensorflow/tensorflow:nightly
+FROM gcr.io/tensorflow/tensorflow:latest-devel
 
 RUN pip install --upgrade pip
 RUN apt-get update
 RUN apt-get install -y python-scipy
-RUN pip install sklearn
+RUN pip install sklearn nltk
+RUN python -c "import nltk; nltk.download('punkt')"
 
 ADD download_git_repo.py download_git_repo.py
 

@@ -19,26 +19,23 @@ import numpy as np
 import tensorflow as tf
 
 
-graph = tf.Graph()
 m1 = np.array([[1., 2.], [3., 4.], [5., 6.], [7., 8.]], dtype=np.float32)
 
-with graph.as_default():
+# Input data.
+m1_input = tf.placeholder(tf.float32, shape=[4, 2])
 
-    # Input data.
-    m1_input = tf.placeholder(tf.float32, shape=[4, 2])
+m2 = tf.Variable(tf.random_uniform([2, 3], -1.0, 1.0))
 
-    m2 = tf.Variable(tf.random_uniform([2, 3], -1.0, 1.0))
+m3 = tf.matmul(m1_input, m2)
 
-    m3 = tf.matmul(m1_input, m2)
+# This is an identity op with the side effect of printing data when
+# evaluating.
+m3 = tf.Print(m3, [m3], message="m3 is: ")
 
-    # This is an identity op with the side effect of printing data when
-    # evaluating.
-    m3 = tf.Print(m3, [m3], message="m3 is: ")
+# Add variable initializer.
+init = tf.initialize_all_variables()
 
-    # Add variable initializer.
-    init = tf.initialize_all_variables()
-
-with tf.Session(graph=graph) as session:
+with tf.Session() as session:
     # We must initialize all variables before we use them.
     init.run()
     print("Initialized")
