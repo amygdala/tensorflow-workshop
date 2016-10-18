@@ -35,11 +35,7 @@ BATCH_SIZE = 100
 EVAL_BATCH_SIZE = 3
 # Number of units in hidden layers.
 HIDDEN1_UNITS = 128
-
 FLAGS = None
-
-
-# data_sets = read_data_sets(FLAGS.data_dir, False)
 
 
 # Build inference graph.
@@ -71,8 +67,8 @@ def mnist_inference(images, hidden1_units):
         logits = tf.matmul(hidden1, weights) + biases
 
     # Uncomment the following line to see what we have constructed.
-    tf.train.write_graph(tf.get_default_graph().as_graph_def(),
-                         "/tmp", "inference.pbtxt", as_text=True)
+    # tf.train.write_graph(tf.get_default_graph().as_graph_def(),
+    #                      "/tmp", "inference.pbtxt", as_text=True)
     return logits
 
 
@@ -101,10 +97,6 @@ def mnist_training(logits, labels, learning_rate):
     # Use the optimizer to apply the gradients that minimize the loss
     # (and also increment the global step counter) as a single training step.
     train_op = optimizer.minimize(loss, global_step=global_step)
-
-    # Uncomment the following line to see what we have constructed.
-    # tf.train.write_graph(tf.get_default_graph().as_graph_def(),
-    #                      "/tmp", "train.pbtxt", as_text=True)
 
     return train_op, loss
 
@@ -157,11 +149,7 @@ def main(_):
         print("Writing Summaries to %s" % FLAGS.model_dir)
         train_summary_writer = tf.train.SummaryWriter(FLAGS.model_dir)
 
-        # Uncomment the following line to see what we have constructed.
-        # tf.train.write_graph(tf.get_default_graph().as_graph_def(),
-        #                      "/tmp", "complete.pbtxt", as_text=True)
-
-    # Run training for MAX_STEPS and save checkpoint at the end.
+    # Run training and save checkpoint at the end.
     with tf.Session(graph=mnist_graph) as sess:
         # Run the Op to initialize the variables.
         sess.run(init)
@@ -200,7 +188,7 @@ def main(_):
     # Run evaluation based on the saved checkpoint.
     with tf.Session(graph=tf.Graph()) as sess:
         checkpoint_file = tf.train.latest_checkpoint(FLAGS.model_dir)
-        print("\nRunning evaluation based on saved checkpoint.")
+        print("\nRunning predictions based on saved checkpoint.")
         print("checkpoint file: {}".format(checkpoint_file))
         # Load the saved meta graph and restore variables
         saver = tf.train.import_meta_graph("{}.meta".format(checkpoint_file))
