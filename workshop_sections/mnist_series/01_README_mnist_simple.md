@@ -16,7 +16,7 @@ $ python mnist_simple.py
 ## Running the example in a Jupyter notebook
 
 You can also run the example as a Jupyter (ipython) notebook.
-Start up the Jupyter server in this directory like this:
+Start up the Jupyter server from this directory like this:
 
 ```shell
 $ jupyter notebook
