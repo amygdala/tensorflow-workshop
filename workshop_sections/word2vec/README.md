@@ -55,7 +55,7 @@ with open('text8', 'r') as f:
  * `word_array`: A `np.ndarray` of words 
 
 ```
-targets, contexts = word2vec.generate_batches(word_array)
+targets, contexts = word2vec.generate_batches(word_array[:-4000000])
 ```
 (this may take 5-10 minutes)
 
