@@ -110,7 +110,7 @@ To predict, simply input a pandas dataframe or numpy array into `word2vec_model.
 For example, predicting the 5 most common known words:
 
 ```
-word2vec_model.predict(x=index[5:])
+word2vec_model.predict(x=index[:5])
 ```
 
 Or predicting a specific word, like:
