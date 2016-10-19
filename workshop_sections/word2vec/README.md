@@ -77,7 +77,7 @@ import time
 workshop_root = os.path.dirname(os.path.dirname(os.getcwd()))
 output_dir = os.path.join(workshop_root, 'workshop-data', 'output', str(int(time.time())))
 tf.logging.set_verbosity(tf.logging.INFO)
-word2vec_model = tf.contrib.learn.Estimator(model_fn=word2vec.make_model_fn(index, counts), model_dir=output_dir)
+word2vec_model = tf.contrib.learn.Estimator(model_fn=word2vec.make_model_fn(index, counts.tolist()), model_dir=output_dir)
 ```
 
 To train with the in memory numpy arrays, run:
