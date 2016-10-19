@@ -82,7 +82,7 @@ word2vec_model = tf.contrib.learn.Estimator(model_fn=word2vec.make_model_fn(inde
 To train with the in memory numpy arrays, run:
 
 ```
-word2vec_model.fit(x=targets, y=contexts, batch_size=256, max_steps=int(len(targets)//256))
+word2vec_model.fit(x=targets, y=contexts, batch_size=256, max_steps=int(len(targets)/256))
 ```
 
 To train with the pre-preprocessed TFRecords, run:

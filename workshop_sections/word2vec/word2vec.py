@@ -25,10 +25,8 @@ from tensorflow.contrib.learn import ModeKeys
 
 
 GCS_SKIPGRAMS = [
-    'gs://oscon-tf-workshop-materials/skipgrams/shard-0.pb2',
-    'gs://oscon-tf-workshop-materials/skipgrams/shard-17007616.pb2',
-    'gs://oscon-tf-workshop-materials/skipgrams/shard-25511424.pb2',
-    'gs://oscon-tf-workshop-materials/skipgrams/shard-8503808.pb2',
+    'gs://oscon-tf-workshop-materials/skipgrams/batches-{}.pb2'.format(i)
+    for i in range(4)
 ]
 
 
