@@ -54,6 +54,7 @@ with open('text8', 'r') as f:
 
  * `word_array`: A `np.ndarray` of words 
 
+NOTE: You may need to use a smaller slice depending on the amount of memory on your machine.
 ```
 targets, contexts = word2vec.generate_batches(word_array[:-4000000])
 ```
