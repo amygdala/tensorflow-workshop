@@ -159,7 +159,7 @@ def generate_batches(word_array, num_skips=2, skip_window=1):
 def build_string_index(string, vocab_size=2 ** 15):
   word_array = np.array(nltk.word_tokenize(string))
 
-  unique, inverse, counts = np.unique(word_array, return_counts=True)
+  unique, counts = np.unique(word_array, return_counts=True)
 
   sort_unique = np.argsort(counts)
   sorted_counts = counts[sort_unique][::-1][:vocab_size - 1]
