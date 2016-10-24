@@ -88,7 +88,7 @@ word2vec_model.fit(x=targets, y=contexts, batch_size=256, max_steps=int(len(targ
 
 To train with the pre-preprocessed TFRecords, run:
 ```
-word2vec_model.fit(input_fn=word2vec.input_from_files(word2vec.GCS_SKIPGRAMS, 256), max_steps=50000)
+word2vec_model.fit(input_fn=word2vec.input_from_files(word2vec.GCS_SKIPGRAMS, 256))
 ```
 
 In another shell (or outside your docker container), run
