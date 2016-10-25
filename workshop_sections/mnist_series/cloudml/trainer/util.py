@@ -56,10 +56,10 @@ def make_input_fn(files,
 
     # Build a queue of the filenames to be read.
     filename_queue = tf.train.string_input_producer(
-        files, num_epochs=num_epochs, shuffle=shuffle)
+        files, num_epochs=num_epochs)
 
-    example_id, encoded_examples = tf.TFRecordReader(
-        options=reader_options).read_up_to(filename_queue, batch_size)
+    example_id, encoded_examples = tf.TFRecordReader().read_up_to(
+        filename_queue, batch_size)
 
     features, targets = example_parser(encoded_examples)
     capacity = min_after_dequeue + queue_size_multiplier * batch_size
