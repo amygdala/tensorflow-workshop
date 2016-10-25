@@ -114,7 +114,7 @@ Run it on the cloud with:
 
 ```
 gcloud beta ml jobs submit training mnist_hptuning \
-    --staging-bucket $BUCKET_NAME \
+    --staging-bucket gs://$BUCKET_NAME \
     --package-path trainer/ \
     --module-name trainer.task \
     --config my_config.yaml \
