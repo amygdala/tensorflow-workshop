@@ -89,69 +89,8 @@ import struct
 FLAGS = tf.app.flags.FLAGS
 ARGFLAGS = None
 
-# # Input and output file flags.
-# tf.app.flags.DEFINE_string('image_dir', '',
-#                            """Path to folders of labeled images.""")
-# tf.app.flags.DEFINE_string('output_graph', '/tmp/output_graph.pb',
-#                            """Where to save the trained graph.""")
-# tf.app.flags.DEFINE_string('output_labels', '/tmp/output_labels.txt',
-#                            """Where to save the trained graph's labels.""")
-# tf.app.flags.DEFINE_string('summaries_dir', '/tmp/retrain_logs',
-#                           """Where to save summary logs for TensorBoard.""")
-
-# # Details of the training configuration.
-# tf.app.flags.DEFINE_integer('num_steps', 4000,
-#                             """How many training steps to run before ending.""")
-# tf.app.flags.DEFINE_float('learning_rate', 0.01,
-#                           """How large a learning rate to use when training.""")
-# tf.app.flags.DEFINE_integer(
-#     'testing_percentage', 10,
-#     """What percentage of images to use as a test set.""")
-# tf.app.flags.DEFINE_integer(
-#     'validation_percentage', 10,
-#     """What percentage of images to use as a validation set.""")
-# tf.app.flags.DEFINE_integer('eval_step_interval', 10,
-#                             """How often to evaluate the training results.""")
-# tf.app.flags.DEFINE_integer('train_batch_size', 100,
-#                             """How many images to train on at a time.""")
-# tf.app.flags.DEFINE_integer('test_batch_size', 500,
-#                             """How many images to test on at a time. This"""
-#                             """ test set is only used infrequently to verify"""
-#                             """ the overall accuracy of the model.""")
-# tf.app.flags.DEFINE_integer(
-#     'validation_batch_size', 100,
-#     """How many images to use in an evaluation batch. This validation set is"""
-#     """ used much more often than the test set, and is an early indicator of"""
-#     """ how accurate the model is during training.""")
-
-# # File-system cache locations.
-# tf.app.flags.DEFINE_string('model_dir', '/tmp/imagenet',
-#                            """Path to classify_image_graph_def.pb, """
-#                            """imagenet_synset_to_human_label_map.txt, and """
-#                            """imagenet_2012_challenge_label_map_proto.pbtxt.""")
-# tf.app.flags.DEFINE_string(
-#     'bottleneck_dir', '/tmp/bottleneck',
-#     """Path to cache bottleneck layer values as files.""")
-# tf.app.flags.DEFINE_string('final_tensor_name', 'final_result',
-#                            """The name of the output classification layer in"""
-#                            """ the retrained graph.""")
-
-# # Controls the distortions used during training.
-# tf.app.flags.DEFINE_boolean(
-#     'flip_left_right', False,
-#     """Whether to randomly flip half of the training images horizontally.""")
-# tf.app.flags.DEFINE_integer(
-#     'random_crop', 0,
-#     """A percentage determining how much of a margin to randomly crop off the"""
-#     """ training images.""")
-# tf.app.flags.DEFINE_integer(
-#     'random_scale', 0,
-#     """A percentage determining how much to randomly scale up the size of the"""
-#     """ training images by.""")
-# tf.app.flags.DEFINE_integer(
-#     'random_brightness', 0,
-#     """A percentage determining how much to randomly multiply the training"""
-#     """ image input pixels up or down by.""")
+# comment out for less info during the training runs.
+tf.logging.set_verbosity(tf.logging.INFO)
 
 # These are all parameters that are tied to the particular model architecture
 # we're using for Inception v3. These include things like tensor names and their
@@ -544,166 +483,14 @@ def get_random_cached_bottlenecks(sess, image_lists, how_many, category,
     ground_truths.append(ground_truth)
   return bottlenecks, ground_truths
 
+  # TODO aju - add this
+  def get_all_cached_bottlenecks(sess, image_lists, how_many, category,
+                                  bottleneck_dir, image_dir, jpeg_data_tensor,
+                                  bottleneck_tensor):
+    """..."""
 
-def get_random_distorted_bottlenecks(
-    sess, image_lists, how_many, category, image_dir, input_jpeg_tensor,
-    distorted_image, resized_input_tensor, bottleneck_tensor):
-  """Retrieves bottleneck values for training images, after distortions.
+    pass
 
-  If we're training with distortions like crops, scales, or flips, we have to
-  recalculate the full model for every image, and so we can't use cached
-  bottleneck values. Instead we find random images for the requested category,
-  run them through the distortion graph, and then the full graph to get the
-  bottleneck results for each.
-
-  Args:
-    sess: Current TensorFlow Session.
-    image_lists: Dictionary of training images for each label.
-    how_many: The integer number of bottleneck values to return.
-    category: Name string of which set of images to fetch - training, testing,
-    or validation.
-    image_dir: Root folder string of the subfolders containing the training
-    images.
-    input_jpeg_tensor: The input layer we feed the image data to.
-    distorted_image: The output node of the distortion graph.
-    resized_input_tensor: The input node of the recognition graph.
-    bottleneck_tensor: The bottleneck output layer of the CNN graph.
-
-  Returns:
-    List of bottleneck arrays and their corresponding ground truths.
-  """
-  class_count = len(image_lists.keys())
-  bottlenecks = []
-  ground_truths = []
-  for unused_i in range(how_many):
-    label_index = random.randrange(class_count)
-    label_name = list(image_lists.keys())[label_index]
-    image_index = random.randrange(MAX_NUM_IMAGES_PER_CLASS + 1)
-    image_path = get_image_path(image_lists, label_name, image_index, image_dir,
-                                category)
-    if not gfile.Exists(image_path):
-      tf.logging.fatal('File does not exist %s', image_path)
-    jpeg_data = gfile.FastGFile(image_path, 'rb').read()
-    # Note that we materialize the distorted_image_data as a numpy array before
-    # sending running inference on the image. This involves 2 memory copies and
-    # might be optimized in other implementations.
-    distorted_image_data = sess.run(distorted_image,
-                                    {input_jpeg_tensor: jpeg_data})
-    bottleneck = run_bottleneck_on_image(sess, distorted_image_data,
-                                         resized_input_tensor,
-                                         bottleneck_tensor)
-    ground_truth = np.zeros(class_count, dtype=np.float32)
-    ground_truth[label_index] = 1.0
-    bottlenecks.append(bottleneck)
-    ground_truths.append(ground_truth)
-  return bottlenecks, ground_truths
-
-
-def should_distort_images(flip_left_right, random_crop, random_scale,
-                          random_brightness):
-  """Whether any distortions are enabled, from the input flags.
-
-  Args:
-    flip_left_right: Boolean whether to randomly mirror images horizontally.
-    random_crop: Integer percentage setting the total margin used around the
-    crop box.
-    random_scale: Integer percentage of how much to vary the scale by.
-    random_brightness: Integer range to randomly multiply the pixel values by.
-
-  Returns:
-    Boolean value indicating whether any distortions should be applied.
-  """
-  return (flip_left_right or (random_crop != 0) or (random_scale != 0) or
-          (random_brightness != 0))
-
-
-def add_input_distortions(flip_left_right, random_crop, random_scale,
-                          random_brightness):
-  """Creates the operations to apply the specified distortions.
-
-  During training it can help to improve the results if we run the images
-  through simple distortions like crops, scales, and flips. These reflect the
-  kind of variations we expect in the real world, and so can help train the
-  model to cope with natural data more effectively. Here we take the supplied
-  parameters and construct a network of operations to apply them to an image.
-
-  Cropping
-  ~~~~~~~~
-
-  Cropping is done by placing a bounding box at a random position in the full
-  image. The cropping parameter controls the size of that box relative to the
-  input image. If it's zero, then the box is the same size as the input and no
-  cropping is performed. If the value is 50%, then the crop box will be half the
-  width and height of the input. In a diagram it looks like this:
-
-  <       width         >
-  +---------------------+
-  |                     |
-  |   width - crop%     |
-  |    <      >         |
-  |    +------+         |
-  |    |      |         |
-  |    |      |         |
-  |    |      |         |
-  |    +------+         |
-  |                     |
-  |                     |
-  +---------------------+
-
-  Scaling
-  ~~~~~~~
-
-  Scaling is a lot like cropping, except that the bounding box is always
-  centered and its size varies randomly within the given range. For example if
-  the scale percentage is zero, then the bounding box is the same size as the
-  input and no scaling is applied. If it's 50%, then the bounding box will be in
-  a random range between half the width and height and full size.
-
-  Args:
-    flip_left_right: Boolean whether to randomly mirror images horizontally.
-    random_crop: Integer percentage setting the total margin used around the
-    crop box.
-    random_scale: Integer percentage of how much to vary the scale by.
-    random_brightness: Integer range to randomly multiply the pixel values by.
-    graph.
-
-  Returns:
-    The jpeg input layer and the distorted result tensor.
-  """
-
-  jpeg_data = tf.placeholder(tf.string, name='DistortJPGInput')
-  decoded_image = tf.image.decode_jpeg(jpeg_data, channels=MODEL_INPUT_DEPTH)
-  decoded_image_as_float = tf.cast(decoded_image, dtype=tf.float32)
-  decoded_image_4d = tf.expand_dims(decoded_image_as_float, 0)
-  margin_scale = 1.0 + (random_crop / 100.0)
-  resize_scale = 1.0 + (random_scale / 100.0)
-  margin_scale_value = tf.constant(margin_scale)
-  resize_scale_value = tf.random_uniform(tensor_shape.scalar(),
-                                         minval=1.0,
-                                         maxval=resize_scale)
-  scale_value = tf.mul(margin_scale_value, resize_scale_value)
-  precrop_width = tf.mul(scale_value, MODEL_INPUT_WIDTH)
-  precrop_height = tf.mul(scale_value, MODEL_INPUT_HEIGHT)
-  precrop_shape = tf.pack([precrop_height, precrop_width])
-  precrop_shape_as_int = tf.cast(precrop_shape, dtype=tf.int32)
-  precropped_image = tf.image.resize_bilinear(decoded_image_4d,
-                                              precrop_shape_as_int)
-  precropped_image_3d = tf.squeeze(precropped_image, squeeze_dims=[0])
-  cropped_image = tf.random_crop(precropped_image_3d,
-                                 [MODEL_INPUT_HEIGHT, MODEL_INPUT_WIDTH,
-                                  MODEL_INPUT_DEPTH])
-  if flip_left_right:
-    flipped_image = tf.image.random_flip_left_right(cropped_image)
-  else:
-    flipped_image = cropped_image
-  brightness_min = 1.0 - (random_brightness / 100.0)
-  brightness_max = 1.0 + (random_brightness / 100.0)
-  brightness_value = tf.random_uniform(tensor_shape.scalar(),
-                                       minval=brightness_min,
-                                       maxval=brightness_max)
-  brightened_image = tf.mul(flipped_image, brightness_value)
-  distort_result = tf.expand_dims(brightened_image, 0, name='DistortResult')
-  return jpeg_data, distort_result
 
 
 def variable_summaries(var, name):
@@ -719,7 +506,21 @@ def variable_summaries(var, name):
     tf.histogram_summary(name, var)
 
 
-def add_final_training_ops(class_count, final_tensor_name, bottleneck_tensor):
+# aju
+def generate_input_placeholders(bottleneck_tensor):
+  """..."""
+  with tf.name_scope('input'):
+    bottleneck_input = tf.placeholder_with_default(
+        bottleneck_tensor, shape=[None, BOTTLENECK_TENSOR_SIZE],
+        name='BottleneckInputPlaceholder')
+
+    ground_truth_input = tf.placeholder(tf.float32,
+                                        [None, class_count],
+                                        name='GroundTruthInput')
+    return(bottleneck_input, ground_truth_input)
+
+
+def add_final_training_ops(class_count, final_tensor_name, bottleneck_input, ground_truth_input):
   """Adds a new softmax and fully-connected layer for training.
 
   We need to retrain the top layer to identify our new classes, so this function
@@ -739,14 +540,15 @@ def add_final_training_ops(class_count, final_tensor_name, bottleneck_tensor):
     The tensors for the training and cross entropy results, and tensors for the
     bottleneck input and ground truth input.
   """
-  with tf.name_scope('input'):
-    bottleneck_input = tf.placeholder_with_default(
-        bottleneck_tensor, shape=[None, BOTTLENECK_TENSOR_SIZE],
-        name='BottleneckInputPlaceholder')
+  # aju - factor this out
+  # with tf.name_scope('input'):
+  #   bottleneck_input = tf.placeholder_with_default(
+  #       bottleneck_tensor, shape=[None, BOTTLENECK_TENSOR_SIZE],
+  #       name='BottleneckInputPlaceholder')
 
-    ground_truth_input = tf.placeholder(tf.float32,
-                                        [None, class_count],
-                                        name='GroundTruthInput')
+  #   ground_truth_input = tf.placeholder(tf.float32,
+  #                                       [None, class_count],
+  #                                       name='GroundTruthInput')
 
   # Organizing the following ops as `final_training_ops` so they're easier
   # to see in TensorBoard
@@ -774,10 +576,9 @@ def add_final_training_ops(class_count, final_tensor_name, bottleneck_tensor):
 
   with tf.name_scope('train'):
     train_step = tf.train.GradientDescentOptimizer(ARGFLAGS.learning_rate).minimize(
-        cross_entropy_mean)
+        cross_entropy_mean, global_step=tf.contrib.framework.get_global_step())
 
-  return (train_step, cross_entropy_mean, bottleneck_input, ground_truth_input,
-          final_tensor)
+  return (train_step, cross_entropy_mean, final_tensor)
 
 
 def add_evaluation_step(result_tensor, ground_truth_tensor):
@@ -799,6 +600,27 @@ def add_evaluation_step(result_tensor, ground_truth_tensor):
       evaluation_step = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
     tf.scalar_summary('accuracy', evaluation_step)
   return evaluation_step
+
+
+def make_model_fn(class_count):
+
+  def _make_model(bottleneck_input, ground_truth_input, mode, params):
+
+    # Add the new layer that we'll be training.
+    (train_step, cross_entropy,
+     final_tensor) = add_final_training_ops(
+      # len(image_lists.keys()),
+      class_count,
+      ARGFLAGS.final_tensor_name,
+      bottleneck_input, ground_truth_input)
+
+    # Create the operations we need to evaluate the accuracy of our new layer.
+    evaluation_step = add_evaluation_step(final_tensor, ground_truth_input)
+    prediction_dict = {"accuracy": evaluation_step}
+
+    return prediction_dict, cross_entropy, train_step
+
+  return _make_model
 
 
 def main(_):
@@ -824,110 +646,120 @@ def main(_):
           ' - multiple classes are needed for classification.')
     return -1
 
-  # See if the command-line flags mean we're applying any distortions.
-  do_distort_images = should_distort_images(
-      ARGFLAGS.flip_hz, ARGFLAGS.random_crop, ARGFLAGS.random_scale,
-      ARGFLAGS.random_brightness)
   sess = tf.Session()
 
-  if do_distort_images:
-    print("Applying image distortions.")
-    # We will be applying distortions, so set up the operations we'll need.
-    distorted_jpeg_data_tensor, distorted_image_tensor = add_input_distortions(
-        ARGFLAGS.flip_hz, ARGFLAGS.random_crop, ARGFLAGS.random_scale,
-        ARGFLAGS.random_brightness)
-  else:
-    # We'll make sure we've calculated the 'bottleneck' image summaries and
-    # cached them on disk.
-    cache_bottlenecks(sess, image_lists, ARGFLAGS.image_dir, ARGFLAGS.bottleneck_dir,
-                      jpeg_data_tensor, bottleneck_tensor)
+  # We'll make sure we've calculated the 'bottleneck' image summaries and
+  # cached them on disk.
+  cache_bottlenecks(sess, image_lists, ARGFLAGS.image_dir, ARGFLAGS.bottleneck_dir,
+                    jpeg_data_tensor, bottleneck_tensor)
 
-  # Add the new layer that we'll be training.
-  (train_step, cross_entropy, bottleneck_input, ground_truth_input,
-   final_tensor) = add_final_training_ops(len(image_lists.keys()),
-                                          ARGFLAGS.final_tensor_name,
-                                          bottleneck_tensor)
+  # # Add the new layer that we'll be training.
+  # (train_step, cross_entropy, bottleneck_input, ground_truth_input,
+  #  final_tensor) = add_final_training_ops(len(image_lists.keys()),
+  #                                         ARGFLAGS.final_tensor_name,
+  #                                         bottleneck_tensor)
 
-  # Create the operations we need to evaluate the accuracy of our new layer.
-  evaluation_step = add_evaluation_step(final_tensor, ground_truth_input)
+  # # Create the operations we need to evaluate the accuracy of our new layer.
+  # evaluation_step = add_evaluation_step(final_tensor, ground_truth_input)
 
-  # Merge all the summaries and write them out to /tmp/retrain_logs (by default)
-  merged = tf.merge_all_summaries()
-  train_writer = tf.train.SummaryWriter(ARGFLAGS.summaries_dir + '/train',
-                                        sess.graph)
-  validation_writer = tf.train.SummaryWriter(ARGFLAGS.summaries_dir + '/validation')
+  # # Merge all the summaries and write them out to /tmp/retrain_logs (by default)
+  # merged = tf.merge_all_summaries()
+  # train_writer = tf.train.SummaryWriter(ARGFLAGS.summaries_dir + '/train',
+  #                                       sess.graph)
+  # validation_writer = tf.train.SummaryWriter(ARGFLAGS.summaries_dir + '/validation')
 
-  # Set up all our weights to their initial default values.
-  init = tf.initialize_all_variables()
-  sess.run(init)
+  # # Set up all our weights to their initial default values.
+  # init = tf.initialize_all_variables()
+  # sess.run(init)
 
-  # Run the training for as many cycles as requested on the command line.
-  print("\nTraining for %s steps" % ARGFLAGS.num_steps)
-  for i in range(ARGFLAGS.num_steps):
-    # Get a batch of input bottleneck values, either calculated fresh every time
-    # with distortions applied, or from the cache stored on disk.
-    if do_distort_images:
-      train_bottlenecks, train_ground_truth = get_random_distorted_bottlenecks(
-          sess, image_lists, ARGFLAGS.train_batch_size, 'training',
-          ARGFLAGS.image_dir, distorted_jpeg_data_tensor,
-          distorted_image_tensor, resized_image_tensor, bottleneck_tensor)
-    else:
-      train_bottlenecks, train_ground_truth = get_random_cached_bottlenecks(
-          sess, image_lists, ARGFLAGS.train_batch_size, 'training',
-          ARGFLAGS.bottleneck_dir, ARGFLAGS.image_dir, jpeg_data_tensor,
-          bottleneck_tensor)
-    # Feed the bottlenecks and ground truth into the graph, and run a training
-    # step. Capture training summaries for TensorBoard with the `merged` op.
-    train_summary, _ = sess.run([merged, train_step],
-             feed_dict={bottleneck_input: train_bottlenecks,
-                        ground_truth_input: train_ground_truth})
-    train_writer.add_summary(train_summary, i)
+  # aju -- define the custom estimator
 
-    # Every so often, print out how well the graph is training.
-    is_last_step = (i + 1 == ARGFLAGS.num_steps)
-    if (i % ARGFLAGS.eval_step_interval) == 0 or is_last_step:
-      train_accuracy, cross_entropy_value = sess.run(
-          [evaluation_step, cross_entropy],
-          feed_dict={bottleneck_input: train_bottlenecks,
-                     ground_truth_input: train_ground_truth})
-      print('%s: Step %d: Train accuracy = %.1f%%' % (datetime.now(), i,
-                                                      train_accuracy * 100))
-      print('%s: Step %d: Cross entropy = %f' % (datetime.now(), i,
-                                                 cross_entropy_value))
-      validation_bottlenecks, validation_ground_truth = (
-          get_random_cached_bottlenecks(
-              sess, image_lists, ARGFLAGS.validation_batch_size, 'validation',
-              ARGFLAGS.bottleneck_dir, ARGFLAGS.image_dir, jpeg_data_tensor,
-              bottleneck_tensor))
-      # Run a validation step and capture training summaries for TensorBoard
-      # with the `merged` op.
-      validation_summary, validation_accuracy = sess.run(
-          [merged, evaluation_step],
-          feed_dict={bottleneck_input: validation_bottlenecks,
-                     ground_truth_input: validation_ground_truth})
-      validation_writer.add_summary(validation_summary, i)
-      print('%s: Step %d: Validation accuracy = %.1f%%' %
-            (datetime.now(), i, validation_accuracy * 100))
+  # bottleneck_input, ground_truth_input = generate_input_placeholders(bottleneck_tensor)
+  model_fn = make_model_fn(len(image_lists.keys()))
+  model_params = {}
 
-  # We've completed all our training, so run a final test evaluation on
-  # some new images we haven't used before.
-  test_bottlenecks, test_ground_truth = get_random_cached_bottlenecks(
-      sess, image_lists, ARGFLAGS.test_batch_size, 'testing',
+  classifier = tf.contrib.learn.Estimator(
+    model_fn=model_fn, params=model_params,
+    model_dir=ARGFLAGS.summaries_dir)
+
+  # aju -- generate inputs ... temp process...
+  train_bottlenecks, train_ground_truth = get_random_cached_bottlenecks(
+      sess, image_lists, 2000, 'training',
       ARGFLAGS.bottleneck_dir, ARGFLAGS.image_dir, jpeg_data_tensor,
       bottleneck_tensor)
-  test_accuracy = sess.run(
-      evaluation_step,
-      feed_dict={bottleneck_input: test_bottlenecks,
-                 ground_truth_input: test_ground_truth})
-  print('Final test accuracy = %.1f%%' % (test_accuracy * 100))
+  train_bottlenecks = np.array(train_bottlenecks)
+  train_ground_truth = np.array(train_ground_truth)
+  print(train_ground_truth)
+  print(train_bottlenecks)
 
-  # Write out the trained graph and labels with the weights stored as constants.
-  output_graph_def = graph_util.convert_variables_to_constants(
-      sess, graph.as_graph_def(), [ARGFLAGS.final_tensor_name])
-  with gfile.FastGFile(ARGFLAGS.output_graph, 'wb') as f:
-    f.write(output_graph_def.SerializeToString())
-  with gfile.FastGFile(ARGFLAGS.output_labels, 'w') as f:
-    f.write('\n'.join(image_lists.keys()) + '\n')
+
+  # then run the training
+  print("Starting training for %s steps max" % ARGFLAGS.num_steps)
+  classifier.fit(x=train_bottlenecks.astype(np.float32),
+          y=train_ground_truth, batch_size=50,
+          max_steps=ARGFLAGS.num_steps)
+
+  # aju -- should be superseded by fit() etc. now...
+  # # Run the training for as many cycles as requested on the command line.
+  # print("\nTraining for %s steps" % ARGFLAGS.num_steps)
+  # for i in range(ARGFLAGS.num_steps):
+  #   # Get a batch of input bottleneck values
+  #   train_bottlenecks, train_ground_truth = get_random_cached_bottlenecks(
+  #       sess, image_lists, ARGFLAGS.train_batch_size, 'training',
+  #       ARGFLAGS.bottleneck_dir, ARGFLAGS.image_dir, jpeg_data_tensor,
+  #       bottleneck_tensor)
+  #   # Feed the bottlenecks and ground truth into the graph, and run a training
+  #   # step. Capture training summaries for TensorBoard with the `merged` op.
+  #   train_summary, _ = sess.run([merged, train_step],
+  #            feed_dict={bottleneck_input: train_bottlenecks,
+  #                       ground_truth_input: train_ground_truth})
+  #   train_writer.add_summary(train_summary, i)
+
+  #   # Every so often, print out how well the graph is training.
+  #   is_last_step = (i + 1 == ARGFLAGS.num_steps)
+  #   if (i % ARGFLAGS.eval_step_interval) == 0 or is_last_step:
+  #     train_accuracy, cross_entropy_value = sess.run(
+  #         [evaluation_step, cross_entropy],
+  #         feed_dict={bottleneck_input: train_bottlenecks,
+  #                    ground_truth_input: train_ground_truth})
+  #     print('%s: Step %d: Train accuracy = %.1f%%' % (datetime.now(), i,
+  #                                                     train_accuracy * 100))
+  #     print('%s: Step %d: Cross entropy = %f' % (datetime.now(), i,
+  #                                                cross_entropy_value))
+  #     validation_bottlenecks, validation_ground_truth = (
+  #         get_random_cached_bottlenecks(
+  #             sess, image_lists, ARGFLAGS.validation_batch_size, 'validation',
+  #             ARGFLAGS.bottleneck_dir, ARGFLAGS.image_dir, jpeg_data_tensor,
+  #             bottleneck_tensor))
+  #     # Run a validation step and capture training summaries for TensorBoard
+  #     # with the `merged` op.
+  #     validation_summary, validation_accuracy = sess.run(
+  #         [merged, evaluation_step],
+  #         feed_dict={bottleneck_input: validation_bottlenecks,
+  #                    ground_truth_input: validation_ground_truth})
+  #     validation_writer.add_summary(validation_summary, i)
+  #     print('%s: Step %d: Validation accuracy = %.1f%%' %
+  #           (datetime.now(), i, validation_accuracy * 100))
+
+  # # We've completed all our training, so run a final test evaluation on
+  # # some new images we haven't used before.
+  # test_bottlenecks, test_ground_truth = get_random_cached_bottlenecks(
+  #     sess, image_lists, ARGFLAGS.test_batch_size, 'testing',
+  #     ARGFLAGS.bottleneck_dir, ARGFLAGS.image_dir, jpeg_data_tensor,
+  #     bottleneck_tensor)
+  # test_accuracy = sess.run(
+  #     evaluation_step,
+  #     feed_dict={bottleneck_input: test_bottlenecks,
+  #                ground_truth_input: test_ground_truth})
+  # print('Final test accuracy = %.1f%%' % (test_accuracy * 100))
+
+  # # Write out the trained graph and labels with the weights stored as constants.
+  # output_graph_def = graph_util.convert_variables_to_constants(
+  #     sess, graph.as_graph_def(), [ARGFLAGS.final_tensor_name])
+  # with gfile.FastGFile(ARGFLAGS.output_graph, 'wb') as f:
+  #   f.write(output_graph_def.SerializeToString())
+  # with gfile.FastGFile(ARGFLAGS.output_labels, 'w') as f:
+  #   f.write('\n'.join(image_lists.keys()) + '\n')
 
 
 if __name__ == '__main__':
@@ -940,7 +772,7 @@ if __name__ == '__main__':
                                help="Where to save the trained graph.")
     parser.add_argument('--output_labels', type=str, default='/tmp/output_labels.txt',
                                help="Where to save the trained graph's labels.")
-    parser.add_argument('--summaries_dir', type=str, default='/tmp/retrain_logs',
+    parser.add_argument('--summaries_dir', type=str, default='/tmp/summaries',
                               help="Where to save summary logs for TensorBoard.")
 
     # Details of the training configuration.
