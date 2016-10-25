@@ -33,7 +33,7 @@ python prepare_data.py data/
 After you have successfully completed this, run
 
 ```
-gsutil -m cp -z -r data/* gs://$BUCKET_NAME/
+gsutil -m cp -z pb2 -r data/* gs://$BUCKET_NAME/
 ```
 
 ### Reading TFRecords - Exercise 2
