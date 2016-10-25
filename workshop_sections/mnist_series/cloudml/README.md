@@ -2,7 +2,7 @@
 
 ## Set Up
 
-Make sure you have installed gcloud, and created an output bucket (hereafter referred to as `$BUCKET`), which you have authorized the Google Cloud ML API to access.
+Make sure you have installed gcloud, and created an output bucket (hereafter referred to as `$BUCKET_NAME`), which you have authorized the Google Cloud ML API to access.
 
 ## Data I/O
 
@@ -27,7 +27,7 @@ Write a Python CLI which writes each of `mnist.train` and `mnist.test` to a TFRe
 The solution can be fonud in `prepare_data.py` and run with
 
 ```
-python prepare_data.py gs://$BUCKET/
+python prepare_data.py gs://$BUCKET_NAME/
 ```
 
 ### Reading TFRecords - Exercise 2
@@ -54,8 +54,8 @@ Then run:
 gcloud beta ml local train --package-path trainer/ --module-name trainer.task \
     -- \
     --max-steps 50000 \
-    --train-data-paths gs://$BUCKET/train.pb2 \
-    --eval-data-paths gs://$BUCKET/eval.pb2 \
+    --train-data-paths gs://$BUCKET_NAME/train.pb2 \
+    --eval-data-paths gs://$BUCKET_NAME/eval.pb2 \
     --output-path output/
 ```
 
@@ -114,13 +114,13 @@ Run it on the cloud with:
 
 ```
 gcloud beta ml jobs submit training mnist_hptuning \
-    --staging-bucket $BUCKET \
+    --staging-bucket $BUCKET_NAME \
     --package-path trainer/ \
     --module-name trainer.task \
     -- \
     --max-steps 50000 \
-    --train-data-paths gs://$BUCKET/train.pb2 \
-    --eval-data-paths gs://$BUCKET/eval.pb2 \
-    --output-path gs://$BUCKET/output
+    --train-data-paths gs://$BUCKET_NAME/train.pb2 \
+    --eval-data-paths gs://$BUCKET_NAME/eval.pb2 \
+    --output-path gs://$BUCKET_NAME/output
 gcloud beta ml jobs stream-logs mnist_hptuning
 ```
