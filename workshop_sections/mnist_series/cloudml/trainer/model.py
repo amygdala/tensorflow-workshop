@@ -23,21 +23,6 @@ from tensorflow.contrib.metrics.python.ops import metric_ops
 # The MNIST dataset has 10 classes, representing the digits 0 through 9.
 NUM_CLASSES = 10
 
-# The MNIST images are always 28x28 pixels.
-IMAGE_SIZE = 28
-IMAGE_PIXELS = IMAGE_SIZE * IMAGE_SIZE
-
-
-def parse_examples(examples):
-  feature_map = {
-      'labels': tf.FixedLenFeature(
-          shape=[], dtype=tf.int64, default_value=[-1]),
-      'images': tf.FixedLenFeature(
-          shape=[IMAGE_PIXELS], dtype=tf.float32),
-  }
-  features = tf.parse_example(examples, features=feature_map)
-  return features['images'], features['labels']
-
 
 def make_model_fn(args):
   def model_fn(features, labels, mode):

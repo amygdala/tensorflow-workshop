@@ -19,12 +19,26 @@ import multiprocessing
 import tensorflow as tf
 
 
+# The MNIST images are always 28x28 pixels.
+IMAGE_SIZE = 28
+IMAGE_PIXELS = IMAGE_SIZE * IMAGE_SIZE
+
+
+def parse_examples(examples):
+  feature_map = {
+      'labels': tf.FixedLenFeature(
+          shape=[], dtype=tf.int64, default_value=[-1]),
+      'images': tf.FixedLenFeature(
+          shape=[IMAGE_PIXELS], dtype=tf.float32),
+  }
+  features = tf.parse_example(examples, features=feature_map)
+  return features['images'], features['labels']
+
+
 def make_input_fn(files,
                   example_parser,
                   batch_size,
-                  shuffle=True,
-                  num_epochs=None,
-                  reader_options=None):
+                  num_epochs=None):
   def _input_fn():
     """Creates readers and queues for reading example protos."""
     thread_count = multiprocessing.cpu_count()
@@ -48,24 +62,12 @@ def make_input_fn(files,
         options=reader_options).read_up_to(filename_queue, batch_size)
 
     features, targets = example_parser(encoded_examples)
-    if shuffle:
-      capacity = min_after_dequeue + queue_size_multiplier * batch_size
-      feature_batch, target_batch = tf.train.shuffle_batch(
-          [features, targets],
-          batch_size,
-          capacity,
-          min_after_dequeue,
-          enqueue_many=True,
-          num_threads=thread_count)
-
-    else:
-      capacity = queue_size_multiplier * batch_size
-      feature_batch, target_batch = tf.train.batch(
-          [features, targets],
-          batch_size,
-          capacity=capacity,
-          enqueue_many=True,
-          num_threads=thread_count)
-
-    return feature_batch, target_batch
+    capacity = min_after_dequeue + queue_size_multiplier * batch_size
+    return tf.train.shuffle_batch(
+        [features, targets],
+        batch_size,
+        capacity,
+        min_after_dequeue,
+        enqueue_many=True,
+        num_threads=thread_count)
   return _input_fn

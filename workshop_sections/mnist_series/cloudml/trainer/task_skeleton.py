@@ -36,48 +36,14 @@ tf.logging.set_verbosity(tf.logging.INFO)
 
 
 def make_experiment_fn(args):
-  train_input_fn = util.make_input_fn(
-      args.train_data_paths,
-      util.parse_examples,
-      args.batch_size,
-      num_epochs=args.num_epochs
-  )
-  eval_input_fn = util.make_input_fn(
-      args.eval_data_paths,
-      util.parse_examples,
-      args.batch_size,
-      num_epochs=args.num_epochs
-  )
-
+  # TODO Make Input Fuctions 
   def _experiment_fn(output_dir):
-      return learn.Experiment(
-          learn.Estimator(
-              model_fn=model.make_model_fn(args),
-              model_dir=output_dir
-          ),
-          train_input_fn=train_input_fn,
-          eval_input_fn=eval_input_fn,
-          train_steps=args.max_steps,
-          eval_metrics=model.METRICS,
-          continuous_eval_throttle_secs=args.min_eval_seconds,
-          min_eval_frequency=args.min_train_eval_rate
-      )
+    # TODO return a learn.Experiment
+  
   return _experiment_fn
 
 
 def main(args):
-  env = json.loads(os.environ.get('TF_CONFIG', '{}'))
-
-  # Print the job data as provided by the service.
-  logging.info('Original job data: %s', env.get('job', {}))
-
-  # First find out if there's a task value on the environmtent variable.
-  # If there is none or it is empty define a default one.
-  task_data = env.get('task', {'type': 'master', 'index': 0})
-  trial = task_data.get('trial')
-  if trial is not None:
-    args.output_path = os.path.join(args.output_path, trial)
-
   learn_runner.run(make_experiment_fn(args), args.output_path)
 
 
