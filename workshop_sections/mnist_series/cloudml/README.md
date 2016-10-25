@@ -56,7 +56,7 @@ gcloud beta ml local train --package-path trainer/ --module-name trainer.task \
     --max-steps 50000 \
     --train-data-paths gs://$BUCKET/train.pb2 \
     --eval-data-paths gs://$BUCKET/eval.pb2 \
-    --output-data-paths output/
+    --output-path output/
 ```
 
 If you start seeing losses logged you have successfully implemented parse_examples.
@@ -121,6 +121,6 @@ gcloud beta ml jobs submit training mnist_hptuning \
     --max-steps 50000 \
     --train-data-paths gs://$BUCKET/train.pb2 \
     --eval-data-paths gs://$BUCKET/eval.pb2 \
-    --output-data-paths gs://$BUCKET/output /
+    --output-path gs://$BUCKET/output
 gcloud beta ml jobs stream-logs mnist_hptuning
 ```

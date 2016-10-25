@@ -45,7 +45,6 @@ def make_model_fn(args):
     if mode == ModeKeys.EVAL:
       # TODO accuracy_op = Calculate the accuracy of the inferred digits given 'labels'
       tensors['accuracy'] = accuracy_op
-      tf.scalar_summary('accuracy', accuracy_op)
       tf.scalar_summary('training/hptuning/metric', accuracy_op)
 
     # Add to the Graph the Ops that calculate and apply gradients.
