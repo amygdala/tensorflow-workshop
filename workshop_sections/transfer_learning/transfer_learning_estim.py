@@ -616,11 +616,35 @@ def make_model_fn(class_count):
 
     # Create the operations we need to evaluate the accuracy of our new layer.
     evaluation_step = add_evaluation_step(final_tensor, ground_truth_input)
-    prediction_dict = {"accuracy": evaluation_step}
+    predclass = tf.argmax(final_tensor, 1)
+    prediction_dict = {"class": final_tensor, "index": predclass}
 
     return prediction_dict, cross_entropy, train_step
 
   return _make_model
+
+def make_image_predictions(
+    classifier, image_lists, jpeg_data_tensor, bottleneck_tensor, path_list):
+  """..."""
+
+  sess = tf.Session()
+  bottlenecks = []
+  for img_path in path_list:
+    print("predicting for image path %s" % img_path)
+    # get bottleneck for an image path. Don't cache the bottleneck values here.
+    if not gfile.Exists(img_path):
+      tf.logging.fatal('File does not exist %s', img_path)
+    image_data = gfile.FastGFile(img_path, 'rb').read()
+    bottleneck_values = run_bottleneck_on_image(sess, image_data,
+                                                jpeg_data_tensor,
+                                                bottleneck_tensor)
+    bottlenecks.append(bottleneck_values)
+  prediction_input = np.array(bottlenecks)
+  predictions = classifier.predict(x=prediction_input, as_iterable=True)
+  for _, p in enumerate(predictions):
+    print(p["class"])
+    print(p["index"])
+    print(list(image_lists.keys())[p["index"]])
 
 
 def main(_):
@@ -653,26 +677,7 @@ def main(_):
   cache_bottlenecks(sess, image_lists, ARGFLAGS.image_dir, ARGFLAGS.bottleneck_dir,
                     jpeg_data_tensor, bottleneck_tensor)
 
-  # # Add the new layer that we'll be training.
-  # (train_step, cross_entropy, bottleneck_input, ground_truth_input,
-  #  final_tensor) = add_final_training_ops(len(image_lists.keys()),
-  #                                         ARGFLAGS.final_tensor_name,
-  #                                         bottleneck_tensor)
-
-  # # Create the operations we need to evaluate the accuracy of our new layer.
-  # evaluation_step = add_evaluation_step(final_tensor, ground_truth_input)
-
-  # # Merge all the summaries and write them out to /tmp/retrain_logs (by default)
-  # merged = tf.merge_all_summaries()
-  # train_writer = tf.train.SummaryWriter(ARGFLAGS.summaries_dir + '/train',
-  #                                       sess.graph)
-  # validation_writer = tf.train.SummaryWriter(ARGFLAGS.summaries_dir + '/validation')
-
-  # # Set up all our weights to their initial default values.
-  # init = tf.initialize_all_variables()
-  # sess.run(init)
-
-  # aju -- define the custom estimator
+    # aju -- define the custom estimator
 
   # bottleneck_input, ground_truth_input = generate_input_placeholders(bottleneck_tensor)
   model_fn = make_model_fn(len(image_lists.keys()))
@@ -684,13 +689,13 @@ def main(_):
 
   # aju -- generate inputs ... temp process...
   train_bottlenecks, train_ground_truth = get_random_cached_bottlenecks(
-      sess, image_lists, 2000, 'training',
+      sess, image_lists, 2700, 'training',
       ARGFLAGS.bottleneck_dir, ARGFLAGS.image_dir, jpeg_data_tensor,
       bottleneck_tensor)
   train_bottlenecks = np.array(train_bottlenecks)
   train_ground_truth = np.array(train_ground_truth)
-  print(train_ground_truth)
-  print(train_bottlenecks)
+  # print(train_ground_truth)
+  # print(train_bottlenecks)
 
 
   # then run the training
@@ -699,67 +704,24 @@ def main(_):
           y=train_ground_truth, batch_size=50,
           max_steps=ARGFLAGS.num_steps)
 
-  # aju -- should be superseded by fit() etc. now...
-  # # Run the training for as many cycles as requested on the command line.
-  # print("\nTraining for %s steps" % ARGFLAGS.num_steps)
-  # for i in range(ARGFLAGS.num_steps):
-  #   # Get a batch of input bottleneck values
-  #   train_bottlenecks, train_ground_truth = get_random_cached_bottlenecks(
-  #       sess, image_lists, ARGFLAGS.train_batch_size, 'training',
-  #       ARGFLAGS.bottleneck_dir, ARGFLAGS.image_dir, jpeg_data_tensor,
-  #       bottleneck_tensor)
-  #   # Feed the bottlenecks and ground truth into the graph, and run a training
-  #   # step. Capture training summaries for TensorBoard with the `merged` op.
-  #   train_summary, _ = sess.run([merged, train_step],
-  #            feed_dict={bottleneck_input: train_bottlenecks,
-  #                       ground_truth_input: train_ground_truth})
-  #   train_writer.add_summary(train_summary, i)
+  # We've completed all our training, so run a final test evaluation on
+  # some new images we haven't used before.
+  test_bottlenecks, test_ground_truth = get_random_cached_bottlenecks(
+      sess, image_lists, ARGFLAGS.test_batch_size, 'testing',
+      ARGFLAGS.bottleneck_dir, ARGFLAGS.image_dir, jpeg_data_tensor,
+      bottleneck_tensor)
+  test_bottlenecks = np.array(test_bottlenecks)
+  test_ground_truth = np.array(test_ground_truth)
+  print("evaluating....")
+  print(classifier.evaluate(
+      test_bottlenecks.astype(np.float32), test_ground_truth))
 
-  #   # Every so often, print out how well the graph is training.
-  #   is_last_step = (i + 1 == ARGFLAGS.num_steps)
-  #   if (i % ARGFLAGS.eval_step_interval) == 0 or is_last_step:
-  #     train_accuracy, cross_entropy_value = sess.run(
-  #         [evaluation_step, cross_entropy],
-  #         feed_dict={bottleneck_input: train_bottlenecks,
-  #                    ground_truth_input: train_ground_truth})
-  #     print('%s: Step %d: Train accuracy = %.1f%%' % (datetime.now(), i,
-  #                                                     train_accuracy * 100))
-  #     print('%s: Step %d: Cross entropy = %f' % (datetime.now(), i,
-  #                                                cross_entropy_value))
-  #     validation_bottlenecks, validation_ground_truth = (
-  #         get_random_cached_bottlenecks(
-  #             sess, image_lists, ARGFLAGS.validation_batch_size, 'validation',
-  #             ARGFLAGS.bottleneck_dir, ARGFLAGS.image_dir, jpeg_data_tensor,
-  #             bottleneck_tensor))
-  #     # Run a validation step and capture training summaries for TensorBoard
-  #     # with the `merged` op.
-  #     validation_summary, validation_accuracy = sess.run(
-  #         [merged, evaluation_step],
-  #         feed_dict={bottleneck_input: validation_bottlenecks,
-  #                    ground_truth_input: validation_ground_truth})
-  #     validation_writer.add_summary(validation_summary, i)
-  #     print('%s: Step %d: Validation accuracy = %.1f%%' %
-  #           (datetime.now(), i, validation_accuracy * 100))
+  print("predicting...")
+  path_list = ['flower_photos/daisy/2019064575_7656b9340f_m.jpg',
+      'flower_photos/sunflowers/8480886751_71d88bfdc0_n.jpg']
+  make_image_predictions(
+      classifier, image_lists, jpeg_data_tensor, bottleneck_tensor, path_list)
 
-  # # We've completed all our training, so run a final test evaluation on
-  # # some new images we haven't used before.
-  # test_bottlenecks, test_ground_truth = get_random_cached_bottlenecks(
-  #     sess, image_lists, ARGFLAGS.test_batch_size, 'testing',
-  #     ARGFLAGS.bottleneck_dir, ARGFLAGS.image_dir, jpeg_data_tensor,
-  #     bottleneck_tensor)
-  # test_accuracy = sess.run(
-  #     evaluation_step,
-  #     feed_dict={bottleneck_input: test_bottlenecks,
-  #                ground_truth_input: test_ground_truth})
-  # print('Final test accuracy = %.1f%%' % (test_accuracy * 100))
-
-  # # Write out the trained graph and labels with the weights stored as constants.
-  # output_graph_def = graph_util.convert_variables_to_constants(
-  #     sess, graph.as_graph_def(), [ARGFLAGS.final_tensor_name])
-  # with gfile.FastGFile(ARGFLAGS.output_graph, 'wb') as f:
-  #   f.write(output_graph_def.SerializeToString())
-  # with gfile.FastGFile(ARGFLAGS.output_labels, 'w') as f:
-  #   f.write('\n'.join(image_lists.keys()) + '\n')
 
 
 if __name__ == '__main__':
