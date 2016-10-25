@@ -117,6 +117,7 @@ gcloud beta ml jobs submit training mnist_hptuning \
     --staging-bucket $BUCKET_NAME \
     --package-path trainer/ \
     --module-name trainer.task \
+    --config my_config.yaml
     -- \
     --max-steps 50000 \
     --train-data-paths gs://$BUCKET_NAME/train.pb2 \
