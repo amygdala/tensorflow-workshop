@@ -17,7 +17,7 @@
 import multiprocessing
 
 import tensorflow as tf
-
+from tensorflow.python.lib.io.tf_record import TFRecordCompressionType
 
 # The MNIST images are always 28x28 pixels.
 IMAGE_SIZE = 28
@@ -58,8 +58,11 @@ def make_input_fn(files,
     filename_queue = tf.train.string_input_producer(
         files, num_epochs=num_epochs)
 
-    example_id, encoded_examples = tf.TFRecordReader().read_up_to(
-        filename_queue, batch_size)
+    example_id, encoded_examples = tf.TFRecordReader(
+        options=tf.python_io.TFRecordOptions(
+            compression_type=TFRecordCompressionType.GZIP
+        )
+    ).read_up_to(filename_queue, batch_size)
 
     features, targets = example_parser(encoded_examples)
     capacity = min_after_dequeue + queue_size_multiplier * batch_size
