@@ -19,6 +19,12 @@ This example shows how to take a Inception v3 architecture model trained on
 ImageNet images, and train a new top layer that can recognize other classes of
 images.
 
+This example is based on the code here:
+https://github.com/tensorflow/tensorflow/blob/master/tensorflow/examples/image_retraining/retrain.py
+but has been further modified in a number of ways, including use of a custom
+tf.contrib.learn.Estimator to support training, evaluation, prediction,
+model checkpointing, and summary generation.
+
 The top layer receives as input a 2048-dimensional vector for each image. We
 train a softmax layer on top of this representation. Assuming the softmax layer
 contains N labels, this corresponds to learning N + 2048*N model parameters
