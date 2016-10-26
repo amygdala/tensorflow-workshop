@@ -16,7 +16,7 @@ FROM gcr.io/tensorflow/tensorflow:latest-devel
 RUN pip install --upgrade pip
 RUN apt-get update
 RUN apt-get install -y python-scipy
-RUN pip install sklearn nltk
+RUN pip install sklearn nltk pillow
 RUN python -c "import nltk; nltk.download('punkt')"
 
 ADD download_git_repo.py download_git_repo.py
