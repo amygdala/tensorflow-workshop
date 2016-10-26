@@ -6,9 +6,9 @@ trainingInput:
     # Maximize the objective value.
     goal: MAXIMIZE
     # Run at most 10 trials with different hyperparameters.
-    maxTrials: 10
+    maxTrials: 20
     # Run two trials at a time.
-    maxParallelTrials: 2
+    maxParallelTrials: 4
     params:
       # Allow the size of the first hidden layer to vary between 40 and 400.
       # One value in this range will be passed to each trial via the

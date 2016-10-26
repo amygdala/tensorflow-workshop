@@ -4,11 +4,61 @@
 
 Make sure you have installed gcloud, and created an output bucket (hereafter referred to as `$BUCKET_NAME`), which you have authorized the Google Cloud ML API to access.
 
+## Define the Model - Exercise 1
+
+We have provided a skeleton model file at `trainer/model_skeleton.py`: This skeleton demonstrates how to conditionally construct a model based on a `mode` parameter. Fill this in with the TensorFlow code from previous sections on MNIST. 
+
+Additionally, the `args` namespace provides three hyperparameters `args.learning_rate`, `args.hidden1`, and `args.hidden2` which you should use to define your model.
+
+To validate that you have correctly implemented `make_model_fn`
+
+Open a python interpreter with `python` and run:
+
+```
+import tensorflow as tf
+import task
+from model_skeleton import make_model_fn, METRICS
+import argparse
+parser = argparse.ArgumentParser()
+task.model_arguments(parser)
+args = parser.parse_args(args=[])
+mnist_estimator = tf.contrib.learn.Estimator(model_fn=make_model_fn(args), model_dir='output/')
+from tensorflow.examples.tutorials.mnist import input_data
+mnist_data = input_data.read_data_sets("data",
+                                       one_hot=False,
+                                       validation_size=0)
+mnist_estimator.fit(x=mnist_data.train.images,
+                    y=mnist_data.train.labels
+                    batch_size=256,
+                    max_steps=10000)
+```
+
+If this produces loss logs you have successfully implemented `make_model_fn`:
+
+You can also now run:
+
+```
+mnist_estimator.evaluate(x=mnist_data.test.images,
+                         y=mnist_data.test.labels,
+                         metrics=METRICS)
+```
+
+Which will give you the trained accuracy
+
+
+After you are finished, replace the provided solution with your own implementation:
+
+```
+mv trainer/model.py trainer/model_solution.py
+mv trainer/model_skeleton.py trainer/model.py
+```
+
+
 ## Data I/O
 
 TFRecords are a scalable way to provide data to TensorFlow training processes. They allow you to read data from files (local or Google Cloud Storage) as part of TensorFlow graph execution.
 
-### Writing TFRecords - Exercise 1
+### Writing TFRecords - Exercise 2
 
 ```
 from tensorflow.examples.tutorials.mnist import input_data
@@ -36,7 +86,7 @@ After you have successfully completed this, run
 gsutil -m cp -z pb2 -r data/* gs://$BUCKET_NAME/
 ```
 
-### Reading TFRecords - Exercise 2
+### Reading TFRecords - Exercise 3
 
 Next we need to provide an `input_fn` to our model. When called `input_fn` will add TFRecord reading operations to our graph, and return two Tensors: `features` and `targets` which represent the training data and labels of our model.
 
@@ -68,23 +118,6 @@ gcloud beta ml local train --package-path trainer/ --module-name trainer.task \
 If you start seeing losses logged you have successfully implemented parse_examples.
 
 You can then implement `make_input_fn` and remove `from  util_solution import * ` and validate the same way
-
-## Define the Model - Exercise 3
-
-We have provided a skeleton model file at `trainer/model_skeleton.py`: This skeleton demonstrates how to conditionally construct a model based on a `mode` parameter. Fill this in with the TensorFlow code from previous sections on MNIST. 
-
-Additionally, the `args` namespace provides three hyperparameters `args.learning_rate`, `args.hidden1`, and `args.hidden2` which you should use to define your model.
-
-To validate that you have correctly implemented `make_model_fn`
-
-Simply run:
-
-```
-mv trainer/model.py trainer/model_solution.py
-mv trainer/model_skeleton.py trainer/model.py
-```
-
-And run local training with `gcloud` as above.
 
 ## Putting it all Together: The Experiment function - Exercise 4
 
