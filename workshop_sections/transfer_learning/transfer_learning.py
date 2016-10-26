@@ -59,6 +59,7 @@ import hashlib
 import json
 import os
 import re
+import struct
 import sys
 import tarfile
 import time
@@ -70,9 +71,6 @@ from tensorflow.contrib.learn import ModeKeys
 
 from tensorflow.python.platform import gfile
 from tensorflow.python.util import compat
-
-
-import struct
 
 FLAGS = tf.app.flags.FLAGS
 ARGFLAGS = None
@@ -595,7 +593,7 @@ def make_model_fn(class_count):
 
 def make_image_predictions(
     classifier, jpeg_data_tensor, bottleneck_tensor, path_list, labels_list):
-  """..."""
+  """Use the learned model to make predictions."""
 
   if not labels_list:
     output_labels_file = os.path.join(ARGFLAGS.model_dir, "output_labels.json")
@@ -717,12 +715,12 @@ def main(_):
         f.write(output_labels)
 
   print("\nPredicting...")
-  path_list = ['flower_photos/daisy/2019064575_7656b9340f_m.jpg',
-               'flower_photos/sunflowers/8480886751_71d88bfdc0_n.jpg']
-  # path_list = ['hugs_photos/hugs/9783035421_d4c6569fda.jpg',
-  #     'hugs_photos/hugs/9160821720_d1d926be43_b.jpg',
-  #     'hugs_photos/not-hugs/8855807326_18ab8a583e.jpg',
-  #     'hugs_photos/not-hugs/8599546166_b3c0fd6495.jpg']
+  # path_list = ['flower_photos/daisy/2019064575_7656b9340f_m.jpg',
+               # 'flower_photos/sunflowers/8480886751_71d88bfdc0_n.jpg']
+  path_list = ['hugs_photos/hugs/9783035421_d4c6569fda.jpg',
+      'hugs_photos/hugs/9160821720_d1d926be43_b.jpg',
+      'hugs_photos/not-hugs/8855807326_18ab8a583e.jpg',
+      'hugs_photos/not-hugs/8599546166_b3c0fd6495.jpg']
 
   make_image_predictions(
       classifier, jpeg_data_tensor, bottleneck_tensor, path_list, labels_list)
