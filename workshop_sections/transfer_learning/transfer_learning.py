@@ -1,4 +1,4 @@
-# Copyright 2015 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2016 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -74,6 +74,7 @@ from tensorflow.python.util import compat
 
 FLAGS = tf.app.flags.FLAGS
 ARGFLAGS = None
+LABELS_FILENAME = "output_labels.json"
 
 # comment out for less info during the training runs.
 tf.logging.set_verbosity(tf.logging.INFO)
@@ -123,7 +124,7 @@ def create_image_lists(image_dir, testing_percentage, validation_percentage):
   # See if the model dir contains an existing labels list. This will only be
   # the case if training using that model has ocurred previously.
   labels_list = None
-  output_labels_file = os.path.join(ARGFLAGS.model_dir, "output_labels.json")
+  output_labels_file = os.path.join(ARGFLAGS.model_dir, LABELS_FILENAME)
   if gfile.Exists(output_labels_file):
     with open(output_labels_file, 'r') as lfile:
       labels_string = lfile.read()
@@ -596,7 +597,7 @@ def make_image_predictions(
   """Use the learned model to make predictions."""
 
   if not labels_list:
-    output_labels_file = os.path.join(ARGFLAGS.model_dir, "output_labels.json")
+    output_labels_file = os.path.join(ARGFLAGS.model_dir, LABELS_FILENAME)
     if gfile.Exists(output_labels_file):
       with open(output_labels_file, 'r') as lfile:
         labels_string = lfile.read()
@@ -661,7 +662,7 @@ def main(_):
         jpeg_data_tensor, bottleneck_tensor)
   else:
     # load the labels list, needed to create the model; exit if it's not there
-    output_labels_file = os.path.join(ARGFLAGS.model_dir, "output_labels.json")
+    output_labels_file = os.path.join(ARGFLAGS.model_dir, LABELS_FILENAME)
     if gfile.Exists(output_labels_file):
       with open(output_labels_file, 'r') as lfile:
         labels_string = lfile.read()
@@ -706,7 +707,7 @@ def main(_):
         test_bottlenecks.astype(np.float32), test_ground_truth))
 
     # write the output labels file if it doesn't already exist
-    output_labels_file = os.path.join(ARGFLAGS.model_dir, "output_labels.json")
+    output_labels_file = os.path.join(ARGFLAGS.model_dir, LABELS_FILENAME)
     if gfile.Exists(output_labels_file):
       print("Labels list file already exists; not writing.")
     else:
