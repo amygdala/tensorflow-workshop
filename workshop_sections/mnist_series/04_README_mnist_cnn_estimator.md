@@ -1,8 +1,6 @@
 
 # Creating a Custom MNIST estimator
 
-This lab is not used in the workshop, but may be of interest.
-
 The [`mnist_cnn.py`](mnist_cnn.py) script follows the [Deep MNIST for Experts](https://www.tensorflow.org/versions/r0.11/tutorials/mnist/pros/index.html#deep-mnist-for-experts) tutorial on the tensorflow.org site.
 (Its hidden layers use *convolutions*.)
 
