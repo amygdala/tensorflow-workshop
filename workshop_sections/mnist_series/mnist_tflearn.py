@@ -93,6 +93,7 @@ def main(_):
     print("Downloading and reading data sets...")
     DATA_SETS = input_data.read_data_sets(ARGFLAGS.data_dir)
 
+    # Uncomment this if you'd like to run the linear classifier first.
     # print("\n-----Running linear classifier...")
     # run_linear_classifier()
 
@@ -104,7 +105,7 @@ def main(_):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data_dir', type=str, default='MNIST_data',
+    parser.add_argument('--data_dir', type=str, default='/tmp/MNIST_data',
                         help='Directory for storing data')
     parser.add_argument('--model_dir', type=str,
                         default=os.path.join(

@@ -73,7 +73,7 @@ def main(_):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data_dir', type=str, default='MNIST_data',
+    parser.add_argument('--data_dir', type=str, default='/tmp/MNIST_data',
                         help='Directory for storing data')
     parser.add_argument('--num_steps', type=int,
                         default=10000,

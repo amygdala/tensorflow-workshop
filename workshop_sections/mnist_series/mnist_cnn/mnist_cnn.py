@@ -22,7 +22,7 @@ from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
-mnist = input_data.read_data_sets('MNIST_data', one_hot=True)
+mnist = input_data.read_data_sets('/tmp/MNIST_data', one_hot=True)
 
 MODEL_DIR = os.path.join("/tmp/tfmodels/mnist_cnn", str(int(time.time())))
 
