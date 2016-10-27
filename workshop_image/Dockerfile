@@ -16,8 +16,12 @@ FROM gcr.io/tensorflow/tensorflow:latest-devel
 RUN pip install --upgrade pip
 RUN apt-get update
 RUN apt-get install -y python-scipy
-RUN pip install sklearn nltk
+RUN pip install sklearn nltk pillow
 RUN python -c "import nltk; nltk.download('punkt')"
+
+
+RUN curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-132.0.0-linux-x86_64.tar.gz | tar xzsf
+RUN ./google-cloud-sdk/install.sh -q
 
 ADD download_git_repo.py download_git_repo.py
 
