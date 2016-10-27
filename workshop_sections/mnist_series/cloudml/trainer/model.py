@@ -18,6 +18,7 @@ Provides example_parser and make_model_fn for use in a custom Estimator
 import tensorflow as tf
 from tensorflow.contrib import layers, framework
 from tensorflow.contrib.learn import ModeKeys
+from tensorflow.contrib.learn.python.learn import metric_spec
 from tensorflow.contrib.metrics.python.ops import metric_ops
 
 # The MNIST dataset has 10 classes, representing the digits 0 through 9.
@@ -42,8 +43,8 @@ def make_model_fn(args):
       tensors['loss'] = loss_op
       tf.scalar_summary('loss', loss_op)
 
-    # Add to the Graph the Ops for accuracy calculation.
     if mode == ModeKeys.EVAL:
+      # Add to the Graph the Ops for accuracy calculation.
       accuracy_op = evaluation(logits, labels)
       tensors['accuracy'] = accuracy_op
       tf.scalar_summary('training/hptuning/metric', accuracy_op)
@@ -66,8 +67,14 @@ def make_model_fn(args):
 
 
 METRICS = {
-    ('loss', 'loss'): metric_ops.streaming_mean,
-    ('accuracy', 'accuracy'): metric_ops.streaming_mean,
+    'loss': metric_spec.MetricSpec(
+        metric_fn=metric_ops.streaming_mean,
+        prediction_key='loss'
+    ),
+    'accuracy': metric_spec.MetricSpec(
+        metric_fn=metric_ops.streaming_mean,
+        prediction_key='accuracy'
+    )
 }
 
 

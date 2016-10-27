@@ -60,7 +60,9 @@ def make_experiment_fn(args):
           train_steps=args.max_steps,
           eval_metrics=model.METRICS,
           continuous_eval_throttle_secs=args.min_eval_seconds,
-          min_eval_frequency=args.min_train_eval_rate
+          min_eval_frequency=args.min_train_eval_rate,
+          # Until learn_runner is updated to use train_and_evaluate
+          local_eval_frequency=args.min_train_eval_rate
       )
   return _experiment_fn
 
@@ -157,7 +159,7 @@ def training_arguments(parser):
       type=float,
       default=5,
       help="""\
-      Minimal interval between calculating evaluation metrics and saving 
+      Minimal interval between calculating evaluation metrics and saving
       evaluation summaries.\
       """
   )
