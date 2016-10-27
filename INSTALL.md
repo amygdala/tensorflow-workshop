@@ -73,7 +73,7 @@ Install the version of Conda that uses Python 3.5 by default.  Follow the instru
 
 Follow the instructions [on the TensorFlow site](https://www.tensorflow.org/versions/r0.11/get_started/os_setup.html#anaconda-installation) to create a Conda environment, *activate* it, and then use [conda-forge](https://www.tensorflow.org/versions/r0.11/get_started/os_setup.html#using-conda) to install TensorFlow within it.
 
-**Note**: as of this writing, `conda-forge` installs TensorFlow 0.10. That is fine for this workshop. If you'd prefer to install 0.11, follow the ["using pip" section](https://www.tensorflow.org/versions/r0.11/get_started/os_setup.html#using-pip) instead.
+**Note**: as of this writing, `conda-forge` installs TensorFlow 0.11. That is fine for this workshop. If you'd prefer to install using pip, follow the ["using pip" section](https://www.tensorflow.org/versions/r0.11/get_started/os_setup.html#using-pip) instead.
 
 If you'd prefer to use virtualenv, see [these instructions](https://www.tensorflow.org/versions/r0.11/get_started/os_setup.html#virtualenv-installation) instead.
 
