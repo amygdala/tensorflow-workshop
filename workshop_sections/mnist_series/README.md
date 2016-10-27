@@ -10,4 +10,6 @@ Each builds conceptually on the previous ones.  Start at the README numbered '01
 
 - [04_README_mnist_cnn_estimator](./04_README_mnist_cnn_estimator.md): Build a custom `Estimator` for a version of MNIST that uses CNNs.  We'll do this in two stages.  First, we'll create an `Estimator` that directly uses the graph described in [this tutorial](https://www.tensorflow.org/versions/r0.11/tutorials/mnist/pros/index.html#deep-mnist-for-experts).  Then, we'll convert that to a version which uses `tf.layers`.
 
-In addition, there is an [extras](extras/README.md) directory, that contains some auxiliary labs not currently used in this workshop, but which may be of interest.
+- [Running distributed MNIST using Cloud ML](./cloudml/README.md).
+
+In addition, there is an [extras](./extras) directory, that contains some auxiliary labs not currently used in this workshop, but which may be of interest.
