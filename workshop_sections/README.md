@@ -6,7 +6,7 @@ This directory contains the workshop labs.
 - [Building a small starter TensorFlow graph](starter_tf_graph/README.md)
 - [Introducing MNIST, and building a simple linear classifier in TensorFlow](mnist_series/01_README_mnist_simple.md).
 - [Using TensorFlow's high-level APIs to build an MNIST DNN Classifier, and introducing TensorBoard](mnist_series/02_README_mnist_tflearn.md).
-- [Building a custom `Estimator` for a version of MNIST that uses CNNs](mnist_series/04_README_mnist_cnn_estimator.md).
+- [Building a custom `Estimator` for a version of MNIST that uses CNNs](mnist_series/03_README_mnist_cnn_estimator.md).
 - [Running distributed MNIST using Cloud ML](mnist_series/cloudml).
 - [Transfer learning: using a trained model to 'bootstrap' learning new classifications](transfer_learning/README.md).
 - [Building a word2vec model using a Custom Estimator, and exploring the learned embeddings](word2vec/README.md). Introducing [TFRecords](https://www.tensorflow.org/versions/r0.11/api_docs/python/python_io.html#data-io-python-functions).
