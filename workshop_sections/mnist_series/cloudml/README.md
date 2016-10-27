@@ -2,7 +2,7 @@
 
 ## Set Up
 
-This section assumes you completed the [Optional Cloud ML Setup](https://github.com/amygdala/tensorflow-workshop/INSTALL.md#cloud-ml-setup)
+This section assumes you completed the [Optional Cloud ML Setup](https://github.com/amygdala/tensorflow-workshop/blob/master/INSTALL.md#optional-get-started-with-google-cloud-machine-learning)
 
 
 ## Define the Model - Exercise 1
