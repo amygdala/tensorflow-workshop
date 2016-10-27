@@ -17,7 +17,7 @@ To use it, you'll need to have [Docker installed](https://docs.docker.com/engine
 Once Docker is installed and running, download the workshop image:
 
 ```sh
-$ docker pull gcr.io/google-samples/tf-workshop:v3
+$ docker pull gcr.io/google-samples/tf-workshop:v4
 ```
 
 [Here's the Dockerfile](https://github.com/amygdala/tensorflow-workshop/tree/master/workshop_image) used to build this image.
@@ -32,7 +32,7 @@ Once you've downloaded the container image, you can run it like this:
 
 ```sh
 $ docker run -v `pwd`/workshop-data:/root/tensorflow-workshop-master/workshop-data -it \
-    -p 6006:6006 -p 8888:8888 gcr.io/google-samples/tf-workshop:v3
+    -p 6006:6006 -p 8888:8888 gcr.io/google-samples/tf-workshop:v4
 ```
 
 Edit the path to the directory you're mounting as appropriate. The first component of the `-v` arg is the local directory, and the second component is where you want to mount it in your running container.
@@ -61,19 +61,21 @@ $ docker exec -it <container_id> bash
 
 (These steps are not necessary if you have already completed the instructions for running the Docker image.)
 
-We highly recommend that you use a virtual environment for your TensorFlow installation rather than a direct install onto your machine.  The instructions below walk you thorough a `conda` install, but a `virtualenv` environment should work as well. The instructions specify using Python 3, but Python 2.7 is also okay.
+We highly recommend that you use a virtual environment for your TensorFlow installation rather than a direct install onto your machine.  The instructions below walk you thorough a `conda` install, but a `virtualenv` environment will work as well.
 
-### Install Conda + Python 3 to use as your local virtual environment
+The instructions specify using Python 2.7, but Python 3.x will work for everything but the "Cloud ML" sections of the workshop.
+
+### Install Conda + Python 2.7 to use as your local virtual environment
 
 Anaconda is a Python distribution that includes a large number of standard numeric and scientific computing packages. Anaconda uses a package manager called "conda" that has its own environment system similar to Virtualenv.
 
-Install the version of Conda that uses Python 3.5 by default.  Follow the instructions [here](https://www.continuum.io/downloads).  The [miniconda version](http://conda.pydata.org/miniconda.html) should suffice.
+Follow the instructions [here](https://www.continuum.io/downloads).  The [miniconda version](http://conda.pydata.org/miniconda.html) should suffice.
 
 ### Install TensorFlow into a virtual environment
 
-Follow the instructions [on the TensorFlow site](https://www.tensorflow.org/versions/r0.11/get_started/os_setup.html#anaconda-installation) to create a Conda environment, *activate* it, and then use [conda-forge](https://www.tensorflow.org/versions/r0.11/get_started/os_setup.html#using-conda) to install TensorFlow within it.
+Follow the instructions [on the TensorFlow site](https://www.tensorflow.org/versions/r0.11/get_started/os_setup.html#anaconda-installation) to create a Conda environment with Python 2.7, *activate* it, and then use [conda-forge](https://www.tensorflow.org/versions/r0.11/get_started/os_setup.html#using-conda) to install TensorFlow within it.
 
-**Note**: as of this writing, `conda-forge` installs TensorFlow 0.10. That is fine for this workshop. If you'd prefer to install 0.11, follow the ["using pip" section](https://www.tensorflow.org/versions/r0.11/get_started/os_setup.html#using-pip) instead.
+**Note**: as of this writing, `conda-forge` installs TensorFlow 0.11. That is fine for this workshop. If you'd prefer to install using pip, follow the ["using pip" section](https://www.tensorflow.org/versions/r0.11/get_started/os_setup.html#using-pip) instead.
 
 If you'd prefer to use virtualenv, see [these instructions](https://www.tensorflow.org/versions/r0.11/get_started/os_setup.html#virtualenv-installation) instead.
 
