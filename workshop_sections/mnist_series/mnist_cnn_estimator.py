@@ -26,6 +26,7 @@ import os
 import time
 
 import tensorflow as tf
+from tensorflow.contrib.learn import ModeKeys
 from tensorflow.examples.tutorials.mnist import input_data
 
 FLAGS = None
@@ -87,16 +88,18 @@ def model_fn(x, target, mode, params):
     h_pool2_flat = tf.reshape(h_pool2, [-1, 7*7*64])
     h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
 
-    # dropout spec moved to estimator params.
-    # keep_prob = tf.placeholder(tf.float32)
-    # h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
+
+    if mode == ModeKeys.TRAIN:
+        h_fc1_drop = tf.nn.dropout(h_fc1, params["dropout"])
+    else:
+        h_fc1_drop = h_fc1
 
     # readout layer
 
     W_fc2 = weight_variable([1024, 10])
     b_fc2 = bias_variable([10])
 
-    y_conv = tf.matmul(h_fc1, W_fc2) + b_fc2
+    y_conv = tf.matmul(h_fc1_drop, W_fc2) + b_fc2
 
     cross_entropy = tf.reduce_mean(
         tf.nn.softmax_cross_entropy_with_logits(y_conv, y_))
