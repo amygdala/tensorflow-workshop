@@ -20,8 +20,9 @@ RUN pip install sklearn nltk pillow
 RUN python -c "import nltk; nltk.download('punkt')"
 
 
-RUN curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-132.0.0-linux-x86_64.tar.gz | tar xzsf
+RUN curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-132.0.0-linux-x86_64.tar.gz | tar xvz
 RUN ./google-cloud-sdk/install.sh -q
+RUN ./google-cloud-sdk/bin/gcloud components install beta
 
 ADD download_git_repo.py download_git_repo.py
 

@@ -86,7 +86,7 @@ With your conda environment activated, install the following packages:
 ```sh
 $ conda install numpy
 $ conda install scipy
-$ pip install sklearn
+$ pip install sklearn pillow
 $ conda install matplotlib
 $ conda install jupyter
 $ conda install nltk
@@ -100,6 +100,26 @@ $ python -c "import nltk; nltk.download('punkt')"
 ```
 (This will give you the necessary corpuses for the [word2vec](workshop_sections/word2vec/README.md) lab).
 
+### Install the Google Cloud SDK
+
+Follow the installation instructions [here](https://cloud.google.com/sdk/downloads) then run:
+
+```
+gcloud components install beta
+```
+
+To get the `gcloud beta ml` commands.
+
+
+## [Optional: Get Started With Google Cloud Machine Learning](#cloud-ml-setup)
+
+Follow the following instructions in order:
+
+NOTE: You DO NOT need to follow the "Setting up your Environment" section
+
+* [Setting Up Your GCP Project](https://cloud.google.com/ml/docs/how-tos/getting-set-up#setting_up_your_google_cloud_project )
+* [Initializing Cloud ML for your project](https://cloud.google.com/ml/docs/how-tos/getting-set-up#initializing_your_product_name_short_project)
+* [Setting up your Cloud Storage Bucket](https://cloud.google.com/ml/docs/how-tos/getting-set-up#setting_up_your_cloud_storage_bucket)
 
 ## Optional: Clone/Download the TensorFlow repo from GitHub
 
