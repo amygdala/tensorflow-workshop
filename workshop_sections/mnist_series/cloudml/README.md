@@ -29,7 +29,7 @@ mnist_data = input_data.read_data_sets("data",
                                        one_hot=False,
                                        validation_size=0)
 mnist_estimator.fit(x=mnist_data.train.images,
-                    y=mnist_data.train.labels
+                    y=mnist_data.train.labels,
                     batch_size=256,
                     max_steps=10000)
 ```

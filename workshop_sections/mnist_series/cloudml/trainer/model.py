@@ -90,7 +90,7 @@ def inference(images, hidden1_units, hidden2_units):
   """
   hidden1 = layers.fully_connected(images, hidden1_units)
   hidden2 = layers.fully_connected(hidden1, hidden2_units)
-  return layers.fully_connected(hidden2, NUM_CLASSES)
+  return layers.fully_connected(hidden2, NUM_CLASSES, activation_fn=None)
 
 
 def loss(logits, labels):

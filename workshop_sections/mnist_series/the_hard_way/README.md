@@ -43,7 +43,7 @@ If you have a TensorBoard server already running, kill the old one first.
 While it's running, we'll take a closer look at the code.  In addition to defining an interesting model graph, this code shows (at least) a couple more interesting new things.  It demonstrates how to checkpoint models and then how to load and reuse a model from a checkpoint file. (`DNNClassifier`, in the previous lab, did this for you.)
 It also shows how to generate summary info for TensorBoard.  (`DNNClassifier` did this for you as well.)
 
-## The "two-hidden-layer" version
+## Exercise: The "two-hidden-layer" version
 
 Now that we've explored the [`mnist_onehlayer.py`](./mnist_onehlayer.py) code, see if you can figure out how to make two changes to it.
 
