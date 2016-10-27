@@ -10,9 +10,8 @@ Each builds conceptually on the previous ones.  Start at the README numbered '01
 
 - ["The hard way"](./the_hard_way/README.md): Next, we'll drop down into using the 'low-level' TensorFlow APIs, and see how we'd build the same model that way.
 
-- [04_README_mnist_cnn_estimator](./04_README_mnist_cnn_estimator.md): Here, we'll pop back up to `tflearn`.  We'll build a custom `Estimator` for a version of MNIST that uses CNNs.  We'll do this in two stages.  First, we'll create an `Estimator` that directly uses the graph described in [this tutorial](https://www.tensorflow.org/versions/r0.11/tutorials/mnist/pros/index.html#deep-mnist-for-experts).  Then, we'll convert that to a version which uses `tf.layers`.
+- [04_README_mnist_cnn_estimator](./mnist_cnn/README.md): Here, we'll pop back up to `tflearn`.  We'll build a custom `Estimator` for a version of MNIST that uses CNNs.  We'll do this in two stages.  First, we'll create an `Estimator` that directly uses the graph described in [this tutorial](https://www.tensorflow.org/versions/r0.11/tutorials/mnist/pros/index.html#deep-mnist-for-experts).  Then, we'll convert that to a version which uses `tf.layers`.
 
 - [Running distributed MNIST using Cloud ML](./cloudml/README.md).
 
-In addition, there is an [extras](./extras) directory, that contains some auxiliary labs not currently used in this workshop, but which may be of interest.
 
