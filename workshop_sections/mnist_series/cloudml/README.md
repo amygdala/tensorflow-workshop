@@ -2,7 +2,8 @@
 
 ## Set Up
 
-Make sure you have installed gcloud, and created an output bucket (hereafter referred to as `$BUCKET_NAME`), which you have authorized the Google Cloud ML API to access.
+This section assumes you completed the [Optional Cloud ML Setup](https://github.com/amygdala/tensorflow-workshop/blob/master/INSTALL.md#optional-get-started-with-google-cloud-machine-learning)
+
 
 ## Define the Model - Exercise 1
 

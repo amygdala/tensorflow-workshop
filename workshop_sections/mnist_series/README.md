@@ -13,3 +13,4 @@ Each builds conceptually on the previous ones.  Start at the README numbered '01
 - [Running distributed MNIST using Cloud ML](./cloudml/README.md).
 
 In addition, there is an [extras](./extras) directory, that contains some auxiliary labs not currently used in this workshop, but which may be of interest.
+
