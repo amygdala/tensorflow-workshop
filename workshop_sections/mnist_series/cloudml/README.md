@@ -75,7 +75,7 @@ Write a Python CLI which writes each of `mnist.train` and `mnist.test` to a TFRe
 * `'labels'`: An `tf.train.Int64List` containing the single label value for the example
 * `'images'`: A `tf.train.FloatList` containing the flattened array of pixels for the example
 
-The solution can be fonud in `prepare_data.py` and run with
+The solution can be found in `prepare_data.py` and run with:
 
 ```
 python prepare_data.py data/
@@ -118,7 +118,7 @@ gcloud beta ml local train --package-path trainer/ --module-name trainer.task \
 
 If you start seeing losses logged you have successfully implemented parse_examples.
 
-You can then implement `make_input_fn` and remove `from  util_solution import * ` and validate the same way
+You can then implement `make_input_fn` and remove `from  util_solution import * ` and validate the same way.
 
 ## Putting it all Together: The Experiment function - Exercise 4
 
