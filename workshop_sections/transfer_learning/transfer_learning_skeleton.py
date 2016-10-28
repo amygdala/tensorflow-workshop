@@ -581,19 +581,23 @@ def make_model_fn(class_count):
     train_step = None
     cross_entropy = None
 
-    # Add the new layer that we'll be training.
-    (train_step, cross_entropy,
-     final_tensor) = add_final_training_ops(
-        class_count, mode, ARGFLAGS.final_tensor_name,
-        bottleneck_input, ground_truth_input)
+    # YOUR CODE HERE.
+    # Use the functions 'add_final_training_ops()' and 'add_evaluation_step()',
+    # then add support for generating a prediction.
+    # The evaluation part of the graph only needs to be added if the mode is
+    # ModeKeys.EVAL or ModeKeys.TRAIN.
+    # The prediction part of the graph only needs to be added if the mode is
+    # ModeKeys.INFER
 
-    if mode in [ModeKeys.EVAL, ModeKeys.TRAIN]:
-      # Create the operations we need to evaluate accuracy
-      add_evaluation_step(final_tensor, ground_truth_input)
+    # ..... build the model graph ....
 
     if mode == ModeKeys.INFER:
-      predclass = tf.argmax(final_tensor, 1)
-      prediction_dict = {"class_vector": final_tensor, "index": predclass}
+      # YOUR CODE HERE: GENERATE PREDICTION INFO
+      # See if you can figure out how to derive the index of the highest-value
+      # entry in the result vector, and store that value as "index" in
+      # prediction_dict.
+      prediction_dict = { # TODO: build the prediction_dict..
+                        }
 
     return prediction_dict, cross_entropy, train_step
 
