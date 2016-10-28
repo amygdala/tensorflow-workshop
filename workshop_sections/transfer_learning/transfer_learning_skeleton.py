@@ -581,15 +581,17 @@ def make_model_fn(class_count):
     train_step = None
     cross_entropy = None
 
-    # YOUR CODE HERE.
-    # Use the functions 'add_final_training_ops()' and 'add_evaluation_step()',
-    # then add support for generating a prediction.
-    # The evaluation part of the graph only needs to be added if the mode is
-    # ModeKeys.EVAL or ModeKeys.TRAIN.
-    # The prediction part of the graph only needs to be added if the mode is
-    # ModeKeys.INFER
+    # YOUR CODE HERE: build the model graph, including definition of the loss
+    # function and training op, as well as an op to evaluate the accuracy
+    # of the results.
+    # Use the functions 'add_final_training_ops()' and 'add_evaluation_step()'.
 
-    # ..... build the model graph ....
+    # Then, add support for generating prediction information.
+    # The evaluation part of the graph only needs to be added if the 'mode' is
+    # ModeKeys.EVAL or ModeKeys.TRAIN.
+    # The prediction part of the graph only needs to be added if the 'mode' is
+    # ModeKeys.INFER.
+
 
     if mode == ModeKeys.INFER:
       # YOUR CODE HERE: GENERATE PREDICTION INFO
