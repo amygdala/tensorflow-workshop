@@ -11,7 +11,7 @@ It also includes a bonus demonstration of using a [LinearClassifier](https://www
 The python script for this section is: [`mnist_tflearn.py`](./mnist_tflearn.py).
 Start the lab by running it like this:
 
-```shell
+```sh
 $ python mnist_tflearn.py
 ```
 
@@ -22,7 +22,7 @@ By default, it writes summary and model checkpoint info to a (timestamp-based) s
 You can also run the example as a Jupyter (ipython) notebook.
 Start up the Jupyter server from this directory like this, if it's not already running:
 
-```shell
+```sh
 $ jupyter notebook
 ```
 
@@ -33,7 +33,7 @@ When the server starts up, it may bring up a tab automatically in your browser. 
 
 After the script/notebook runs, or while it's running, start up TensorBoard as follows in a new terminal window. (If you get a 'not found' error, make sure you've activated your virtual environment in that new window):
 
-```shell
+```sh
 $ tensorboard --logdir=/tmp/tfmodels/mnist_tflearn
 ```
 
@@ -64,7 +64,7 @@ Try uncommenting `run_linear_classifier()` in `main()` to run it. (You may want 
 Then, try comparing the linear classifier's performance to that of the DNN classifier.
 To do this, you can point tensorboard to a set of directories, like this (replacing `<path1>` and `<path2>` with the appropriate paths):
 
-```shell
+```sh
 tensorboard --logdir=name1:<path1>,name2:<path2>
 ```
 

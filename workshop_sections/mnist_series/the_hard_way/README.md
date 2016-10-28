@@ -19,7 +19,7 @@ See if you can find where the 'hidden layer' part of the model graph is defined.
 ## Running the example as a script
 
 Run this script like this:
-```shell
+```sh
 $ python mnist_onehlayer.py
 ```
 
@@ -28,7 +28,7 @@ $ python mnist_onehlayer.py
 You can also run the example as a Jupyter (ipython) notebook.
 Start up the Jupyter server from this directory like this, if it's not already running:
 
-```shell
+```sh
 $ jupyter notebook
 ```
 
