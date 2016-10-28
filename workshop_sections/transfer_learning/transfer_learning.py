@@ -253,7 +253,7 @@ def get_bottleneck_path(image_lists, label_name, index, bottleneck_dir,
                         category) + '.txt'
 
 
-def create_inception_graph():
+def create_inception_graph(dest_dir):
   """"Creates a graph from saved GraphDef file and returns a Graph object.
 
   Returns:
@@ -262,7 +262,7 @@ def create_inception_graph():
   """
   with tf.Session() as sess:
     model_filename = os.path.join(
-        ARGFLAGS.incp_model_dir, 'classify_image_graph_def.pb')
+        dest_dir, 'classify_image_graph_def.pb')
     with gfile.FastGFile(model_filename, 'rb') as f:
       graph_def = tf.GraphDef()
       graph_def.ParseFromString(f.read())
@@ -293,17 +293,16 @@ def run_bottleneck_on_image(sess, image_data, image_data_tensor,
   return bottleneck_values
 
 
-def maybe_download_and_extract():
+def maybe_download_and_extract(dest_dir='/tmp/imagenet'):
   """Download and extract model tar file.
 
   If the pretrained model we're using doesn't already exist, this function
   downloads it from the TensorFlow.org website and unpacks it into a directory.
   """
-  dest_directory = ARGFLAGS.incp_model_dir
-  if not os.path.exists(dest_directory):
-    os.makedirs(dest_directory)
+  if not os.path.exists(dest_dir):
+    os.makedirs(dest_dir)
   filename = DATA_URL.split('/')[-1]
-  filepath = os.path.join(dest_directory, filename)
+  filepath = os.path.join(dest_dir, filename)
   if not os.path.exists(filepath):
 
     def _progress(count, block_size, total_size):
@@ -318,7 +317,7 @@ def maybe_download_and_extract():
     print()
     statinfo = os.stat(filepath)
     print('Successfully downloaded', filename, statinfo.st_size, 'bytes.')
-  tarfile.open(filepath, 'r:gz').extractall(dest_directory)
+  tarfile.open(filepath, 'r:gz').extractall(dest_dir)
 
 
 def ensure_dir_exists(dir_name):
@@ -634,14 +633,30 @@ def make_image_predictions(
     print(labels_list[p["index"]])
 
 
+def get_prediction_images(img_dir):
+  # Grab images from the prediction directory.
+  extensions = ['jpg', 'jpeg', 'JPG', 'JPEG']
+  file_list = []
+  if not gfile.Exists(img_dir):
+    print("Image directory '" + img_dir + "' not found.")
+    return None
+  print("Looking for images in '" + img_dir + "'")
+  for extension in extensions:
+    file_glob = os.path.join(img_dir, '*.' + extension)
+    file_list.extend(glob.glob(file_glob))
+  if not file_list:
+    print('No image files found')
+  return file_list
+
+
 def main(_):
 
   print("Using model directory %s" % ARGFLAGS.model_dir)
 
   # Set up the pre-trained graph.
-  maybe_download_and_extract()
+  maybe_download_and_extract(dest_dir=ARGFLAGS.incp_model_dir)
   graph, bottleneck_tensor, jpeg_data_tensor, resized_image_tensor = (
-      create_inception_graph())
+      create_inception_graph(ARGFLAGS.incp_model_dir))
 
   sess = tf.Session()
   labels_list = None
@@ -722,15 +737,12 @@ def main(_):
         f.write(output_labels)
 
   print("\nPredicting...")
-  # path_list = ['flower_photos/daisy/2019064575_7656b9340f_m.jpg',
-               # 'flower_photos/sunflowers/8480886751_71d88bfdc0_n.jpg']
-  path_list = ['hugs_photos/hugs/9783035421_d4c6569fda.jpg',
-      'hugs_photos/hugs/9160821720_d1d926be43_b.jpg',
-      'hugs_photos/not-hugs/8855807326_18ab8a583e.jpg',
-      'hugs_photos/not-hugs/8599546166_b3c0fd6495.jpg']
-
-  make_image_predictions(
-      classifier, jpeg_data_tensor, bottleneck_tensor, path_list, labels_list)
+  img_list = get_prediction_images(ARGFLAGS.prediction_img_dir)
+  if not img_list:
+    print("No images found in %s" % ARGFLAGS.prediction_img_dir)
+  else:
+    make_image_predictions(
+        classifier, jpeg_data_tensor, bottleneck_tensor, img_list, labels_list)
 
 
 if __name__ == '__main__':
@@ -750,6 +762,9 @@ if __name__ == '__main__':
         '--predict_only', dest='predict_only', action='store_true',
         help="Run prediction only; checkpointed model must exist.")
     parser.set_defaults(predict_only=False)
+    parser.add_argument(
+        '--prediction_img_dir', type=str, default='prediction_images',
+        help="Directory of images to use for predictions")
 
     # Details of the training configuration.
     parser.add_argument(
