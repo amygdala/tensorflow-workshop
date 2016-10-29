@@ -639,9 +639,9 @@ def make_image_predictions(
   for _, p in enumerate(predictions):
     print("---------")
     for k in p.keys():
-      print("%s is %s: " % (k, p[k]))
+      print("%s is: %s " % (k, p[k]))
       if k == "index":
-        print(labels_list[p[k]])
+        print("index label is: %s" % labels_list[p[k]])
 
 
 def get_prediction_images(img_dir):
