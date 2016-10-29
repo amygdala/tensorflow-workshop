@@ -19,7 +19,8 @@
 
 This lab shows how we can use an existing model to do *transfer learning* -- effectively bootstrapping an existing model to reduce the effort needed to learn something new.
 
-Specifically, we will take an 'Inception' v3 architecture model trained on ImageNet images, and using its penultimate "bottleneck" layer, train a new top layer that can recognize other classes of images. We'll see that our new top layer is not very complex, and that we don't need to do too much training to get good results for our new classifications.
+Specifically, we will take an 'Inception' v3 architecture model trained on ImageNet images, and using its penultimate "bottleneck" layer, train a new top layer that can recognize other classes of images.
+We'll see that our new top layer does not need to be very complex, and that we don't need to do much training of this new model, to get good results for our new image classifications.
 
 The core of the approach is the same as that used in [this TensorFlow example](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/examples/image_retraining), but here we will use a custom [Estimator](https://www.tensorflow.org/versions/r0.11/api_docs/python/contrib.learn.html#estimators) (and train on a different set of photos).
 
