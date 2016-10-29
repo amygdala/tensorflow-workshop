@@ -573,7 +573,7 @@ def add_evaluation_step(result_tensor, ground_truth_tensor):
   return evaluation_step
 
 
-def make_model_fn(class_count):
+def make_model_fn(class_count, final_tensor_name):
 
   def _make_model(bottleneck_input, ground_truth_input, mode, params):
 
@@ -584,7 +584,7 @@ def make_model_fn(class_count):
     # Add the new layer that we'll be training.
     (train_step, cross_entropy,
      final_tensor) = add_final_training_ops(
-        class_count, mode, ARGFLAGS.final_tensor_name,
+        class_count, mode, final_tensor_name,
         bottleneck_input, ground_truth_input)
 
     if mode in [ModeKeys.EVAL, ModeKeys.TRAIN]:
@@ -633,9 +633,9 @@ def make_image_predictions(
   for _, p in enumerate(predictions):
     print("---------")
     for k in p.keys():
-      print("%s is %s: " % (k, p[k]))
+      print("%s is: %s " % (k, p[k]))
       if k == "index":
-        print(labels_list[p[k]])
+        print("index label is: %s" % labels_list[p[k]])
 
 
 def get_prediction_images(img_dir):
@@ -700,7 +700,7 @@ def main(_):
       return None
 
   # Define the custom estimator
-  model_fn = make_model_fn(class_count)
+  model_fn = make_model_fn(class_count, ARGFLAGS.final_tensor_name)
   model_params = {}
   classifier = tf.contrib.learn.Estimator(
       model_fn=model_fn, params=model_params, model_dir=ARGFLAGS.model_dir)
