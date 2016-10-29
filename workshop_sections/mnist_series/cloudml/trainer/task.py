@@ -73,7 +73,7 @@ def main(args):
   # Print the job data as provided by the service.
   logging.info('Original job data: %s', env.get('job', {}))
 
-  # First find out if there's a task value on the environmtent variable.
+  # First find out if there's a task value on the environment variable.
   # If there is none or it is empty define a default one.
   task_data = env.get('task', {'type': 'master', 'index': 0})
   trial = task_data.get('trial')
@@ -169,7 +169,7 @@ def training_arguments(parser):
       default=20,
       help="""\
       Minimal train / eval time ratio on master:
-      The number of steps between 
+      The number of steps between
       """
   )
   return group

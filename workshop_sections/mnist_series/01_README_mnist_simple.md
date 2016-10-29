@@ -9,7 +9,7 @@ It's a good illustration of a common pattern for creating and training a model i
 The python script for this section is here: [`mnist_simple.py`](./mnist_simple.py).
 Run it as follows.  Make sure you're in your python virtual environment (unless you're running in a Docker container):
 
-```shell
+```sh
 $ python mnist_simple.py
 ```
 
@@ -18,7 +18,7 @@ $ python mnist_simple.py
 You can also run the example as a Jupyter (ipython) notebook.
 Start up the Jupyter server from this directory like this:
 
-```shell
+```sh
 $ jupyter notebook
 ```
 

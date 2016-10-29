@@ -573,7 +573,7 @@ def add_evaluation_step(result_tensor, ground_truth_tensor):
   return evaluation_step
 
 
-def make_model_fn(class_count, final_tensor_name):
+def make_model_fn(class_count):
 
   def _make_model(bottleneck_input, ground_truth_input, mode, params):
 
@@ -581,19 +581,25 @@ def make_model_fn(class_count, final_tensor_name):
     train_step = None
     cross_entropy = None
 
-    # Add the new layer that we'll be training.
-    (train_step, cross_entropy,
-     final_tensor) = add_final_training_ops(
-        class_count, mode, final_tensor_name,
-        bottleneck_input, ground_truth_input)
+    # YOUR CODE HERE: build the model graph, including definition of the loss
+    # function and training op, as well as an op to evaluate the accuracy
+    # of the results.
+    # Use the functions 'add_final_training_ops()' and 'add_evaluation_step()'.
 
-    if mode in [ModeKeys.EVAL, ModeKeys.TRAIN]:
-      # Create the operations we need to evaluate accuracy
-      add_evaluation_step(final_tensor, ground_truth_input)
+    # Then, add support for generating prediction information.
+    # The evaluation part of the graph only needs to be added if the 'mode' is
+    # ModeKeys.EVAL or ModeKeys.TRAIN.
+    # The prediction part of the graph only needs to be added if the 'mode' is
+    # ModeKeys.INFER.
+
 
     if mode == ModeKeys.INFER:
-      predclass = tf.argmax(final_tensor, 1)
-      prediction_dict = {"class_vector": final_tensor, "index": predclass}
+      # YOUR CODE HERE: GENERATE PREDICTION INFO
+      # See if you can figure out how to derive the index of the highest-value
+      # entry in the result vector, and store that value as "index" in
+      # prediction_dict.
+      prediction_dict = { # TODO: build the prediction_dict..
+                        }
 
     return prediction_dict, cross_entropy, train_step
 
@@ -700,7 +706,7 @@ def main(_):
       return None
 
   # Define the custom estimator
-  model_fn = make_model_fn(class_count, ARGFLAGS.final_tensor_name)
+  model_fn = make_model_fn(class_count)
   model_params = {}
   classifier = tf.contrib.learn.Estimator(
       model_fn=model_fn, params=model_params, model_dir=ARGFLAGS.model_dir)
