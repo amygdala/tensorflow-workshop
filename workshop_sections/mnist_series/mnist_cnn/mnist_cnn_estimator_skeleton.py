@@ -63,9 +63,9 @@ def model_fn(x, target, mode, params):
     # Build your model graph, including the loss function and training op.
     # You don’t need to define ‘placeholders’— they are passed in
     # as the first 2 args (here, x and target).
-    # You can use the modes — ModeKeys.TRAIN, ModeKeys.EVAL, and ModeKeys.INFER,
-    # if there is part of the graph that you only want to build under some
-    # of the contexts.
+    # You can use the mode values — ModeKeys.TRAIN, ModeKeys.EVAL, and
+    # ModeKeys.INFER, if there is part of the graph that you only want to
+    # build under some of the contexts.
 
     # Note that instead of one 'prediction' value, you can alternately
     # construct and return a prediction dict
