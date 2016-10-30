@@ -14,7 +14,8 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Trains MNIST using tf.contrib.learn.
+"""Trains MNIST using a custom estimator, with the model based on the one here:
+https://www.tensorflow.org/versions/r0.11/tutorials/mnist/pros/index.html#deep-mnist-for-experts
 """
 
 from __future__ import absolute_import
@@ -111,8 +112,9 @@ def model_fn(x, target, mode, params):
         # optimizer=tf.train.AdamOptimizer
         optimizer="Adam")
 
-    predictions = tf.argmax(y_conv, 1)
-    return predictions, cross_entropy, train_op
+    prediction = tf.argmax(y_conv, 1)
+    # you can alternately construct and return a prediction dict
+    return prediction, cross_entropy, train_op
 
 
 def run_cnn_classifier():

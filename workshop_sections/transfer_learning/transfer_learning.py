@@ -80,6 +80,8 @@ from tensorflow.contrib.learn import ModeKeys
 
 from tensorflow.python.platform import gfile
 from tensorflow.python.util import compat
+from tensorflow.contrib.learn.python.learn import metric_spec
+from tensorflow.contrib.metrics.python.ops import metric_ops
 
 FLAGS = tf.app.flags.FLAGS
 ARGFLAGS = None
@@ -587,17 +589,31 @@ def make_model_fn(class_count, final_tensor_name):
         class_count, mode, final_tensor_name,
         bottleneck_input, ground_truth_input)
 
-    if mode in [ModeKeys.EVAL, ModeKeys.TRAIN]:
+    if mode == ModeKeys.EVAL:
+      prediction_dict['loss'] = cross_entropy
       # Create the operations we need to evaluate accuracy
-      add_evaluation_step(final_tensor, ground_truth_input)
+      acc = add_evaluation_step(final_tensor, ground_truth_input)
+      prediction_dict['accuracy'] = acc
 
     if mode == ModeKeys.INFER:
       predclass = tf.argmax(final_tensor, 1)
-      prediction_dict = {"class_vector": final_tensor, "index": predclass}
+      prediction_dict["class_vector"] = final_tensor
+      prediction_dict["index"] = predclass
 
     return prediction_dict, cross_entropy, train_step
 
   return _make_model
+
+METRICS = {
+    'loss': metric_spec.MetricSpec(
+        metric_fn=metric_ops.streaming_mean,
+        prediction_key='loss'
+    ),
+    'accuracy': metric_spec.MetricSpec(
+        metric_fn=metric_ops.streaming_mean,
+        prediction_key='accuracy'
+    )
+}
 
 
 def make_image_predictions(
@@ -720,7 +736,7 @@ def main(_):
         y=train_ground_truth, batch_size=50,
         max_steps=ARGFLAGS.num_steps)
 
-    # We've completed all our training, so run a final test evaluation on
+    # We've completed our training, so run a test evaluation on
     # some new images we haven't used before.
     test_bottlenecks, test_ground_truth = get_all_cached_bottlenecks(
         sess, image_lists, 'testing',
@@ -730,7 +746,7 @@ def main(_):
     test_ground_truth = np.array(test_ground_truth)
     print("evaluating....")
     print(classifier.evaluate(
-        test_bottlenecks.astype(np.float32), test_ground_truth))
+        test_bottlenecks.astype(np.float32), test_ground_truth, metrics=METRICS))
 
     # write the output labels file if it doesn't already exist
     output_labels_file = os.path.join(ARGFLAGS.model_dir, LABELS_FILENAME)

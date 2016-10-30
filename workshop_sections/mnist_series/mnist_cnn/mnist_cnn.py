@@ -14,6 +14,10 @@
 # limitations under the License.
 # ==============================================================================
 
+"""Trains MNIST using the model described here:
+https://www.tensorflow.org/versions/r0.11/tutorials/mnist/pros/index.html#deep-mnist-for-experts
+"""
+
 import os
 import time
 
