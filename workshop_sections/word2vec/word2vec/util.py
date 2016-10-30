@@ -20,9 +20,11 @@ import nltk
 import numpy as np
 import tensorflow as tf
 
+from tensorflow.python.lib.io.tf_record import TFRecordCompressionType
+
 
 GCS_SKIPGRAMS = [
-    'gs://oscon-tf-workshop-materials/skipgrams/batches-{}.pb2'.format(i)
+    'gs://ml-workshop/skipgrams/batches-{}.pb2'.format(i)
     for i in range(4)
 ]
 
@@ -69,12 +71,25 @@ def build_string_index(string, vocab_size=2 ** 15):
   return unique_sorted, sorted_counts, word_array
 
 
-def input_from_files(filenames, batch_size, num_epochs=1):
-  def _make_input_fn():
+def write_index_to_file(index, filename):
+  with open(filename, 'wb') as writer:
+    writer.write(tf.contrib.util.make_tensor_proto(index).SerializeToString())
+
+
+def make_input_fn(filenames,
+                  batch_size,
+                  index_file,
+                  num_epochs=None):
+  def _input_fn():
     with tf.name_scope('input'):
+      index = tf.parse_tensor(tf.read_file(index_file), tf.string)
       filename_queue = tf.train.string_input_producer(
           filenames, num_epochs=num_epochs)
-      reader = tf.TFRecordReader()
+      reader = tf.TFRecordReader(
+          options=tf.python_io.TFRecordOptions(
+              compression_type=TFRecordCompressionType.GZIP
+          )
+      )
       _, serialized_example = reader.read(filename_queue)
 
       words = tf.parse_single_example(
@@ -84,8 +99,12 @@ def input_from_files(filenames, batch_size, num_epochs=1):
               'context_words': tf.FixedLenFeature([batch_size], tf.string)
           }
       )
-      return tf.expand_dims(words['target_words'], 1), words['context_words']
-  return _make_input_fn
+      return {
+          'targets': tf.expand_dims(words['target_words'], 1),
+          'index': index
+      }, words['context_words']
+
+  return _input_fn
 
 
 def write_batches_to_file(filename,
@@ -103,9 +122,12 @@ def write_batches_to_file(filename,
         span_windows_trunc, (-1, span_batch_size, span))
 
     shard_size = len(window_batches) // num_shards
+
+    options = tf.python_io.TFRecordOptions(
+        compression_type=TFRecordCompressionType.GZIP)
     for shard, index in enumerate(range(0, len(window_batches), shard_size)):
       shard_file = '{}-{}.pb2'.format(filename, shard)
-      with tf.python_io.TFRecordWriter(shard_file) as writer:
+      with tf.python_io.TFRecordWriter(shard_file, options=options) as writer:
         for windows in window_batches[index:index+shard_size]:
           batches = np.apply_along_axis(
               to_skipgrams, 1, windows, skip_window, num_skips)
