@@ -14,7 +14,9 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Trains MNIST using tf.contrib.learn.
+"""Trains MNIST using a custom estimator, with the model based on the one here:
+https://www.tensorflow.org/versions/r0.11/tutorials/mnist/pros/index.html#deep-mnist-for-experts ,
+and using tf.contrib.layers to build the model.
 """
 
 from __future__ import absolute_import

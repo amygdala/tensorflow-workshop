@@ -13,7 +13,7 @@
   - [3. A Custom Esimator for the transfer learning model](#3-a-custom-esimator-for-the-transfer-learning-model)
   - [Named Scopes and TensorBoard Summary information](#named-scopes-and-tensorboard-summary-information)
   - [4. Exercise: Building the Custom Estimator's model graph](#4-exercise-building-the-custom-estimators-model-graph)
-    - [If you get stuck...](#if-you-get-stuck)
+
 
 ## Introduction
 
@@ -134,21 +134,26 @@ However, here, as we're wrapping things in an Estimator, we don't need to an an 
 
 ## 4. Exercise: Building the Custom Estimator's model graph
 
-Start with [`transfer_learning_skeleton.py`](transfer_learning.py), and complete the `_make_model` function definition. This function builds the model graph for the custom estimator.
+Start with [`transfer_learning_skeleton.py`](transfer_learning.py), and complete the `_make_model`
+function definition. This function builds the model graph for the custom estimator.
 
-As noted above, the Inception model graph is doing the heavy lifting here. We will just train a new top layer to identify our new classes: that is, we will just add a new softmax and fully-connected layer.  The input to this layer is the generated "bottleneck" values.
-The `add_final_training_ops` function defines this layer, then defines the loss function and the training op.
+As noted above, the Inception model graph is doing the heavy lifting here. We will just train a new
+top layer to identify our new classes: that is, we will just add a new softmax and fully-connected
+layer.  The input to this layer is the generated "bottleneck" values. The `add_final_training_ops`
+function defines this layer, then defines the loss function and the training op.
 
-Then, the `add_evaluation_step` function adds an op to evaluate the accuracy of the results.
+Then, the `add_evaluation_step` function adds an op to evaluate the accuracy of the results. Add
+'loss' and 'accuracy' metrics to the prediction_dict, as per the `METRICS` dict below
+`make_model_fn` in the code, which we will then pass to the Estimator's `evaluate()` method.
 
-Put these pieces together to build the bulk of the model graph.
+Then, add support for generating prediction value(s).
+See if you can figure out how to derive the index of the highest-value the entry in the result
+vector, and store that value at the `"index"` key in the `prediction_dict`. As a hint, take a look
+at the ops used in `add_evaluation_step()`.
 
-Then add support for generating prediction value(s).  
-See if you can figure out how to derive the index of the highest-value the entry in the result vector, and store that value at the `"index"` key in the `prediction_dict`.
-As a hint, take a look at the ops used in `add_evaluation_step()`.
+As shown in the skeleton of `_make_model`, be sure to return the prediction dict, the loss, and the
+training op.  This info sets up the Estimator to handle calls to its `fit()`, `evaluate()`, and
+`predict()` methods.
 
-As shown in the skeleton function, be sure to return the prediction dict, the loss, and the training op.  This info sets up the Estimator to handle calls to its `fit()`, `evaluate()`, and `predict()` methods.
-
-### If you get stuck...
 
 If you get stuck, you can take a peek at `transfer_learning.py`, but try not to do that too soon.

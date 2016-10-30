@@ -586,9 +586,13 @@ def make_model_fn(class_count):
     # of the results.
     # Use the functions 'add_final_training_ops()' and 'add_evaluation_step()'.
 
-    # Then, add support for generating prediction information.
     # The evaluation part of the graph only needs to be added if the 'mode' is
-    # ModeKeys.EVAL or ModeKeys.TRAIN.
+    # ModeKeys.EVAL.
+    # Add 'loss' and 'accuracy' metrics to the prediction_dict, as per the
+    # METRICS dict below, which we will pass to the Estimator's evaluate()
+    # method.
+
+    # Then, add support for generating prediction information.
     # The prediction part of the graph only needs to be added if the 'mode' is
     # ModeKeys.INFER.
 
@@ -604,6 +608,17 @@ def make_model_fn(class_count):
     return prediction_dict, cross_entropy, train_step
 
   return _make_model
+
+METRICS = {
+    'loss': metric_spec.MetricSpec(
+        metric_fn=metric_ops.streaming_mean,
+        prediction_key='loss'
+    ),
+    'accuracy': metric_spec.MetricSpec(
+        metric_fn=metric_ops.streaming_mean,
+        prediction_key='accuracy'
+    )
+}
 
 
 def make_image_predictions(
@@ -736,7 +751,7 @@ def main(_):
     test_ground_truth = np.array(test_ground_truth)
     print("evaluating....")
     print(classifier.evaluate(
-        test_bottlenecks.astype(np.float32), test_ground_truth))
+        test_bottlenecks.astype(np.float32), test_ground_truth, metrics=METRICS))
 
     # write the output labels file if it doesn't already exist
     output_labels_file = os.path.join(ARGFLAGS.model_dir, LABELS_FILENAME)
