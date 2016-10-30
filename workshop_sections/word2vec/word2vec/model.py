@@ -22,6 +22,18 @@ import tensorflow as tf
 from tensorflow.contrib.learn import ModeKeys
 
 
+def model_args(parser):
+  group = parser.add_argument_group(title='Model Arguments')
+  group.add_argument('--reference-words', nargs='*', type=str)
+  group.add_argument('--num-partitions', default=1, type=int)
+  group.add_argument('--embedding-size', default=128, type=int)
+  group.add_argument('--vocab-size', default=2 ** 15, type=int)
+  group.add_argument('--num-sim', default=8, type=int)
+  group.add_argument('--num-sampled', default=64, type=int)
+  group.add_argument('--learning-rate', default=0.1, type=float)
+  return group
+
+
 def make_model_fn(args):
   def _model_fn(inputs, context_words, mode):
     target_words = inputs['targets']

@@ -28,18 +28,6 @@ import util
 tf.logging.set_verbosity(tf.logging.INFO)
 
 
-def model_args(parser):
-  group = parser.add_argument_group(title='Model Arguments')
-  group.add_argument('--reference-words', nargs='*', type=str)
-  group.add_argument('--num-partitions', default=1, type=int)
-  group.add_argument('--embedding-size', default=128, type=int)
-  group.add_argument('--vocab-size', default=2 ** 15, type=int)
-  group.add_argument('--num-sim', default=8, type=int)
-  group.add_argument('--num-sampled', default=64, type=int)
-  group.add_argument('--learning-rate', default=0.1, type=float)
-  return group
-
-
 def make_experiment_fn(args):
   train_input_fn = util.make_input_fn(
       args.train_data_paths,
@@ -53,6 +41,7 @@ def make_experiment_fn(args):
       args.index_file,
       num_epochs=args.num_epochs
   )
+
   def experiment_fn(output_dir):
     return Experiment(
         Estimator(
@@ -60,7 +49,11 @@ def make_experiment_fn(args):
             model_dir=output_dir
         ),
         train_input_fn=train_input_fn,
-        eval_input_fn=eval_input_fn
+        eval_input_fn=eval_input_fn,
+        continuous_eval_throttle_secs=args.min_eval_seconds,
+        min_eval_frequency=args.min_train_eval_rate,
+        # Until learn_runner is updated to use train_and_evaluate
+        local_eval_frequency=args.min_train_eval_rate
     )
   return experiment_fn
 
@@ -104,6 +97,24 @@ if __name__ == '__main__':
       type=int,
       default=1
   )
-  model_args(parser)
+  parser.add_argument(
+      '--min-eval-seconds',
+      type=float,
+      default=5,
+      help="""\
+      Minimal interval between calculating evaluation metrics and saving
+      evaluation summaries.\
+      """
+  )
+  parser.add_argument(
+      '--min-train-eval-rate',
+      type=int,
+      default=20,
+      help="""\
+      Minimal train / eval time ratio on master:
+      The number of steps between evaluations
+      """
+  )
+  model.model_args(parser)
   args = parser.parse_args()
   learn_runner.run(make_experiment_fn(args), args.output_path)
