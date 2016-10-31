@@ -90,7 +90,6 @@ $ conda install numpy
 $ conda install scipy
 $ pip install sklearn pillow
 $ conda install matplotlib
-$ conda install jupyter
 $ conda install nltk
 ```
 
