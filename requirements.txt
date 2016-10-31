@@ -1,0 +1,12 @@
+cycler==0.10.0
+matplotlib==1.5.3
+nltk==3.2.1
+numpy==1.11.2
+Pillow==3.4.2
+pyparsing==2.1.10
+python-dateutil==2.5.3
+pytz==2016.7
+scikit-learn==0.18
+scipy==0.18.1
+six==1.10.0
+sklearn==0.0
