@@ -93,6 +93,12 @@ $ conda install matplotlib
 $ conda install nltk
 ```
 
+You can also install using `requirements.txt`:
+
+```sh
+$ pip install -r requirements.txt
+```
+
 (If you are using `virtualenv` instead of `conda`, install the packages using the equivalent `pip` commands instead).
 
 Then run:
