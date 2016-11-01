@@ -1,7 +1,10 @@
 import argparse
+import datetime
+import os
 
 import apache_beam as beam
 from apache_beam.utils.options import PipelineOptions
+from google.cloud import ml
 
 
 def text_classification_features(tf, element):
@@ -12,8 +15,9 @@ def text_classification_features(tf, element):
     return tf.train.Feature(int64_list=tf.train.Int64List(value=value))
 
   return {
-      'words': _bytes_feature(tf, element[1]),
-      'category': _int64_feature(tf, [element[0]])
+      'words': _bytes_feature([s.encode('utf_8')
+                               for s in element[1]]),
+      'category': _int64_feature([element[0]])
   }
 
 
@@ -57,8 +61,24 @@ def tokenize_and_index(row):
 
 
 def main(args, unknown):
-  from google.cloud.ml.io import SaveFeatures
-  pipeline = beam.Pipeline(options=PipelineOptions(flags=unknown))
+  if args.cloud:
+    options = {
+        'staging_location':
+        os.path.join(args.output_dir, 'tmp', 'staging'),
+        'temp_location':
+        os.path.join(args.output_dir, 'tmp'),
+        'job_name': ('cloud-ml-sample-reddit-data-preprocess-{}'.format(
+            datetime.datetime.now().strftime('%Y%m%d%H%M%S'))),
+        'extra_packages': [ml.sdk_location],
+        'teardown_policy': 'TEARDOWN_ALWAYS',
+        'no_save_main_session': True,
+        'autoscaling_algorithm': 'THROUGHPUT_BASED'
+    }
+    opts = beam.pipeline.PipelineOptions(flags=unknown, **options)
+    pipeline = beam.Pipeline('BlockingDataflowPipelineRunner', options=opts)
+  else:
+    pipeline = beam.Pipeline(
+        'apache_beam.runners.inprocess.InProcessPipelineRunner')
   pipeline | beam.io.Read(
       beam.io.BigQuerySource(
           project='oscon-tf-workshop',
@@ -72,12 +92,13 @@ def main(args, unknown):
   ) | beam.ParDo(
       'Make TF examples',
       EncodeExampleDoFn(text_classification_features)
-  ) | 'Write examples to file' >> SaveFeatures(args.output_path)
+  ) | 'Write examples to file' >> ml.io.SaveFeatures(args.output_dir + 'data')
 
   pipeline.run()
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
-  parser.add_argument('--output-path', type=str, required=True)
+  parser.add_argument('--output-dir', type=str, required=True)
+  parser.add_argument('--cloud', action='store_true', default=False)
   args, unknown = parser.parse_known_args()
   main(args, unknown)
