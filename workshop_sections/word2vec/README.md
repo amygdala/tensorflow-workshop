@@ -40,13 +40,13 @@ or copy paste into Jupyter cells.
 ### In memory with Numpy
 
 ```
-import word2vec
+from word2vec import util
 with open('text8', 'r') as f:
-    index, counts, word_array = word2vec.build_string_index(f.read())
+    index, counts, word_array = util.build_string_index(f.read())
 ```
 (this may take ~1 minute)
 
-`word2vec.build_string_index` reads in a string tokenizes it using `nltk.word_tokenize` and builds
+`util.build_string_index` reads in a string tokenizes it using `nltk.word_tokenize` and builds
 
  * `index`: A `np.ndarray` that lists all unique words from most common to least common (+ `'UNK'` a token used to denote words which do not appear often enough in our fixed size vocabulary)
 
@@ -56,7 +56,7 @@ with open('text8', 'r') as f:
 
 NOTE: You may need to use a smaller slice depending on the amount of memory on your machine.
 ```
-targets, contexts = word2vec.generate_batches(word_array[:-4000000])
+targets, contexts = util.generate_batches(word_array[:-4000000])
 ```
 (this may take 5-10 minutes)
 
@@ -88,7 +88,7 @@ word2vec_model.fit(x=targets, y=contexts, batch_size=256, max_steps=int(len(targ
 
 To train with the pre-preprocessed TFRecords, run:
 ```
-word2vec_model.fit(input_fn=word2vec.input_from_files(word2vec.GCS_SKIPGRAMS, 256), max_steps=50000)
+word2vec_model.fit(input_fn=word2vec.input_from_files(word2vec.GCS_SKIPGRAMS, 256))
 ```
 
 In another shell (or outside your docker container), run

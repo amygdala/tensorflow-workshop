@@ -16,114 +16,17 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import math
-
 import nltk
 import numpy as np
 import tensorflow as tf
-from tensorflow.contrib.learn import ModeKeys
+
+from tensorflow.python.lib.io.tf_record import TFRecordCompressionType
 
 
 GCS_SKIPGRAMS = [
-    'gs://oscon-tf-workshop-materials/skipgrams/batches-{}.pb2'.format(i)
+    'gs://ml-workshop/skipgrams/batches-{}.pb2'.format(i)
     for i in range(4)
 ]
-
-
-def make_model_fn(index,
-                  vocab_counts,
-                  num_partitions=1,
-                  embedding_size=128,
-                  vocab_size=2 ** 15,
-                  num_sim=8,
-                  num_sampled=64,
-                  learning_rate=0.1):
-  def _make_model(target_words, context_words, mode):
-    index_tensor = tf.constant(index)
-    reverse_index = tf.contrib.lookup.HashTable(
-        tf.contrib.lookup.KeyValueTensorInitializer(
-            index_tensor, tf.constant(range(vocab_size - 1), dtype=tf.int64)
-        ),
-        vocab_size - 1
-    )
-
-    # tf.contrib.learn.Estimator.fit adds an addition dimension to input
-    target_words_squeezed = tf.squeeze(target_words, squeeze_dims=[1])
-    target_indices = reverse_index.lookup(target_words_squeezed)
-
-    with tf.device(tf.train.replica_device_setter()):
-      with tf.variable_scope('nce',
-                             partitioner=tf.fixed_size_partitioner(
-                                 num_partitions)):
-
-        embeddings = tf.get_variable(
-            'embeddings',
-            shape=[vocab_size, embedding_size],
-            dtype=tf.float32,
-            initializer=tf.random_uniform_initializer(-1.0, 1.0)
-        )
-        if mode in [ModeKeys.TRAIN, ModeKeys.EVAL]:
-          nce_weights = tf.get_variable(
-              'nce_weights',
-              shape=[vocab_size, embedding_size],
-              dtype=tf.float32,
-              initializer=tf.truncated_normal_initializer(
-                  stddev=1.0 / math.sqrt(embedding_size)
-              )
-          )
-          nce_biases = tf.get_variable(
-              'nce_biases',
-              initializer=tf.zeros_initializer([vocab_size]),
-              dtype=tf.float32
-          )
-
-      prediction_dict, loss, train_op = ({}, None, None)
-
-      if mode in [ModeKeys.TRAIN, ModeKeys.EVAL]:
-        context_indices = tf.expand_dims(
-            reverse_index.lookup(context_words), 1)
-        embedded = tf.nn.embedding_lookup(embeddings, target_indices)
-
-        sampled_words = tf.nn.fixed_unigram_candidate_sampler(
-            true_classes=context_indices,
-            num_true=1,
-            num_sampled=num_sampled,
-            unique=True,
-            range_max=vocab_size,
-            distortion=0.75,
-            unigrams=vocab_counts + [1]
-        )
-        loss = tf.reduce_mean(tf.nn.nce_loss(
-            nce_weights,
-            nce_biases,
-            embedded,
-            context_indices,
-            num_sampled,
-            vocab_size,
-            sampled_values=sampled_words
-        ))
-        tf.scalar_summary('loss', loss)
-
-      if mode == ModeKeys.TRAIN:
-        train_op = tf.train.GradientDescentOptimizer(learning_rate).minimize(
-            loss, global_step=tf.contrib.framework.get_global_step()
-        )
-
-      if mode in [ModeKeys.EVAL, ModeKeys.INFER]:
-        # Compute the cosine similarity between examples and embeddings.
-        norm = tf.sqrt(tf.reduce_sum(tf.square(embeddings), 1, keep_dims=True))
-        normalized_embeddings = embeddings / norm
-        valid_embeddings = tf.nn.embedding_lookup(
-            normalized_embeddings, target_indices)
-        similarity = tf.matmul(
-            valid_embeddings, normalized_embeddings, transpose_b=True)
-        prediction_dict['values'], predictions = tf.nn.top_k(
-            similarity, sorted=True, k=num_sim)
-        index_tensor = tf.concat(0, [index_tensor, tf.constant(['UNK'])])
-        prediction_dict['predictions'] = tf.gather(index_tensor, predictions)
-
-      return prediction_dict, loss, train_op
-  return _make_model
 
 
 def _rolling_window(a, window):
@@ -168,12 +71,25 @@ def build_string_index(string, vocab_size=2 ** 15):
   return unique_sorted, sorted_counts, word_array
 
 
-def input_from_files(filenames, batch_size, num_epochs=1):
-  def _make_input_fn():
+def write_index_to_file(index, filename):
+  with open(filename, 'wb') as writer:
+    writer.write(tf.contrib.util.make_tensor_proto(index).SerializeToString())
+
+
+def make_input_fn(filenames,
+                  batch_size,
+                  index_file,
+                  num_epochs=None):
+  def _input_fn():
     with tf.name_scope('input'):
+      index = tf.parse_tensor(tf.read_file(index_file), tf.string)
       filename_queue = tf.train.string_input_producer(
           filenames, num_epochs=num_epochs)
-      reader = tf.TFRecordReader()
+      reader = tf.TFRecordReader(
+          options=tf.python_io.TFRecordOptions(
+              compression_type=TFRecordCompressionType.GZIP
+          )
+      )
       _, serialized_example = reader.read(filename_queue)
 
       words = tf.parse_single_example(
@@ -183,8 +99,12 @@ def input_from_files(filenames, batch_size, num_epochs=1):
               'context_words': tf.FixedLenFeature([batch_size], tf.string)
           }
       )
-      return tf.expand_dims(words['target_words'], 1), words['context_words']
-  return _make_input_fn
+      return {
+          'targets': tf.expand_dims(words['target_words'], 1),
+          'index': index
+      }, words['context_words']
+
+  return _input_fn
 
 
 def write_batches_to_file(filename,
@@ -202,9 +122,12 @@ def write_batches_to_file(filename,
         span_windows_trunc, (-1, span_batch_size, span))
 
     shard_size = len(window_batches) // num_shards
+
+    options = tf.python_io.TFRecordOptions(
+        compression_type=TFRecordCompressionType.GZIP)
     for shard, index in enumerate(range(0, len(window_batches), shard_size)):
       shard_file = '{}-{}.pb2'.format(filename, shard)
-      with tf.python_io.TFRecordWriter(shard_file) as writer:
+      with tf.python_io.TFRecordWriter(shard_file, options=options) as writer:
         for windows in window_batches[index:index+shard_size]:
           batches = np.apply_along_axis(
               to_skipgrams, 1, windows, skip_window, num_skips)
