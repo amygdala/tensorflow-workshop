@@ -8,7 +8,7 @@ We have also updated the example to support the Cloud ML (online and batch) pred
 
 You can find the updated code here:
 
-cd ~/google-cloud-ml/samples/mnist/distributed/
+cd mnist/distributed/
 Test the training code locally
 
 First, verify that the model trains locally (on a single worker):
