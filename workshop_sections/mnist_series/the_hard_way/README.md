@@ -1,6 +1,12 @@
 
 # Run and modify a version of MNIST built using TensorFlow's 'low-level' APIs
 
+  - [The "one-hidden-layer" version of the MNIST model](#the-one-hidden-layer-version-of-the-mnist-model)
+  - [Running the example as a script](#running-the-example-as-a-script)
+  - [Running the example in a Jupyter notebook](#running-the-example-in-a-jupyter-notebook)
+  - [TensorBoard](#tensorboard)
+  - [Exercise: The "two-hidden-layer" version](#exercise-the-two-hidden-layer-version)
+
 In this lab, now that you've seen how easy it is to use the `DNNClassifier`, we'll look at something a bit more complex: how to build a similar NN using TensorFlow's "low-level" APIs.
 
 This requires you to pay attention to a lot more things than you had to do in the previous lab, including: define a model graph and training op; manage the batched training loop; checkpointing the model and generating TensorBoard summaries; and supporting making predictions. 
