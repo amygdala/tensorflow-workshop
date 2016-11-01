@@ -91,12 +91,14 @@ $ conda install scipy
 $ pip install sklearn pillow
 $ conda install matplotlib
 $ conda install nltk
+$ conda install -c conda-forge tensorflow
 ```
 
 You can also install using `requirements.txt`:
 
 ```sh
 $ pip install -r requirements.txt
+$ conda install -c conda-forge tensorflow
 ```
 
 (If you are using `virtualenv` instead of `conda`, install the packages using the equivalent `pip` commands instead).
