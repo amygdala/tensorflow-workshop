@@ -89,6 +89,7 @@ With your conda environment activated, install the following packages:
 $ conda install numpy
 $ conda install scipy
 $ pip install sklearn pillow
+$ pip install jupyter
 $ conda install matplotlib
 $ conda install nltk
 $ conda install -c conda-forge tensorflow
