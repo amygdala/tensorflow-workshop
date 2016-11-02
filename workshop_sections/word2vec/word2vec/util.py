@@ -141,9 +141,9 @@ def write_batches_to_file(filename,
               tf.train.Example(features=tf.train.Features(feature={
                   'target_words': tf.train.Feature(
                       bytes_list=tf.train.BytesList(
-                          value=batches_squashed[0])),
+                          value=batches_squashed[0].astype('U'))),
                   'context_words': tf.train.Feature(
                       bytes_list=tf.train.BytesList(
-                          value=batches_squashed[1]))
+                          value=batches_squashed[1].astype('U')))
               })).SerializeToString()
           )
