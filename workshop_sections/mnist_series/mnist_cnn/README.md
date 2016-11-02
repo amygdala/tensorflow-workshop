@@ -1,5 +1,5 @@
 
-# Creating a Custom MNIST estimator
+# Creating a Custom MNIST Estimator
 
   - [A CNN version of MNIST using TensorFlow's "low-level" API](#a-cnn-version-of-mnist-using-tensorflows-low-level-api)
   - [Exercise 1: MNIST-CNN using a Custom Estimator](#exercise-1-mnist-cnn-using-a-custom-estimator)
