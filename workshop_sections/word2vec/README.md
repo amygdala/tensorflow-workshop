@@ -101,7 +101,7 @@ to watch the training outputs.
 
 ## Using the model to predict
 
-This word2vec model predicts similarities between words using it's trained embeddings.
+This word2vec model predicts similarities between words using its trained embeddings.
 
 When given a vector of words, the word2vec model outputs a prediction dictionary with two values: `'predictions'` are the words most similar to the provided words, while `'values'` is a measure of their similarity to the provided words. You can use `index` to convert these word indices back into strings.
 To predict, simply input a pandas dataframe or numpy array into `word2vec_model.predict`. The `num_sim` parameter in the original `make_model_fn` call controls the number of similar words we predict for each word in the input vector. You can make a new estimator object without retraining as long as you specify the same `model_dir` as your trained model. Trained parameters will be loaded from the most recent checkpoint!
