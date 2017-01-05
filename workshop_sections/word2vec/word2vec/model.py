@@ -30,6 +30,8 @@ def model_args(parser):
   group.add_argument('--vocab-size', default=2 ** 15, type=int)
   group.add_argument('--num-sim', default=8, type=int)
   group.add_argument('--num-sampled', default=64, type=int)
+  group.add_argument('--num-skips', default=4, type=int)
+  group.add_argument('--skip-window', default=8, type=int)
   group.add_argument('--learning-rate', default=0.1, type=float)
   return group
 
@@ -47,8 +49,7 @@ def make_model_fn(args):
     )
 
     # tf.contrib.learn.Estimator.fit adds an addition dimension to input
-    target_words_squeezed = tf.squeeze(target_words, squeeze_dims=[1])
-    target_indices = reverse_index.lookup(target_words_squeezed)
+    target_indices = reverse_index.lookup(target_words)
 
     with tf.device(tf.train.replica_device_setter()):
       with tf.variable_scope('nce',
@@ -79,8 +80,7 @@ def make_model_fn(args):
       tensors, loss, train_op = ({}, None, None)
 
       if mode in [ModeKeys.TRAIN, ModeKeys.EVAL]:
-        context_indices = tf.expand_dims(
-            reverse_index.lookup(context_words), 1)
+        context_indices = reverse_index.lookup(context_words)
         embedded = tf.nn.embedding_lookup(embeddings, target_indices)
 
         loss = tf.reduce_mean(tf.nn.nce_loss(
@@ -91,14 +91,15 @@ def make_model_fn(args):
             args.num_sampled,
             args.vocab_size
         ))
-        tf.scalar_summary('loss', loss)
-        tf.scalar_summary('training/hptuning/metric', loss)
+        tf.summary.scalar('loss', loss)
+        tf.summary.scalar('training/hptuning/metric', loss)
 
       if mode == ModeKeys.TRAIN:
         train_op = tf.train.GradientDescentOptimizer(
             args.learning_rate
         ).minimize(
-            loss, global_step=tf.contrib.framework.get_global_step()
+            loss,
+            global_step=tf.contrib.framework.get_or_create_global_step()
         )
 
       if mode == ModeKeys.INFER:

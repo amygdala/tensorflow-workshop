@@ -32,12 +32,16 @@ def make_experiment_fn(args):
   train_input_fn = util.make_input_fn(
       args.train_data_paths,
       args.batch_size,
+      args.num_skips,
+      args.skip_window,
       args.index_file,
       num_epochs=args.num_epochs
   )
   eval_input_fn = util.make_input_fn(
       args.eval_data_paths,
       args.batch_size,
+      args.num_skips,
+      args.skip_window,
       args.index_file,
       num_epochs=args.num_epochs
   )

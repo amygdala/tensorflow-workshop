@@ -15,48 +15,12 @@
 from __future__ import division
 from __future__ import print_function
 
+import multiprocessing
+
 import nltk
 import numpy as np
 import tensorflow as tf
 
-from tensorflow.python.lib.io.tf_record import TFRecordCompressionType
-
-
-GCS_SKIPGRAMS = [
-    'gs://ml-workshop/skipgrams/batches-{}.pb2'.format(i)
-    for i in range(4)
-]
-
-
-def _rolling_window(a, window):
-  shape = a.shape[:-1] + (a.shape[-1] - window + 1, window)
-  strides = a.strides + (a.strides[-1],)
-  return np.lib.stride_tricks.as_strided(a, shape=shape, strides=strides)
-
-
-
-def to_skipgrams(window, skip_window, num_skips):
-  contexts = np.random.choice(np.concatenate(
-      (window[:skip_window], window[skip_window + 1:])
-  ), size=num_skips, replace=False)
-  targets = np.repeat(window[skip_window], num_skips)
-  return np.concatenate((targets, contexts))
-
-
-def generate_batches(word_array, num_skips=2, skip_window=1):
-  assert num_skips <= 2 * skip_window
-  span = 2 * skip_window + 1
-
-  span_windows = _rolling_window(word_array, span)
-  batches = np.apply_along_axis(
-    to_skipgrams, 1, span_windows, skip_window, num_skips)
-  # Separate targets and contexts
-  batches_sep = np.reshape(batches, (-1, 2, num_skips))
-  # Gather targets and contexts
-  batches_gathered = np.transpose(batches_sep, (1, 0, 2))
-  # Squash targets and contexts
-  batches_squashed = np.reshape(batches_gathered, (2, -1))
-  return batches_squashed[0], batches_squashed[1]
 
 def build_string_index(string, vocab_size=2 ** 15):
   word_array = np.array(nltk.word_tokenize(string))
@@ -70,6 +34,72 @@ def build_string_index(string, vocab_size=2 ** 15):
   return unique_sorted, sorted_counts, word_array
 
 
+def rolling_window(tensor, dtype, shape, capacity=None):
+  with tf.name_scope('rolling_window'):
+    window_size = shape[0]
+    if capacity is None:
+      capacity = shape[0] * 2 + 1
+
+    q = tf.FIFOQueue(capacity, [dtype], shapes=[shape[1:]])
+    enqueue = q.enqueue_many(tensor)
+    tf.train.add_queue_runner(
+        tf.train.QueueRunner(queue=q, enqueue_ops=[enqueue])
+    )
+
+    # Pad first element as it will be immediately overwritten
+    window_initial_value = q.dequeue_many(window_size)
+
+    window = tf.Variable(
+        window_initial_value,
+        expected_shape=shape,
+        trainable=False,
+        collections=[],
+        name='window'
+    )
+    oldest_pos = tf.Variable(
+        0,
+        expected_shape=[],
+        trainable=False,
+        dtype=tf.int32,
+        collections=[],
+        name='oldest_pos'
+    )
+
+    oldest_pos_init = tf.cond(tf.is_variable_initialized(oldest_pos),
+                              lambda: tf.assign(oldest_pos, oldest_pos + 1 % window_size),
+                              lambda: _init_and_return_ref(oldest_pos))
+
+    window_init = tf.cond(tf.is_variable_initialized(window),
+                          lambda: window[oldest_pos_init].assign(q.dequeue()),
+                          lambda: _init_and_return_ref(window))
+
+    return tf.concat(0, [
+        window_init[oldest_pos_init+1:],
+        window_init[:oldest_pos_init+1]
+    ])
+
+
+def _init_and_return_ref(ref):
+    return tf.tuple([ref], control_inputs=[ref.initializer])
+
+def skipgrams(word_tensor, num_skips, skip_window):
+  window = rolling_window(
+      tf.expand_dims(word_tensor, axis=1),
+      tf.string,
+      [2*skip_window + 1, 1]
+  )
+  target = window[skip_window]
+  contexts = tf.random_shuffle(
+      tf.concat(0, [
+          window[:skip_window],
+          window[skip_window+1:]
+      ])
+  )[:num_skips]
+
+  targets = tf.tile(target, [num_skips])
+  return targets, contexts
+
+
 def write_index_to_file(index, filename):
   with open(filename, 'wb') as writer:
     writer.write(tf.contrib.util.make_tensor_proto(index).SerializeToString())
@@ -77,6 +107,8 @@ def write_index_to_file(index, filename):
 
 def make_input_fn(filenames,
                   batch_size,
+                  num_skips,
+                  skip_window,
                   index_file,
                   num_epochs=None):
   def _input_fn():
@@ -84,66 +116,44 @@ def make_input_fn(filenames,
       index = tf.parse_tensor(tf.read_file(index_file), tf.string)
       filename_queue = tf.train.string_input_producer(
           filenames, num_epochs=num_epochs)
-      reader = tf.TFRecordReader(
-          options=tf.python_io.TFRecordOptions(
-              compression_type=TFRecordCompressionType.GZIP
-          )
-      )
-      _, serialized_example = reader.read(filename_queue)
+      reader = tf.TextLineReader()
+      _, string_tensor = reader.read(filename_queue)
 
-      words = tf.parse_single_example(
-          serialized_example,
-          {
-              'target_words': tf.FixedLenFeature([batch_size], tf.string),
-              'context_words': tf.FixedLenFeature([batch_size], tf.string)
-          }
+      word_tensor = tf.py_func(
+          lambda t: np.array(nltk.word_tokenize(t)),
+          [string_tensor],
+          tf.string,
+          stateful=False,
+          name='tokenize'
       )
+
+      targets, contexts = skipgrams(word_tensor, num_skips, skip_window)
+
+      thread_count = multiprocessing.cpu_count()
+
+      # The minimum number of instances in a queue from which examples are
+      # drawn randomly. The larger this number, the more randomness at the
+      # expense of higher memory requirements.
+      min_after_dequeue = batch_size * 10
+
+      # When batching data, the queue's capacity will be larger than the
+      # batch_size by some factor. The recommended formula is (num_threads +
+      # a small safety margin). For now, we use a single thread for reading,
+      # so this can be small.
+      queue_size_multiplier = thread_count + 3
+
+      target_batch, context_batch = tf.train.shuffle_batch(
+          [targets, contexts],
+          batch_size=batch_size,
+          num_threads=thread_count,
+          capacity=min_after_dequeue + queue_size_multiplier * batch_size,
+          min_after_dequeue=min_after_dequeue,
+          enqueue_many=True
+      )
+
       return {
-          'targets': tf.expand_dims(words['target_words'], 1),
+          'targets': target_batch,
           'index': index
-      }, words['context_words']
+      }, context_batch
 
   return _input_fn
-
-
-def write_batches_to_file(filename,
-                          batch_size,
-                          word_array,
-                          num_skips=8,
-                          skip_window=4,
-                          num_shards=4):
-    span = 2 * skip_window + 1
-    span_windows = _rolling_window(word_array, span)
-    span_batch_size = batch_size // num_skips
-    span_windows_len = (len(span_windows) // span_batch_size) * span_batch_size
-    span_windows_trunc = span_windows[:span_windows_len]
-    window_batches = np.reshape(
-        span_windows_trunc, (-1, span_batch_size, span))
-
-    shard_size = len(window_batches) // num_shards
-
-    options = tf.python_io.TFRecordOptions(
-        compression_type=TFRecordCompressionType.GZIP)
-    for shard, index in enumerate(range(0, len(window_batches), shard_size)):
-      shard_file = '{}-{}.pb2'.format(filename, shard)
-      with tf.python_io.TFRecordWriter(shard_file, options=options) as writer:
-        for windows in window_batches[index:index+shard_size]:
-          batches = np.apply_along_axis(
-              to_skipgrams, 1, windows, skip_window, num_skips)
-          # Separate targets and contexts
-          batches_sep = np.reshape(batches, (-1, 2, num_skips))
-          # Gather targets and contexts
-          batches_gathered = np.transpose(batches_sep, (1, 0, 2))
-          # Squash targets and contexts
-          batches_squashed = np.reshape(batches_gathered, (2, -1))
-
-          writer.write(
-              tf.train.Example(features=tf.train.Features(feature={
-                  'target_words': tf.train.Feature(
-                      bytes_list=tf.train.BytesList(
-                          value=batches_squashed[0].astype('U'))),
-                  'context_words': tf.train.Feature(
-                      bytes_list=tf.train.BytesList(
-                          value=batches_squashed[1].astype('U')))
-              })).SerializeToString()
-          )
