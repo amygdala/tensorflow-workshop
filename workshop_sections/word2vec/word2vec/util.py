@@ -24,12 +24,17 @@ import tensorflow as tf
 tf.logging.set_verbosity(tf.logging.INFO)
 
 
+def tokenize_text_file(infile, outfile):
+  with open(infile, 'r') as reader:
+    words = np.array(nltk.word_tokenize(reader.read()))
+  
+  with open(outfile, 'wb') as writer:
+    writer.write(tf.contrib.util.make_tensor_proto(words).SerializeToString())
+
 def window_input_producer(tensor, window_size, capacity=32, num_epochs=None):
-  num_windows = tensor.get_shape().dims[0].value - window_size
-  if num_windows <= 0:
-    raise ValueError('Provided tensor is not large enough for a window')
+  num_windows = tf.shape(tensor)[0] - window_size
   range_queue = tf.train.range_input_producer(
-      tf.constant(num_windows, dtype=tf.int32, shape=[]),
+      num_windows,
       shuffle=False,
       capacity=capacity,
       num_epochs=num_epochs
@@ -67,12 +72,16 @@ def skipgrams(word_tensor, num_skips, skip_window, num_epochs=None):
 
 def build_vocab(word_tensor, vocab_size):
   unique, idx = tf.unique(word_tensor)
-  counts_one_hot = tf.one_hot(
+
+  counts = tf.foldl(
+      lambda counts, item: counts + tf.one_hot(
+          tf.reshape(item, [-1]),
+          tf.shape(unique)[0],
+          dtype=tf.int32)[0],
       idx,
-      idx[tf.to_int32(tf.argmax(idx, 0))] + 1,
-      dtype=tf.int32
+      initializer=tf.zeros_like(unique, dtype=tf.int32),
+      back_prop=False
   )
-  counts = tf.reduce_sum(counts_one_hot, 0)
   _, indices = tf.nn.top_k(counts, k=vocab_size)
   return tf.gather(unique, indices)
 
@@ -85,15 +94,22 @@ def make_input_fn(text_file,
                   num_epochs=None):
   def _input_fn():
     with tf.name_scope('input'):
-      corpus = tf.parse_tensor(tf.read_file(text_file), tf.string)
+      word_tensor = tf.parse_tensor(tf.read_file(text_file), tf.string)
 
-      word_tensor = tf.py_func(
-          lambda t: np.array(nltk.word_tokenize(t)),
-          [corpus],
-          tf.string,
-          stateful=False,
-          name='tokenize'
-      )
+#      corpus = tf.Print(corpus, [corpus], message='corpus:')
+#
+#      word_tensor = tf.py_func(
+#          lambda t: np.array(nltk.word_tokenize(t)),
+#          [corpus],
+#          tf.string,
+#          stateful=False,
+#          name='tokenize'
+#      )
+#
+#      word_tensor = tf.Print(word_tensor, [word_tensor], message='word_tensor:')
+
+      word_tensor = tf.Print(word_tensor, [word_tensor], message='word_tensor fine')
+
       index = build_vocab(word_tensor, vocab_size)
 
       targets, contexts = skipgrams(
