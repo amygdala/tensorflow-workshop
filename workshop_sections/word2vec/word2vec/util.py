@@ -21,113 +21,87 @@ import nltk
 import numpy as np
 import tensorflow as tf
 
-
-def build_string_index(string, vocab_size=2 ** 15):
-  word_array = np.array(nltk.word_tokenize(string))
-
-  unique, counts = np.unique(word_array, return_counts=True)
-
-  sort_unique = np.argsort(counts)
-  sorted_counts = counts[sort_unique][::-1][:vocab_size - 1]
-  unique_sorted = unique[sort_unique][::-1][:vocab_size - 1]
-
-  return unique_sorted, sorted_counts, word_array
+tf.logging.set_verbosity(tf.logging.INFO)
 
 
-def rolling_window(tensor, dtype, shape, capacity=None):
-  with tf.name_scope('rolling_window'):
-    window_size = shape[0]
-    if capacity is None:
-      capacity = shape[0] * 2 + 1
-
-    q = tf.FIFOQueue(capacity, [dtype], shapes=[shape[1:]])
-    enqueue = q.enqueue_many(tensor)
-    tf.train.add_queue_runner(
-        tf.train.QueueRunner(queue=q, enqueue_ops=[enqueue])
-    )
-
-    # Pad first element as it will be immediately overwritten
-    window_initial_value = q.dequeue_many(window_size)
-
-    window = tf.Variable(
-        window_initial_value,
-        expected_shape=shape,
-        trainable=False,
-        collections=[],
-        name='window'
-    )
-    oldest_pos = tf.Variable(
-        0,
-        expected_shape=[],
-        trainable=False,
-        dtype=tf.int32,
-        collections=[],
-        name='oldest_pos'
-    )
-
-    oldest_pos_init = tf.cond(tf.is_variable_initialized(oldest_pos),
-                              lambda: tf.assign(oldest_pos, oldest_pos + 1 % window_size),
-                              lambda: _init_and_return_ref(oldest_pos))
-
-    window_init = tf.cond(tf.is_variable_initialized(window),
-                          lambda: window[oldest_pos_init].assign(q.dequeue()),
-                          lambda: _init_and_return_ref(window))
-
-    return tf.concat(0, [
-        window_init[oldest_pos_init+1:],
-        window_init[:oldest_pos_init+1]
-    ])
-
-
-def _init_and_return_ref(ref):
-    return tf.tuple([ref], control_inputs=[ref.initializer])
-
-def skipgrams(word_tensor, num_skips, skip_window):
-  window = rolling_window(
-      tf.expand_dims(word_tensor, axis=1),
-      tf.string,
-      [2*skip_window + 1, 1]
+def window_input_producer(tensor, window_size, capacity=32, num_epochs=None):
+  num_windows = tensor.get_shape().dims[0].value - window_size
+  if num_windows <= 0:
+    raise ValueError('Provided tensor is not large enough for a window')
+  range_queue = tf.train.range_input_producer(
+      tf.constant(num_windows, dtype=tf.int32, shape=[]),
+      shuffle=False,
+      capacity=capacity,
+      num_epochs=num_epochs
   )
-  target = window[skip_window]
-  contexts = tf.random_shuffle(
-      tf.concat(0, [
-          window[:skip_window],
-          window[skip_window+1:]
-      ])
+  index = range_queue.dequeue()
+  window = tensor[index:index + window_size]
+  queue = tf.FIFOQueue(capacity=capacity,
+                       dtypes=[tensor.dtype.base_dtype],
+                       shapes=[window_size])
+
+  enq = queue.enqueue(window)
+  tf.train.add_queue_runner(
+      tf.train.QueueRunner(queue, [enq])
+  )
+
+  return queue
+
+
+def skipgrams(word_tensor, num_skips, skip_window, num_epochs=None):
+  window_size = 2 * skip_window + 1
+  indices = range(window_size)
+  del indices[skip_window]
+
+  indices_tensor = tf.random_shuffle(
+      tf.constant(indices, dtype=tf.int32)
   )[:num_skips]
 
-  targets = tf.tile(target, [num_skips])
+  windows = window_input_producer(word_tensor, window_size, num_epochs=num_epochs)
+  window = windows.dequeue()
+
+  targets = tf.tile([window[skip_window]], [num_skips])
+  contexts = tf.gather(window, indices_tensor)
   return targets, contexts
 
 
-def write_index_to_file(index, filename):
-  with open(filename, 'wb') as writer:
-    writer.write(tf.contrib.util.make_tensor_proto(index).SerializeToString())
+def build_vocab(word_tensor, vocab_size):
+  unique, idx = tf.unique(word_tensor)
+  counts_one_hot = tf.one_hot(
+      idx,
+      idx[tf.to_int32(tf.argmax(idx, 0))] + 1,
+      dtype=tf.int32
+  )
+  counts = tf.reduce_sum(counts_one_hot, 0)
+  _, indices = tf.nn.top_k(counts, k=vocab_size)
+  return tf.gather(unique, indices)
 
 
-def make_input_fn(filenames,
+def make_input_fn(text_file,
                   batch_size,
                   num_skips,
                   skip_window,
-                  index_file,
+                  vocab_size,
                   num_epochs=None):
   def _input_fn():
     with tf.name_scope('input'):
-      index = tf.parse_tensor(tf.read_file(index_file), tf.string)
-      filename_queue = tf.train.string_input_producer(
-          filenames, num_epochs=num_epochs)
-      reader = tf.TextLineReader()
-      _, string_tensor = reader.read(filename_queue)
+      corpus = tf.parse_tensor(tf.read_file(text_file), tf.string)
 
       word_tensor = tf.py_func(
           lambda t: np.array(nltk.word_tokenize(t)),
-          [string_tensor],
+          [corpus],
           tf.string,
           stateful=False,
           name='tokenize'
       )
+      index = build_vocab(word_tensor, vocab_size)
 
-      targets, contexts = skipgrams(word_tensor, num_skips, skip_window)
+      targets, contexts = skipgrams(
+          word_tensor,
+          num_skips,
+          skip_window,
+          num_epochs=num_epochs
+      )
 
       thread_count = multiprocessing.cpu_count()
 
