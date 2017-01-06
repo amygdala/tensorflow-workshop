@@ -1,5 +1,4 @@
 # Copyright 2016 Google Inc. All Rights Reserved.
-# Copyright 2016 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -41,6 +40,7 @@ class Evaluator(object):
   def __init__(self, args, model, data_paths, dataset='eval'):
     self.eval_batch_size = args.eval_batch_size
     self.num_eval_batches = args.eval_set_size // self.eval_batch_size
+    # logging.info("eval set size: %s", args.eval_set_size)
     self.batch_of_examples = []
     self.checkpoint_path = train_dir(args.output_path)
     self.output_path = os.path.join(args.output_path, dataset)
@@ -53,16 +53,20 @@ class Evaluator(object):
     """Run one round of evaluation, return loss and accuracy."""
 
     num_eval_batches = num_eval_batches or self.num_eval_batches
-    # aju
-    logging.info("number of eval batches: %s and eval batch size: %s",
-        num_eval_batches, self.eval_batch_size)
+    # logging.info("number of eval batches: %s and eval batch size: %s",
+        # num_eval_batches, self.eval_batch_size)
+    # logging.info("batch size: %s", self.batch_size)
     with tf.Graph().as_default() as graph:
       self.tensors = self.model.build_eval_graph(self.eval_data_paths,
                                                  self.eval_batch_size)
       self.summary = tf.summary.merge_all()
       self.saver = tf.train.Saver()
 
-    self.summary_writer = tf.summary.FileWriter(self.output_path)
+
+    try:
+      self.summary_writer = tf.summary.FileWriter(self.output_path)
+    except AttributeError:
+      self.summary_writer = tf.train.SummaryWriter(self.output_path)
     self.sv = tf.train.Supervisor(
         graph=graph,
         logdir=self.output_path,
@@ -426,8 +430,11 @@ def run(model, argv):
   if args.copy_eval_data_to_tmp:
     args.eval_data_paths = copy_data_to_tmp(args.eval_data_paths)
 
-  if not args.eval_batch_size:  # If eval_batch_size not set, use batch_size.
-    args.eval_batch_size = args.batch_size
+  # logging.info("checking eval batch size %s", args.eval_batch_size)
+  if not args.eval_batch_size:
+    # If eval_batch_size not set, use min of batch_size and eval_set_size
+    args.eval_batch_size = min(args.batch_size, args.eval_set_size)
+    logging.info("setting eval batch size to %s", args.eval_batch_size)
 
   cluster_data = env.get('cluster', None)
   cluster = tf.train.ClusterSpec(cluster_data) if cluster_data else None

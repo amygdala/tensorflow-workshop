@@ -46,7 +46,6 @@ For other flags, see PrepareImagesOptions() bellow.
 
 To run this pipeline locally run the above command without --cloud.
 
-TODO(b/31434218)
 """
 import argparse
 import csv
@@ -401,7 +400,11 @@ def default_args(argv):
         'staging_location':
             os.path.join(os.path.dirname(parsed_args.output_path), 'staging'),
         'runner':
-            'BlockingDataflowPipelineRunner',
+            # Use this runner if you want to block:
+            # 'BlockingDataflowPipelineRunner',
+            # This runner does not block -- you can track the job progress in
+            # the developer's console.
+            'DataflowPipelineRunner',
         'extra_package':
             Default.CML_PACKAGE,
         'save_main_session':
