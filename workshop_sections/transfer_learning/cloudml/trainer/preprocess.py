@@ -34,8 +34,8 @@ When processing CSV file:
 To execute this pipeline locally using default options, run this script
 with no arguments. To execute on cloud pass single argument --cloud.
 
-To execute this pipeline on the cloud using the Dataflow service and non-default
-options:
+To execute this pipeline on the cloud using the Dataflow service and
+non-default options:
 python -E preprocess.py \
 --input_path=PATH_TO_INPUT_CSV_FILE \
 --input_dict=PATH_TO_INPUT_DIC_TXT_FILE \
@@ -58,13 +58,13 @@ import sys
 
 import apache_beam as beam
 from apache_beam.utils.options import PipelineOptions
+from google.cloud.ml.io import SaveFeatures
 from PIL import Image
-import tensorflow as tf
 
+import tensorflow as tf
 from tensorflow.contrib.slim.python.slim.nets import inception_v3 as inception
 from tensorflow.python.framework import errors
 from tensorflow.python.lib.io import file_io
-from google.cloud.ml.io import SaveFeatures
 
 slim = tf.contrib.slim
 

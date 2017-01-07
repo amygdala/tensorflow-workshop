@@ -14,32 +14,27 @@
 """..."""
 
 import argparse
-import os
-import re
-import sys
-
 import base64
 from cStringIO import StringIO
-import json
-from googleapiclient import discovery
-from oauth2client.client import GoogleCredentials
-import httplib2
-
-
-from PIL import Image
+import os
+import sys
 
 from flask import Flask, redirect, render_template, request, url_for
+from googleapiclient import discovery
+from oauth2client.client import GoogleCredentials
+from PIL import Image
 from werkzeug import secure_filename
+
 
 desired_width = 299
 desired_height = 299
-
 
 UPLOAD_FOLDER = 'static'
 ALLOWED_EXTENSIONS = set(['jpg', 'jpeg', 'JPG'])
 
 args = None
 labels = None
+
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -61,10 +56,12 @@ def upload_file():
 
             filename = secure_filename(file.filename)
 
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'],
+                      filename))
             fname = "%s/%s" % (UPLOAD_FOLDER, filename)
             ml_client = create_client()
-            result = get_prediction(ml_client, args.project, args.model_name, fname)
+            result = get_prediction(ml_client, args.project,
+                                    args.model_name, fname)
             predictions = result['predictions']
             print("predictions: %s" % predictions)
             prediction = predictions[0]
@@ -89,9 +86,10 @@ def show_result():
     label = request.args['label']
     score = request.args['score']
 
+    # This result handling logic is hardwired for the "hugs/not-hugs"
+    # example, but would be easy to modify for some other set of
+    # classification labels.
     if label == 'not-hugs':
-        # border_color = ""
-        print "not hugs"
         return render_template('jresults.html',
                                filename=filename,
                                label="Not so huggable.",
@@ -99,33 +97,34 @@ def show_result():
                                border_color="#B20000")
 
     elif label == 'hugs':
-        print "hugs"
         return render_template('jresults.html',
                                filename=filename,
                                label="Huggable.",
                                score=score,
                                border_color="#00FF48")
     else:
-        print "I dunno"
         return render_template('error.html',
-                               message="Something went wrong...sorry :-(")
+                               message="Something went wrong.")
 
 
 def create_client():
 
   credentials = GoogleCredentials.get_application_default()
-  ml_service = discovery.build('ml', 'v1beta1', credentials=credentials)
+  ml_service = discovery.build(
+      'ml', 'v1beta1', credentials=credentials)
   return ml_service
+
 
 def get_prediction(ml_service, project, model_name, input_image):
   request_dict = make_request_json(input_image)
   body = {'instances': [request_dict]}
 
+  # This request will use the default model version.
   parent = 'projects/{}/models/{}'.format(project, model_name)
-  print(parent)
   request = ml_service.projects().predict(name=parent, body=body)
   result = request.execute()
   return result
+
 
 def make_request_json(input_image):
   """..."""
@@ -135,21 +134,22 @@ def make_request_json(input_image):
   is_too_big = ((image.size[0] * image.size[1]) >
                 (desired_width * desired_height))
   if is_too_big:
-    image = image.resize((desired_width, desired_height), Image.BILINEAR)
+    image = image.resize(
+        (desired_width, desired_height), Image.BILINEAR)
 
   image.save(resized_handle, format='JPEG')
   encoded_contents = base64.b64encode(resized_handle.getvalue())
 
-  # key can be any UTF-8 string, since it goes in a HTTP request.
   image_json = {'key': input_image,
-                    'image_bytes': {'b64': encoded_contents}}
+                'image_bytes': {'b64': encoded_contents}}
   return image_json
 
 
 def parse_args():
   parser = argparse.ArgumentParser()
   parser.add_argument(
-      '--model_name', type=str, required=True, help='The name of the model.')
+      '--model_name', type=str, required=True,
+      help='The name of the model.')
   parser.add_argument(
       '--dict',
       type=str,
@@ -161,11 +161,10 @@ def parse_args():
   args, _ = parser.parse_known_args(sys.argv)
   return args
 
+
 def read_dictionary(path):
   with open(path) as f:
     return f.read().splitlines()
-
-
 
 
 if __name__ == "__main__":
@@ -174,5 +173,6 @@ if __name__ == "__main__":
     labels = read_dictionary(args.dict)
     print("labels: %s" % labels)
     # Runs on port 5000 by default.
-    # Change to app.run(host='0.0.0.0') for an externally visible server
+    # Change to app.run(host='0.0.0.0') for an externally visible
+    # server.
     app.run(debug=True)

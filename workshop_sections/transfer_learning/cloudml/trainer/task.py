@@ -53,15 +53,11 @@ class Evaluator(object):
     """Run one round of evaluation, return loss and accuracy."""
 
     num_eval_batches = num_eval_batches or self.num_eval_batches
-    # logging.info("number of eval batches: %s and eval batch size: %s",
-        # num_eval_batches, self.eval_batch_size)
-    # logging.info("batch size: %s", self.batch_size)
     with tf.Graph().as_default() as graph:
       self.tensors = self.model.build_eval_graph(self.eval_data_paths,
                                                  self.eval_batch_size)
       self.summary = tf.summary.merge_all()
       self.saver = tf.train.Saver()
-
 
     try:
       self.summary_writer = tf.summary.FileWriter(self.output_path)
