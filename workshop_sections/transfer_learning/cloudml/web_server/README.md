@@ -15,6 +15,12 @@ gcloud beta auth application-default login
 
 ## Running the server
 
+If you're using virtual environments, run the server from the same virtual environment that you set up to do the model training. Then, make sure that you have all of the web server requirements installed in that environment:
+
+```shell
+pip install -r requirements.txt
+```
+
 Start the server like this:
 
 ```shell

@@ -17,6 +17,7 @@ RUN pip install --upgrade pip
 RUN apt-get update
 RUN apt-get install -y python-scipy
 RUN pip install sklearn nltk pillow
+RUN pip install flask google-api-python-client
 RUN python -c "import nltk; nltk.download('punkt')"
 
 
