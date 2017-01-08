@@ -43,8 +43,6 @@ declare -r PROJECT=$(gcloud config list project --format "value(core.project)")
 declare -r VERSION_NAME=$2
 declare -r GCS_PATH=$1
 
-declare -r MODEL_NAME=hugs
-
 echo
 echo "Using GCS_PATH: " $GCS_PATH
 echo "Using VERSION_NAME: " $VERSION_NAME
@@ -73,9 +71,12 @@ gcloud beta ml versions set-default "$VERSION_NAME" --model "$MODEL_NAME"
 
 # Now, generate a request json file with test image(s). If you trained a model
 # with the 'flower' images, edit the image list appropriately.
-python images_to_json.py -o request.json prediction_images/knife.jpg prediction_images/puppy2.jpg prediction/images/puppy1.jpg
+python images_to_json.py -o request.json prediction_images/knife.jpg prediction_images/puppy2.jpg prediction_images/hedgehog.jpg
 
 set +v
+echo
+echo "You can run this command to see all your models:"
+echo "gcloud beta ml models list"
 echo
 echo "Next, from the command line, run the following.  It might take a"
 echo "few moments for the prediction service to spin up."
