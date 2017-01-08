@@ -60,8 +60,8 @@ set -v -e
 # phase.
 
 
-# These calls are synchronous just for shell scripting ease. You could use
-# --runner DataflowPipelineRunner to run them asynchronously.
+# If run in the cloud, these calls are asynchronous (by default).
+# You can track job progress in the Dataflow console.
 # The following uses just 3 cores each, but you can edit to use more
 # if your project quota is sufficient to do so.
 python trainer/preprocess.py \
@@ -82,7 +82,8 @@ python trainer/preprocess.py \
 
 set +v
 echo
-echo "Using job id: " $JOB_ID
+echo "Generated job id: " $JOB_ID
 echo "Using GCS_PATH: " $GCS_PATH
 echo "Using eval output path: " "${GCS_PATH}/preproc/eval"
 echo "Using train output path: " "${GCS_PATH}/preproc/train"
+echo "Dataflow jobs are running at ${DFJOB_ID}e and ${DFJOB_ID}t"

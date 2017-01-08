@@ -27,23 +27,23 @@ fi
 
 if [ -z "$2" ]
   then
-    echo "No job id supplied"
+    echo "No GCS path supplied"
     exit 1
 fi
 
 declare -r BUCKET=$1
-declare -r JOB_ID=$2
+declare -r GCS_PATH=$2
 
 if [ -z "$3" ]
   then
-    declare -r GCS_PATH="${BUCKET}/${USER}/${JOB_ID}"
-    echo "Auto-generating GCS path: ${GCS_PATH}"
+    declare -r JOB_ID="flowers_${USER}_$(date +%Y%m%d_%H%M%S)"
   else
-    declare -r GCS_PATH=$3
+    declare -r JOB_ID=$3
 fi
 
 
 echo
+echo "Using bucket: " $BUCKET
 echo "Using job id: " $JOB_ID
 echo "Using GCS_PATH: " $GCS_PATH
 set -v -e
@@ -60,6 +60,8 @@ gcloud beta ml jobs submit training "$JOB_ID" \
   --output_path "${GCS_PATH}/training" \
   --eval_data_paths "${GCS_PATH}/preproc/eval*" \
   --train_data_paths "${GCS_PATH}/preproc/train*" \
+  --classifier_label_count 5
+
 
 
 # You can also separately run:
@@ -67,8 +69,5 @@ gcloud beta ml jobs submit training "$JOB_ID" \
 # to see logs for a given job.
 
 set +v
-
-# You can also run the training locally via this command:
-# TODO -- xxx
 
 echo "Using GCS_PATH: " $GCS_PATH

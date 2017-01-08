@@ -32,6 +32,11 @@ IMAGE_URI_COLUMN = 'image_uri'
 LABEL_COLUMN = 'label'
 EMBEDDING_COLUMN = 'embedding'
 
+# The 'hugs' dataset uses 2 labels.  The 'flowers' dataset uses 5.
+LABEL_COUNT = 2  # for 'hugs'
+# LABEL_COUNT = 5  # for 'flowers'
+
+
 # Path to a default checkpoint file for the Inception graph.
 DEFAULT_INCEPTION_CHECKPOINT = (
     'gs://cloud-ml-data/img/flower_photos/inception_v3_2016_08_28.ckpt')
@@ -49,13 +54,27 @@ def create_model():
   parser = argparse.ArgumentParser()
   # Label count needs to correspond to nubmer of labels in dictionary used
   # during preprocessing.
-  parser.add_argument('--label_count', type=int, default=2)
+  parser.add_argument('--label_count', type=int, default=LABEL_COUNT)
   parser.add_argument('--dropout', type=float, default=0.5)
   parser.add_argument(
       '--inception_checkpoint_file',
       type=str,
       default=DEFAULT_INCEPTION_CHECKPOINT)
   args, task_args = parser.parse_known_args()
+
+  # Adding the following 'hack' to make the example easier to run: use the
+  # classifier_label count if it was specified as a task.py arg, to set the
+  # model label_count.
+  if '--classifier_label_count' in task_args:
+    clabel_count = task_args[task_args.index('--classifier_label_count') + 1]
+    logging.info("Found classifier_label_count task arg.")
+    try:
+      clabel_count = int(clabel_count)
+      args.label_count = clabel_count
+    except:
+      logging.info("classifier label count was set, but is not an int.")
+    logging.info("using label count: %s", args.label_count)
+
   override_if_not_in_args('--max_steps', '1000', task_args)
   override_if_not_in_args('--batch_size', '100', task_args)
   override_if_not_in_args('--eval_set_size', '370', task_args)

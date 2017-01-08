@@ -329,6 +329,11 @@ def run(model, argv):
       help='The path to which checkpoints and other outputs '
       'should be saved. This can be either a local or GCS '
       'path.')
+  # extending the generic task frame work to add this arg, which we can use to
+  # specify the number of labels in our classifier model.
+  parser.add_argument(
+      '--classifier_label_count',
+      type=int,)
   parser.add_argument(
       '--max_steps',
       type=int,)
