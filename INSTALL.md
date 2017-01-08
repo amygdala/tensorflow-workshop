@@ -1,5 +1,21 @@
 
+
 # Installation instructions for the TensorFlow workshop
+
+  - [Docker-based installation](#docker-based-installation)
+    - [Download the container image](#download-the-container-image)
+    - [Create a directory to hold data files needed by the workshop](#create-a-directory-to-hold-data-files-needed-by-the-workshop)
+    - [Run the container](#run-the-container)
+    - [Restarting the container later](#restarting-the-container-later)
+  - [Virtual environment-based installation](#virtual-environment-based-installation)
+    - [Install Conda + Python 2.7 to use as your local virtual environment](#install-conda--python-27-to-use-as-your-local-virtual-environment)
+    - [Install TensorFlow into a virtual environment](#install-tensorflow-into-a-virtual-environment)
+    - [Install some Python packages](#install-some-python-packages)
+    - [Install the Google Cloud SDK](#install-the-google-cloud-sdk)
+    - [Cloud ML setup](#cloud-ml-setup)
+    - [Cloud ML SDK installation (for 'transfer learning' preprocessing)](#cloud-ml-sdk-installation-for-transfer-learning-preprocessing)
+  - [Set up some data files used in the examples](#set-up-some-data-files-used-in-the-examples)
+  - [Optional: Clone/Download the TensorFlow repo from GitHub](#optional-clonedownload-the-tensorflow-repo-from-github)
 
 You can set up for the workshop in two different, mutually-exclusive ways:
 
@@ -63,7 +79,8 @@ $ docker exec -it <container_id> bash
 
 We highly recommend that you use a virtual environment for your TensorFlow installation rather than a direct install onto your machine.  The instructions below walk you thorough a `conda` install, but a `virtualenv` environment will work as well.
 
-The instructions specify using Python 2.7, but Python 3.x will work for everything but the "Cloud ML" sections of the workshop.
+Note: The 'preprocessing' stage in the [Cloud ML transfer learning](workshop_sections/transfer_learning/cloudml)
+example requires installation of the Cloud ML SDK, which requires Python 2.7. Otherwise, Python 3 should likely work.
 
 ### Install Conda + Python 2.7 to use as your local virtual environment
 
@@ -73,11 +90,11 @@ Follow the instructions [here](https://www.continuum.io/downloads).  The [minico
 
 ### Install TensorFlow into a virtual environment
 
-Follow the instructions [on the TensorFlow site](https://www.tensorflow.org/versions/r0.11/get_started/os_setup.html#anaconda-installation) to create a Conda environment with Python 2.7, *activate* it, and then use [conda-forge](https://www.tensorflow.org/versions/r0.11/get_started/os_setup.html#using-conda) to install TensorFlow within it.
+Follow the instructions [on the TensorFlow site](https://www.tensorflow.org/get_started/os_setup#anaconda_installation) to create a Conda environment with Python 2.7, *activate* it, and then install TensorFlow within it.
 
-**Note**: as of this writing, `conda-forge` installs TensorFlow 0.11. That is fine for this workshop. If you'd prefer to install using pip, follow the ["using pip" section](https://www.tensorflow.org/versions/r0.11/get_started/os_setup.html#using-pip) instead.
+**Note**: Either TensorFlow version 0.11 or 0.12 is okay for this workshop.
 
-If you'd prefer to use virtualenv, see [these instructions](https://www.tensorflow.org/versions/r0.11/get_started/os_setup.html#virtualenv-installation) instead.
+If you'd prefer to use virtualenv, see [these instructions](https://www.tensorflow.org/get_started/os_setup#virtualenv_installation) instead.
 
 Remember to activate your environment in all the terminal windows you use during this workshop.
 
@@ -112,16 +129,62 @@ gcloud components install beta
 
 To get the `gcloud beta ml` commands.
 
+### Cloud ML setup
 
-## [Optional: Get Started With Google Cloud Machine Learning](#cloud-ml-setup)
-
-Follow the following instructions in order:
-
-NOTE: You DO NOT need to follow the "Setting up your Environment" section
+Follow the instructions below to create a project, initialize it for Cloud ML, and set up a storage bucket to use for the workshop examples.
 
 * [Setting Up Your GCP Project](https://cloud.google.com/ml/docs/how-tos/getting-set-up#setting_up_your_google_cloud_project )
 * [Initializing Cloud ML for your project](https://cloud.google.com/ml/docs/how-tos/getting-set-up#initializing_your_product_name_short_project)
 * [Setting up your Cloud Storage Bucket](https://cloud.google.com/ml/docs/how-tos/getting-set-up#setting_up_your_cloud_storage_bucket)
+
+### Cloud ML SDK installation (for 'transfer learning' preprocessing)
+
+The Cloud ML SDK is needed to run the 'preprocessing' stage in the [Cloud ML transfer
+learning](workshop_sections/transfer_learning/cloudml) example. It requires Python 2.7 to install. It's possible to
+skip this part of setup for most of the exercises.
+
+To install the SDK, follow the setup instructions
+[on this page](https://cloud.google.com/ml/docs/how-tos/getting-set-up).
+(Assuming you've followed the instructions above, you will have already done some of this).
+
+You don't need to download the Cloud ML samples or docs for this workshop, though you may find it useful to grab them
+anyway.
+
+## Set up some data files used in the examples
+
+### Transfer learning example
+
+Because we have limited workshop time, we've saved a set of
+[TFRecords]([TFRecords](https://www.tensorflow.org/api_docs/python/python_io/))
+generated as part of the [Cloud ML transfer learning](workshop_sections/transfer_learning/cloudml) 
+example. To save time, copy them now to your own bucket as follows.
+
+Copy a zip of the generated records to some directory on your local machine:
+
+```shell
+gsutil cp gs://oscon-tf-workshop-materials/transfer_learning/cloudml/hugs_preproc_tfrecords.zip .
+```
+
+and then expand the zip:
+
+```shell
+unzip hugs_preproc_tfrecords.zip
+```
+
+Set the `BUCKET` variable to point to your GCS bucket (replacing `your-bucket-name` with the actual name):
+
+```shell
+BUCKET=gs://your-bucket-name
+```
+
+Then set the `GCS_PATH` variable as follows, and copy the unzipped records to a `preproc` directory under that path:
+
+```shell
+GCS_PATH=$BUCKET/hugs_preproc_tfrecords
+gsutil cp -r hugs_preproc_tfrecords/ $GCS_PATH/preproc
+```
+
+Once you've done this, you can delete the local zip and `hugs_preproc_tfrecords` directory.
 
 ## Optional: Clone/Download the TensorFlow repo from GitHub
 

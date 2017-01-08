@@ -1,5 +1,5 @@
 
-# Classifying your own images using transfer learning
+# Classifying your own images using *transfer learning*
 
 The [Google Vision API](xxx) is great for identifying labels, or categories, for a given image. However, sometimes you
 want to further classify your own images, in more specialized categories that the Google Vision API hasn't been trained
@@ -14,13 +14,13 @@ penultimate "bottleneck" layer, train a new top layer that can recognize other c
 We'll see that our new top layer does not need to be very complex, and that we don't need to do much training of this
 new model, to get good results for our new image classifications.
 
-![Image classification NN](./image-classification.png)
+![Image classification NN](./image-classification-3-1.png)
 
 In addition to the transfer learning, this example shows off several other interesting aspects of TensorFlow and Cloud
 ML. It shows how to use
 [Cloud Dataflow](https://cloud.google.com/dataflow/) ([Apache Beam](https://beam.apache.org/))
 to do image preprocessing -- which uses Inception v3 to generate the inputs to the new 'top layer' that we will train
--- and how to save those preprocessing results in [TFRecords](xxx).
+-- and how to save those preprocessing results in [TFRecords](https://www.tensorflow.org/api_docs/python/python_io/).
 
 The example also includes a little "prediction web server" that shows how you can
 **use the Cloud ML API for prediction** once your trained model is serving.
@@ -55,17 +55,13 @@ parallel, making this task a great candidate for Cloud Dataflow.
 We need to run preprocessing for both our training and evaluation images.  We've defined a script, `hugs_preproc.sh`,
 to do this.
 
-
-```shell
-gsutil cat gs://oscon-tf-workshop-materials/transfer_learning/cloudml/hugs_photos/dict.txt
-```
-
-
+First, set the `BUCKET` variable to point to your GCS bucket (replacing `your-bucket-name` with the actual name):
 
 ```shell
 BUCKET=gs://your-bucket-name
 ```
 
+Then, run the pre-processing script.  By default, it will launch two non-blocking Cloud Dataflow jobs to do the preprocessing for the eval and training datasets. By default it only uses 3 workers for each job, but you can change this if you have larger quota.
 
 ```shell
 ./hugs_preproc.sh $BUCKET
@@ -77,11 +73,11 @@ If running in a docker container, instead run the script as follows, defining th
 USER=xxx ./hugs_preproc.sh $BUCKET
 ```
 
-This script ${GCS_PATH}/preproc/train
+This script will generate a `GCS_PATH` (that it will display in STDOUT).
+The pipelines will write the generated embeds, in the form of TFRecord protobuf files, to under `$GCS_PATH/preproc`.
 
-[** This starts dataflow jobs... uses [TFRecords format](xxx) for output...]
-[** then, see your jobs running in the [Cloud console](https://console.cloud.google.com/dataflow)  ...
-Note: only 3 workers, but you can change the script arg to use more... ]
+You can see your pipeline jobs running in the Dataflow panel of the [Cloud console](https://console.cloud.google.com/dataflow).
+Before you use these generated embeds, you'll want to make sure that the Dataflow jobs have finished.
 
 
 ### 2. Modeling: Training the classifier
@@ -95,7 +91,7 @@ randomly ignores a subset of input weights to prevent over-fitting to the traini
 
 ### 2.1 For the workshop, use pre-generated TFRecords for training
 
-Because we have limited workshop time, we've saved a set of generated of TFRecords for the "hugs" images that you can
+Because we have limited workshop time, we've saved a set of generated TFRecords for the "hugs" images that you can
 copy to your own bucket, so that you don't need to wait for Dataflow jobs to finish. If you didn't already copy this
 data as part of the [installation instructions](xxx), you can do it now.
 
@@ -117,6 +113,8 @@ Set the `GCS_PATH` variable to point to a new directory under your own bucket, a
 GCS_PATH=$BUCKET/hugs_preproc_tfrecords
 gsutil cp -r hugs_preproc_tfrecords/ $GCS_PATH/preproc
 ```
+
+Once you've done that you can delete the local zip and `hugs_preproc_tfrecords` directory.
 
 (As indicated above, if we had a bit more time in this workshop, you could wait for your Dataflow preprocessing jobs to finish running, then point to your own generated image embeds instead).
 
@@ -172,16 +170,23 @@ gcloud beta ml models create hugs
 
 ## Appendix: Running training locally
 
-For running training locally:
-export GOOGLE_APPLICATION_CREDENTIALS=/Users/amyu/Downloads/aju-vtests2-201d2930f3da.json
+If you want to run the training session locally (this can be useful for debugging), you will need to point the
+`GOOGLE_APPLICATION_CREDENTIALS` environment variable to a local service account credentials file like this:
 
+```shell
+export GOOGLE_APPLICATION_CREDENTIALS=/path/to/credentials/file.json
+```
+
+Then initiate the local training like this, defining a local output path to use:
+
+```shell
 gcloud beta ml local train --package-path trainer/ --module-name trainer.task \
     -- \
     --max-steps 1000 \
-    --train_data_paths "gs://aju-vtests2-ml-amy/amyu/hugs_amyu_20161227_102958/preproc/train*" \
-    --eval_data_paths "gs://aju-vtests2-ml-amy/amyu/hugs_amyu_20161227_102958/preproc/eval*" \
+    --train_data_paths "$GCS_PATH/preproc/train*" \
+    --eval_data_paths "$GCS_PATH/preproc/eval*" \
     --eval_set_size 19 \
     --output_path output/
-
+```
 
 
