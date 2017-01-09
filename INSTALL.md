@@ -1,20 +1,22 @@
 
+# Installation instructions for the TensorFlow/Cloud ML workshop
 
-# Installation instructions for the TensorFlow workshop
-
+  - [Project and Cloud ML setup](#project-and-cloud-ml-setup)
   - [Docker-based installation](#docker-based-installation)
     - [Download the container image](#download-the-container-image)
     - [Create a directory to hold data files needed by the workshop](#create-a-directory-to-hold-data-files-needed-by-the-workshop)
     - [Run the container](#run-the-container)
+    - [Authorize gcloud in the running container](#authorize-gcloud-in-the-running-container)
     - [Restarting the container later](#restarting-the-container-later)
+    - [Running the Docker container on a VM](#running-the-docker-container-on-a-vm)
   - [Virtual environment-based installation](#virtual-environment-based-installation)
     - [Install Conda + Python 2.7 to use as your local virtual environment](#install-conda--python-27-to-use-as-your-local-virtual-environment)
     - [Install TensorFlow into a virtual environment](#install-tensorflow-into-a-virtual-environment)
     - [Install some Python packages](#install-some-python-packages)
     - [Install the Google Cloud SDK](#install-the-google-cloud-sdk)
-    - [Cloud ML setup](#cloud-ml-setup)
     - [Cloud ML SDK installation (for 'transfer learning' preprocessing)](#cloud-ml-sdk-installation-for-transfer-learning-preprocessing)
   - [Set up some data files used in the examples](#set-up-some-data-files-used-in-the-examples)
+    - [Transfer learning example](#transfer-learning-example)
   - [Optional: Clone/Download the TensorFlow repo from GitHub](#optional-clonedownload-the-tensorflow-repo-from-github)
 
 You can set up for the workshop in two different, mutually-exclusive ways:
@@ -22,11 +24,26 @@ You can set up for the workshop in two different, mutually-exclusive ways:
 - [Running in a docker container](#docker-based-installation).
 - [Installing the necessary packages into a virtual environment](#virtual-environment-based-installation).
 
+You will need to do the [Cloud Project and Cloud ML setup](#cloud-ml-setup) in either case.
+
+## Project and Cloud ML setup
+
+Follow the instructions below to create a project, initialize it for Cloud ML, and set up a storage bucket to use for the workshop examples.
+
+**Note: Skip the "Setting up your environment" section** of the linked-to page at this step. (If you run in a docker container, it is already done for you).
+
+* [Setting Up Your GCP Project](https://cloud.google.com/ml/docs/how-tos/getting-set-up#setting_up_your_google_cloud_project )
+* [Initializing Cloud ML for your project](https://cloud.google.com/ml/docs/how-tos/getting-set-up#initializing_your_product_name_short_project)
+* [Setting up your Cloud Storage Bucket](https://cloud.google.com/ml/docs/how-tos/getting-set-up#setting_up_your_cloud_storage_bucket)
+
 ## Docker-based installation
 
 We're providing a [Docker](https://www.docker.com/) container image with all the necessary libraries included, for you to download.
 
-To use it, you'll need to have [Docker installed](https://docs.docker.com/engine/installation/). To run some of the examples, you'll likely need to configure it with at least 4GB of memory.
+To use it, you'll need to have [Docker installed](https://docs.docker.com/engine/installation/).
+To run some of the examples, you'll likely need to configure it with at least 4GB of memory.
+
+If you like, you can start up a Google Compute Engine (GCE) VM with docker installed, and run the container there.  This is a good option if you don't want to install Docker locally. See the instructions at the end of this section for how to do that.
 
 ### Download the container image
 
@@ -53,6 +70,17 @@ $ docker run -v `pwd`/workshop-data:/root/tensorflow-workshop-master/workshop-da
 
 Edit the path to the directory you're mounting as appropriate. The first component of the `-v` arg is the local directory, and the second component is where you want to mount it in your running container.
 
+### Authorize gcloud in the running container
+
+In the docker container, run the following commands, replacing `<your-project-name` with your project name.
+For the second two, you will get a URL to paste in your browser, to obtain an auth code. In the browser, allow access, then copy the resulting code and paste it at the prompt in your running docker container.
+
+```shell
+gcloud config set project <your-project-name>
+gcloud auth login
+gcloud beta auth application-default login
+```
+
 ### Restarting the container later
 
 If you later exit your container and then want to restart it again, you can find the container ID by running:
@@ -73,11 +101,23 @@ $ docker start <container_id>
 $ docker exec -it <container_id> bash
 ```
 
+### Running the Docker container on a VM
+
+It is easy to set up a Google Compute Engine (GCE) VM in which to run the Docker container.
+
+- Connect to your project's [Cloud Shell](https://cloud.google.com/shell/).
+- From the Cloud Shell, create a container-optimized image as described [here](https://cloud.google.com/container-optimized-os/docs/how-to/create-configure-instance).
+- SSH to that image.  You can do this from the Cloud Console by visiting the Compute Engine panel, and clicking on the 'SSH' pulldown to the right of your instance.
+
+Then, once you've ssh'd to the VM, follow the instructions above to download and run the Docker container there.
+Note: **Docker is already installed** on the 'container-optimized' VMs.
+
+
 ## Virtual environment-based installation
 
 (These steps are not necessary if you have already completed the instructions for running the Docker image.)
 
-We highly recommend that you use a virtual environment for your TensorFlow installation rather than a direct install onto your machine.  The instructions below walk you thorough a `conda` install, but a `virtualenv` environment will work as well.
+We highly recommend that you use a virtual environment for your TensorFlow installation rather than a direct install onto your machine.  The instructions below walk you through a `conda` install, but a `virtualenv` environment will work as well.
 
 Note: The 'preprocessing' stage in the [Cloud ML transfer learning](workshop_sections/transfer_learning/cloudml)
 example requires installation of the Cloud ML SDK, which requires Python 2.7. Otherwise, Python 3 should likely work.
@@ -121,21 +161,13 @@ $ python -c "import nltk; nltk.download('punkt')"
 
 ### Install the Google Cloud SDK
 
-Follow the installation instructions [here](https://cloud.google.com/sdk/downloads) then run:
+Follow the installation instructions [here](https://cloud.google.com/sdk/downloads), then run:
 
 ```
 gcloud components install beta
 ```
 
 To get the `gcloud beta ml` commands.
-
-### Cloud ML setup
-
-Follow the instructions below to create a project, initialize it for Cloud ML, and set up a storage bucket to use for the workshop examples.
-
-* [Setting Up Your GCP Project](https://cloud.google.com/ml/docs/how-tos/getting-set-up#setting_up_your_google_cloud_project )
-* [Initializing Cloud ML for your project](https://cloud.google.com/ml/docs/how-tos/getting-set-up#initializing_your_product_name_short_project)
-* [Setting up your Cloud Storage Bucket](https://cloud.google.com/ml/docs/how-tos/getting-set-up#setting_up_your_cloud_storage_bucket)
 
 ### Cloud ML SDK installation (for 'transfer learning' preprocessing)
 
@@ -152,13 +184,14 @@ To install the SDK, follow the setup instructions
 You don't need to download the Cloud ML samples or docs for this workshop, though you may find it useful to grab them
 anyway.
 
+
 ## Set up some data files used in the examples
 
 ### Transfer learning example
 
 Because we have limited workshop time, we've saved a set of
 [TFRecords]([TFRecords](https://www.tensorflow.org/api_docs/python/python_io/))
-generated as part of the [Cloud ML transfer learning](workshop_sections/transfer_learning/cloudml) 
+generated as part of the [Cloud ML transfer learning](workshop_sections/transfer_learning/cloudml)
 example. To save time, copy them now to your own bucket as follows.
 
 Copy a zip of the generated records to some directory on your local machine:
