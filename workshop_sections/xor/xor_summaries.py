@@ -47,7 +47,7 @@ def make_graph(features, labels, num_hidden=8):
   return train_op, loss, gs, update_acc
 
 
-def main(output_dir, checkpoint_every, num_steps):
+def main(output_dir, summaries_every, num_steps):
   graph = tf.Graph()
 
 
@@ -80,7 +80,7 @@ def main(output_dir, checkpoint_every, num_steps):
           [train_op, update_acc, gs, loss, summary_op],
           feed_dict={features: xy, labels: y_}
       )
-      if step % checkpoint_every == 0:
+      if step % summaries_every == 0:
         writer.add_summary(summaries, global_step=step)
         tf.logging.info('Wrote summaries at step {}'.format(step))
 
@@ -95,4 +95,4 @@ if __name__ == '__main__':
   )
   parser.add_argument('--summaries-every', type=int, default=5)
   args = parser.parse_args()
-  main(args.output_dir, args.checkpoint_every, args.num_steps)
+  main(args.output_dir, args.summaries_every, args.num_steps)
