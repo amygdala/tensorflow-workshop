@@ -1,20 +1,21 @@
 
+# Installation instructions for the TensorFlow/Cloud ML workshop
 
-# Installation instructions for the TensorFlow workshop
-
+  - [Project and Cloud ML setup](#project-and-cloud-ml-setup)
   - [Docker-based installation](#docker-based-installation)
     - [Download the container image](#download-the-container-image)
     - [Create a directory to hold data files needed by the workshop](#create-a-directory-to-hold-data-files-needed-by-the-workshop)
     - [Run the container](#run-the-container)
     - [Restarting the container later](#restarting-the-container-later)
+    - [Running the Docker container on a VM](#running-the-docker-container-on-a-vm)
   - [Virtual environment-based installation](#virtual-environment-based-installation)
     - [Install Conda + Python 2.7 to use as your local virtual environment](#install-conda--python-27-to-use-as-your-local-virtual-environment)
     - [Install TensorFlow into a virtual environment](#install-tensorflow-into-a-virtual-environment)
     - [Install some Python packages](#install-some-python-packages)
     - [Install the Google Cloud SDK](#install-the-google-cloud-sdk)
     - [Cloud ML SDK installation (for 'transfer learning' preprocessing)](#cloud-ml-sdk-installation-for-transfer-learning-preprocessing)
-  - [Cloud ML setup](#cloud-ml-setup)
   - [Set up some data files used in the examples](#set-up-some-data-files-used-in-the-examples)
+    - [Transfer learning example](#transfer-learning-example)
   - [Optional: Clone/Download the TensorFlow repo from GitHub](#optional-clonedownload-the-tensorflow-repo-from-github)
 
 You can set up for the workshop in two different, mutually-exclusive ways:
@@ -22,13 +23,24 @@ You can set up for the workshop in two different, mutually-exclusive ways:
 - [Running in a docker container](#docker-based-installation).
 - [Installing the necessary packages into a virtual environment](#virtual-environment-based-installation).
 
-You will need to do the [Cloud ML setup](#cloud-ml-setup) in either case.
+You will need to do the [Cloud Project and Cloud ML setup](#cloud-ml-setup) in either case.
+
+## Project and Cloud ML setup
+
+Follow the instructions below to create a project, initialize it for Cloud ML, and set up a storage bucket to use for the workshop examples.
+
+* [Setting Up Your GCP Project](https://cloud.google.com/ml/docs/how-tos/getting-set-up#setting_up_your_google_cloud_project )
+* [Initializing Cloud ML for your project](https://cloud.google.com/ml/docs/how-tos/getting-set-up#initializing_your_product_name_short_project)
+* [Setting up your Cloud Storage Bucket](https://cloud.google.com/ml/docs/how-tos/getting-set-up#setting_up_your_cloud_storage_bucket)
 
 ## Docker-based installation
 
 We're providing a [Docker](https://www.docker.com/) container image with all the necessary libraries included, for you to download.
 
-To use it, you'll need to have [Docker installed](https://docs.docker.com/engine/installation/). To run some of the examples, you'll likely need to configure it with at least 4GB of memory.
+To use it, you'll need to have [Docker installed](https://docs.docker.com/engine/installation/).
+To run some of the examples, you'll likely need to configure it with at least 4GB of memory.
+
+If you like, you can start up a Google Compute Engine (GCE) VM with docker installed, and run the container there.  This is a good option if you don't want to install Docker locally. See the instructions at the end of this section for how to do that.
 
 ### Download the container image
 
@@ -74,6 +86,17 @@ $ docker start <container_id>
 ```sh
 $ docker exec -it <container_id> bash
 ```
+
+### Running the Docker container on a VM
+
+It is easy to set up a Google Compute Engine (GCE) VM in which to run the Docker container.
+
+- Connect to your project's [Cloud Shell](https://cloud.google.com/shell/).
+- From the Cloud Shell, create a container-optimized image as described [here](https://cloud.google.com/container-optimized-os/docs/how-to/create-configure-instance).
+- SSH to that image.  You can do this from the Cloud Console by visiting the Compute Engine panel, and clicking on the 'SSH' pulldown to the right of your instance.
+
+Then, once you've ssh'd to the VM, follow the instructions above to download and run the Docker container there.
+
 
 ## Virtual environment-based installation
 
@@ -146,13 +169,7 @@ To install the SDK, follow the setup instructions
 You don't need to download the Cloud ML samples or docs for this workshop, though you may find it useful to grab them
 anyway.
 
-## Cloud ML setup
 
-Follow the instructions below to create a project, initialize it for Cloud ML, and set up a storage bucket to use for the workshop examples.
-
-* [Setting Up Your GCP Project](https://cloud.google.com/ml/docs/how-tos/getting-set-up#setting_up_your_google_cloud_project )
-* [Initializing Cloud ML for your project](https://cloud.google.com/ml/docs/how-tos/getting-set-up#initializing_your_product_name_short_project)
-* [Setting up your Cloud Storage Bucket](https://cloud.google.com/ml/docs/how-tos/getting-set-up#setting_up_your_cloud_storage_bucket)
 
 
 ## Set up some data files used in the examples
@@ -161,7 +178,7 @@ Follow the instructions below to create a project, initialize it for Cloud ML, a
 
 Because we have limited workshop time, we've saved a set of
 [TFRecords]([TFRecords](https://www.tensorflow.org/api_docs/python/python_io/))
-generated as part of the [Cloud ML transfer learning](workshop_sections/transfer_learning/cloudml) 
+generated as part of the [Cloud ML transfer learning](workshop_sections/transfer_learning/cloudml)
 example. To save time, copy them now to your own bucket as follows.
 
 Copy a zip of the generated records to some directory on your local machine:
