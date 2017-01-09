@@ -18,8 +18,8 @@ or if you want to try using the `gcloud beta ml local train` command the followi
 
 ```
 gcloud beta ml local train \
-    --module-name xor.xor_summaries \
-    -- # Everything below here is passed to the user's program \
+    --module-name xor_summaries \
+    -- \
     --output-dir ${OUTPUT_DIR}
 ```
 
@@ -31,10 +31,20 @@ To run in the cloud you need a Google Cloud Storage bucket to which summaries ca
 
 ```
 gcloud beta ml jobs submit training myxorjob \
-     --module-name xor.xor_summaries \
+     --module-name xor_summaries \
      --staging-bucket ${MY_BUCKET} \
-     -- # User code args below here \
+     -- \
      --output-dir ${OUTPUT_DIR}
 ```
 
 The service may take some time to start up. Make sure you have authorized the Cloud Machine Learning service account to access your bucket, as described in the installation instructions.
+
+### Using TensorBoard to view summaries
+
+TensorBoard is the web UI which reads binary summary files written by TensorFlow training jobs, and renders them as graphics. TensorBoard ships with TensorFlow and so should be installed in your local environment. Run TensorBoard with:
+
+```
+tensorboard --logdir ${OUTPUT_DIR}
+```
+
+And it will read from both local and GCS directories. TensorBoard also recursively searches subdirectories of `--logdir` and renders each events file on the same graph allowing you to compare multiple runs of a training job, or different metrics from the same training job.
