@@ -12,8 +12,8 @@
     - [Install TensorFlow into a virtual environment](#install-tensorflow-into-a-virtual-environment)
     - [Install some Python packages](#install-some-python-packages)
     - [Install the Google Cloud SDK](#install-the-google-cloud-sdk)
-    - [Cloud ML setup](#cloud-ml-setup)
     - [Cloud ML SDK installation (for 'transfer learning' preprocessing)](#cloud-ml-sdk-installation-for-transfer-learning-preprocessing)
+  - [Cloud ML setup](#cloud-ml-setup)
   - [Set up some data files used in the examples](#set-up-some-data-files-used-in-the-examples)
   - [Optional: Clone/Download the TensorFlow repo from GitHub](#optional-clonedownload-the-tensorflow-repo-from-github)
 
@@ -21,6 +21,8 @@ You can set up for the workshop in two different, mutually-exclusive ways:
 
 - [Running in a docker container](#docker-based-installation).
 - [Installing the necessary packages into a virtual environment](#virtual-environment-based-installation).
+
+You will need to do the [Cloud ML setup](#cloud-ml-setup) in either case.
 
 ## Docker-based installation
 
@@ -129,14 +131,6 @@ gcloud components install beta
 
 To get the `gcloud beta ml` commands.
 
-### Cloud ML setup
-
-Follow the instructions below to create a project, initialize it for Cloud ML, and set up a storage bucket to use for the workshop examples.
-
-* [Setting Up Your GCP Project](https://cloud.google.com/ml/docs/how-tos/getting-set-up#setting_up_your_google_cloud_project )
-* [Initializing Cloud ML for your project](https://cloud.google.com/ml/docs/how-tos/getting-set-up#initializing_your_product_name_short_project)
-* [Setting up your Cloud Storage Bucket](https://cloud.google.com/ml/docs/how-tos/getting-set-up#setting_up_your_cloud_storage_bucket)
-
 ### Cloud ML SDK installation (for 'transfer learning' preprocessing)
 
 The Cloud ML SDK is needed to run the 'preprocessing' stage in the [Cloud ML transfer
@@ -151,6 +145,15 @@ To install the SDK, follow the setup instructions
 
 You don't need to download the Cloud ML samples or docs for this workshop, though you may find it useful to grab them
 anyway.
+
+## Cloud ML setup
+
+Follow the instructions below to create a project, initialize it for Cloud ML, and set up a storage bucket to use for the workshop examples.
+
+* [Setting Up Your GCP Project](https://cloud.google.com/ml/docs/how-tos/getting-set-up#setting_up_your_google_cloud_project )
+* [Initializing Cloud ML for your project](https://cloud.google.com/ml/docs/how-tos/getting-set-up#initializing_your_product_name_short_project)
+* [Setting up your Cloud Storage Bucket](https://cloud.google.com/ml/docs/how-tos/getting-set-up#setting_up_your_cloud_storage_bucket)
+
 
 ## Set up some data files used in the examples
 
