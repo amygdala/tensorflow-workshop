@@ -214,6 +214,8 @@ prediction_images/hedgehog.jpg  1           [4.091006485396065e-05, 0.9999591112
 
 [** TBD **]
 
+Run the webserver according to the instructions in its [README](web_server).
+
 ## Appendix: Running training locally
 
 If you want to run the training session locally (this can be useful for debugging), you will need to point the

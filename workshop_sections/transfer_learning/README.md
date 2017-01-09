@@ -10,3 +10,6 @@ use the Cloud ML API for prediction once your trained model is serving.
 
 The [TF_Estimator](TF_Estimator) example takes a similar approach, but is not packaged to run on Cloud ML. It also
 shows an example of using a custom [`Estimator`](https://www.tensorflow.org/api_docs/python/contrib.learn/estimators).
+
+The list of image sources for the images used in the "hugs/no-hugs" training is here:
+https://storage.googleapis.com/oscon-tf-workshop-materials/transfer_learning/hugs_photos_sources.csv
