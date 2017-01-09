@@ -121,9 +121,6 @@ Note: **Docker is already installed** on the 'container-optimized' VMs.
 
 We highly recommend that you use a virtual environment for your TensorFlow installation rather than a direct install onto your machine.  The instructions below walk you through a `conda` install, but a `virtualenv` environment will work as well.
 
-Note: The 'preprocessing' stage in the [Cloud ML transfer learning](workshop_sections/transfer_learning/cloudml)
-example requires installation of the Cloud ML SDK, which requires Python 2.7. Otherwise, Python 3 should likely work.
-
 ### Install Conda + Python 2.7 to use as your local virtual environment
 
 Anaconda is a Python distribution that includes a large number of standard numeric and scientific computing packages. Anaconda uses a package manager called "conda" that has its own environment system similar to Virtualenv.
