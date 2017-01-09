@@ -79,7 +79,8 @@ def main(output_dir, checkpoint_every, num_steps):
           feed_dict={features: xy, labels: y_}
       )
       if step % checkpoint_every == 0:
-         writer.add_summary(summaries, global_step=step)
+        writer.add_summary(summaries, global_step=step)
+        tf.logging.info('Wrote summaries at step {}'.format(step))
 
 
 if __name__ == '__main__':
@@ -90,6 +91,6 @@ if __name__ == '__main__':
       help='GCS or local path for summary writing',
       required=True
   )
-  parser.add_argument('--checkpoint-every', type=int, default=1)
+  parser.add_argument('--summaries-every', type=int, default=5)
   args = parser.parse_args()
   main(args.output_dir, args.checkpoint_every, args.num_steps)
