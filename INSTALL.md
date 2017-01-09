@@ -24,7 +24,7 @@ You can set up for the workshop in two different, mutually-exclusive ways:
 - [Running in a docker container](#docker-based-installation).
 - [Installing the necessary packages into a virtual environment](#virtual-environment-based-installation).
 
-You will need to do the [Cloud Project and Cloud ML setup](#cloud-ml-setup) in either case.
+You will need to do the [Cloud Project and Cloud ML setup](#project-and-cloud-ml-setup) in either case.
 
 ## Project and Cloud ML setup
 
@@ -104,6 +104,8 @@ $ docker exec -it <container_id> bash
 ### Running the Docker container on a VM
 
 It is easy to set up a Google Compute Engine (GCE) VM in which to run the Docker container.
+
+First, make sure that your project has the GCE API enabled. An easy way to do this is to go to the [Cloud Console](https://console.cloud.google.com/), and visit the Compute Engine panel.  It should display a button to enable the API.
 
 - Connect to your project's [Cloud Shell](https://cloud.google.com/shell/).
 - From the Cloud Shell, create a container-optimized image as described [here](https://cloud.google.com/container-optimized-os/docs/how-to/create-configure-instance).
