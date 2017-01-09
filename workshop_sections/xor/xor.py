@@ -1,11 +1,11 @@
 import argparse
 import math
-import os
 
 import numpy as np
 
 import tensorflow as tf
 
+tf.logging.set_verbosity(tf.logging.INFO)
 
 def make_graph(features, labels, num_hidden=8):
   hidden_weights = tf.Variable(tf.truncated_normal(
@@ -29,21 +29,19 @@ def make_graph(features, labels, num_hidden=8):
   loss = tf.reduce_mean(tf.square(predictions - tf.to_float(labels)))
 
   gs = tf.Variable(0, trainable=False)
-  train_op = tf.train.GradientDescentOptimizer(0.2).minimize(loss, global_step=gs)
+  train_op = tf.train.GradientDescentOptimizer(0.2).minimize(
+      loss, global_step=gs)
 
   return train_op, loss, gs
 
-def main(output_dir, checkpoint_every, num_steps):
+def main(num_steps):
   graph = tf.Graph()
-
-  if not os.path.exists(output_dir):
-    os.makedirs(output_dir)
 
   with graph.as_default():
     features = tf.placeholder(tf.float32, shape=[4, 2])
     labels = tf.placeholder(tf.int32, shape=[4])
 
-    train_op, loss, gs, update_acc = make_graph(features, labels)
+    train_op, loss, gs = make_graph(features, labels)
     init = tf.global_variables_initializer()
 
   with tf.Session(graph=graph) as sess:
@@ -62,16 +60,11 @@ def main(output_dir, checkpoint_every, num_steps):
           [train_op, gs, loss],
           feed_dict={features: xy, labels: y_}
       )
-    print('Final loss is: {}'.format(loss_value))
+    tf.logging.info('Final loss is: {}'.format(loss_value))
 
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
   parser.add_argument('--num-steps', type=int, default=5000)
-  parser.add_argument(
-      '--output-dir',
-      type=os.path.abspath,
-      default=os.path.abspath('output')
-  )
   args = parser.parse_args()
-  main(args.output_dir, args.checkpoint_every, args.num_steps)
+  main(args.num_steps)

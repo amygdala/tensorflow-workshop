@@ -1,11 +1,11 @@
 import argparse
 import math
-import os
 
 import numpy as np
 
 import tensorflow as tf
 
+tf.logging.set_verbosity(tf.logging.INFO)
 
 def make_graph(features, labels, num_hidden=8):
   hidden_weights = tf.Variable(tf.truncated_normal(
@@ -16,17 +16,14 @@ def make_graph(features, labels, num_hidden=8):
 
   # Shape [4, num_hidden]
   hidden_activations = tf.nn.relu(tf.matmul(features, hidden_weights))
-  tf.summary.image('hidden_activations', tf.expand_dims([hidden_activations], -1))
 
   output_weights = tf.Variable(tf.truncated_normal(
       [num_hidden, 2],
       stddev=1/math.sqrt(num_hidden)
   ))
-  tf.summary.image('output_weights', tf.expand_dims([output_weights], -1))
 
   # Shape [4, 2]
   logits = tf.matmul(hidden_activations, output_weights)
-  tf.summary.image('logits', tf.expand_dims([logits], -1))
 
   cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits, labels)
   loss = tf.reduce_mean(cross_entropy)
@@ -53,9 +50,6 @@ def make_graph(features, labels, num_hidden=8):
 def main(output_dir, checkpoint_every, num_steps):
   graph = tf.Graph()
 
-  if not os.path.exists(output_dir):
-    os.makedirs(output_dir)
-
   with graph.as_default():
     features = tf.placeholder(tf.float32, shape=[4, 2])
     labels = tf.placeholder(tf.int32, shape=[4])
@@ -64,7 +58,6 @@ def main(output_dir, checkpoint_every, num_steps):
     init = tf.global_variables_initializer()
     init_local = tf.local_variables_initializer()
     summary_op = tf.summary.merge_all()
-
 
   writer = tf.summary.FileWriter(output_dir, graph=graph, flush_secs=1)
 
@@ -94,8 +87,7 @@ if __name__ == '__main__':
   parser.add_argument('--num-steps', type=int, default=5000)
   parser.add_argument(
       '--output-dir',
-      type=os.path.abspath,
-      default=os.path.abspath('output')
+      help='GCS or local path for summary writing'
   )
   parser.add_argument('--checkpoint-every', type=int, default=1)
   args = parser.parse_args()
