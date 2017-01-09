@@ -33,7 +33,7 @@ To use it, you'll need to have [Docker installed](https://docs.docker.com/engine
 Once Docker is installed and running, download the workshop image:
 
 ```sh
-$ docker pull gcr.io/google-samples/tf-workshop:v4
+$ docker pull gcr.io/google-samples/tf-workshop:v5
 ```
 
 [Here's the Dockerfile](https://github.com/amygdala/tensorflow-workshop/tree/master/workshop_image) used to build this image.
@@ -48,7 +48,7 @@ Once you've downloaded the container image, you can run it like this:
 
 ```sh
 $ docker run -v `pwd`/workshop-data:/root/tensorflow-workshop-master/workshop-data -it \
-    -p 6006:6006 -p 8888:8888 gcr.io/google-samples/tf-workshop:v4
+    -p 6006:6006 -p 8888:8888 gcr.io/google-samples/tf-workshop:v5
 ```
 
 Edit the path to the directory you're mounting as appropriate. The first component of the `-v` arg is the local directory, and the second component is where you want to mount it in your running container.
@@ -92,7 +92,7 @@ Follow the instructions [here](https://www.continuum.io/downloads).  The [minico
 
 Follow the instructions [on the TensorFlow site](https://www.tensorflow.org/get_started/os_setup#anaconda_installation) to create a Conda environment with Python 2.7, *activate* it, and then install TensorFlow within it.
 
-**Note**: Either TensorFlow version 0.11 or 0.12 is okay for this workshop.
+**Note**: Install TensorFlow version 0.12.
 
 If you'd prefer to use virtualenv, see [these instructions](https://www.tensorflow.org/get_started/os_setup#virtualenv_installation) instead.
 
@@ -145,7 +145,7 @@ skip this part of setup for most of the exercises.
 
 To install the SDK, follow the setup instructions
 [on this page](https://cloud.google.com/ml/docs/how-tos/getting-set-up).
-(Assuming you've followed the instructions above, you will have already done some of this).
+(Assuming you've followed the instructions above, you will have already done some of these steps. **Install TensorFlow version 0.12** as described in [this section](#install-tensorflow-into-a-virtual-environment), not 0.11)
 
 You don't need to download the Cloud ML samples or docs for this workshop, though you may find it useful to grab them
 anyway.
