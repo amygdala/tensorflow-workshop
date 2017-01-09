@@ -11,7 +11,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""..."""
+"""This is a little example web server that shows how to access the Cloud ML
+API for prediction, using the google api client libraries. It lets the user
+upload an image, then encodes that image and sends off the prediction request,
+then displays the results.
+It uses the default version of the specified model.  Some of the web app's
+UI is hardwired for the "hugs" image set, but would be easy to modify for other
+models.
+See the README.md for how to start the server.
+"""
 
 import argparse
 import base64

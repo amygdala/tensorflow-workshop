@@ -29,6 +29,8 @@ You will need to do the [Cloud Project and Cloud ML setup](#cloud-ml-setup) in e
 
 Follow the instructions below to create a project, initialize it for Cloud ML, and set up a storage bucket to use for the workshop examples.
 
+**Note: Skip the "Setting up your environment" section** of the linked-to page at this step. (If you run in a docker container, it is already done for you).
+
 * [Setting Up Your GCP Project](https://cloud.google.com/ml/docs/how-tos/getting-set-up#setting_up_your_google_cloud_project )
 * [Initializing Cloud ML for your project](https://cloud.google.com/ml/docs/how-tos/getting-set-up#initializing_your_product_name_short_project)
 * [Setting up your Cloud Storage Bucket](https://cloud.google.com/ml/docs/how-tos/getting-set-up#setting_up_your_cloud_storage_bucket)
@@ -67,6 +69,17 @@ $ docker run -v `pwd`/workshop-data:/root/tensorflow-workshop-master/workshop-da
 
 Edit the path to the directory you're mounting as appropriate. The first component of the `-v` arg is the local directory, and the second component is where you want to mount it in your running container.
 
+### Authorize gcloud in the running container
+
+In the docker container, run the following commands, replacing `<your-project-name` with your project name.
+For the second two, you will get a URL to paste in your browser, to obtain an auth code. In the browser, allow access, then copy the resulting code and paste it at the prompt in your running docker container.
+
+```shell
+gcloud config set project <your-project-name>
+gcloud auth login
+gcloud beta auth application-default login
+```
+
 ### Restarting the container later
 
 If you later exit your container and then want to restart it again, you can find the container ID by running:
@@ -96,13 +109,14 @@ It is easy to set up a Google Compute Engine (GCE) VM in which to run the Docker
 - SSH to that image.  You can do this from the Cloud Console by visiting the Compute Engine panel, and clicking on the 'SSH' pulldown to the right of your instance.
 
 Then, once you've ssh'd to the VM, follow the instructions above to download and run the Docker container there.
+Note: **Docker is already installed** on the 'container-optimized' VMs.
 
 
 ## Virtual environment-based installation
 
 (These steps are not necessary if you have already completed the instructions for running the Docker image.)
 
-We highly recommend that you use a virtual environment for your TensorFlow installation rather than a direct install onto your machine.  The instructions below walk you thorough a `conda` install, but a `virtualenv` environment will work as well.
+We highly recommend that you use a virtual environment for your TensorFlow installation rather than a direct install onto your machine.  The instructions below walk you through a `conda` install, but a `virtualenv` environment will work as well.
 
 Note: The 'preprocessing' stage in the [Cloud ML transfer learning](workshop_sections/transfer_learning/cloudml)
 example requires installation of the Cloud ML SDK, which requires Python 2.7. Otherwise, Python 3 should likely work.
@@ -146,7 +160,7 @@ $ python -c "import nltk; nltk.download('punkt')"
 
 ### Install the Google Cloud SDK
 
-Follow the installation instructions [here](https://cloud.google.com/sdk/downloads) then run:
+Follow the installation instructions [here](https://cloud.google.com/sdk/downloads), then run:
 
 ```
 gcloud components install beta
@@ -168,8 +182,6 @@ To install the SDK, follow the setup instructions
 
 You don't need to download the Cloud ML samples or docs for this workshop, though you may find it useful to grab them
 anyway.
-
-
 
 
 ## Set up some data files used in the examples
