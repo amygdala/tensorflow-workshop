@@ -81,7 +81,8 @@ USER=xxx ./hugs_preproc.sh $BUCKET
 ```
 
 This script will generate a timestamp-based `GCS_PATH`, that it will display in STDOUT.
-The pipelines will write the generated embeds, in the form of TFRecord protobuf files, to under `$GCS_PATH/preproc`.
+The pipelines will write the generated embeds into
+[TFRecords files containing tf.train.Example protocol buffers](https://www.tensorflow.org/how_tos/reading_data/), under `$GCS_PATH/preproc`.
 
 You can see your pipeline jobs running in the 
 Dataflow panel of the [Cloud console](https://console.cloud.google.com/dataflow).
@@ -208,13 +209,25 @@ KEY                             PREDICTION  SCORES
 prediction_images/hedgehog.jpg  1           [4.091006485396065e-05, 0.9999591112136841, 1.8843516969013763e-08]
 ```
 
-[** more TBD **]
+The prediction index (e.g. '1') corresponds to the label at that index in the 'label dict' used to construct the example set during preprocessing,
+and the score for each index is listed under SCORES. (The last element in the scores list is used for any example images that did not have an associated label).
 
-#### 3.2 Prediction using the Cloud ML API: The prediction web server
+The 'hugs' dataset label dict is here:
 
-[** TBD **]
+```shell
+gsutil cat gs://oscon-tf-workshop-materials/transfer_learning/cloudml/hugs_photos/dict.txt
+```
 
-Run the webserver according to the instructions in its [README](web_server).
+So, that means that index 0 is the 'hugs' label, and index 1 is 'not-hugs'.  Therefore, the prediction above indicates that the hedgehog is 'not-hugs', with score 0.9999591112136841.
+
+#### 3.2 Prediction using the Cloud ML API: A prediction web server
+
+We can also request predictions via the Cloud ML API, and the google api client libraries.
+We've included a little example web server that shows how to do this, and also makes it easy to see how a given image gets labeled.
+
+The web app lets you upload an image, and then it generates a json request containing the image, and sends that to the Cloud ML API.  In response, we get back prediction and score information, and display that on a result page.
+
+Run the web server according to the instructions in its [README](web_server).
 
 ## Appendix: Running training locally
 
