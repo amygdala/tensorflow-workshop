@@ -89,7 +89,8 @@ if __name__ == '__main__':
   parser.add_argument('--num-steps', type=int, default=5000)
   parser.add_argument(
       '--output-dir',
-      help='GCS or local path for summary writing'
+      help='GCS or local path for summary writing',
+      required=True
   )
   parser.add_argument('--checkpoint-every', type=int, default=1)
   args = parser.parse_args()
