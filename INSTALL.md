@@ -6,6 +6,7 @@
     - [Download the container image](#download-the-container-image)
     - [Create a directory to hold data files needed by the workshop](#create-a-directory-to-hold-data-files-needed-by-the-workshop)
     - [Run the container](#run-the-container)
+    - [Authorize gcloud in the running container](#authorize-gcloud-in-the-running-container)
     - [Restarting the container later](#restarting-the-container-later)
     - [Running the Docker container on a VM](#running-the-docker-container-on-a-vm)
   - [Virtual environment-based installation](#virtual-environment-based-installation)
