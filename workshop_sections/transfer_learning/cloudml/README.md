@@ -1,26 +1,25 @@
 
 # Classifying your own images using *transfer learning*
 
-The [Google Vision API](xxx) is great for identifying labels, or categories, for a given image. However, sometimes you
-want to further classify your own images, in more specialized categories that the Google Vision API hasn't been trained
-on.
+The [Google Vision API](https://cloud.google.com/vision/) is great for identifying labels, or categories, for a given
+image. However, sometimes you want to further classify your own images, in more specialized categories that the Google
+Vision API hasn't been trained on.
 
 This lab shows how we can use an existing NN model to do this, via *transfer learning* -- effectively bootstrapping an
 existing model to reduce the effort needed to learn something new.
 
-Specifically, we will take an 'Inception' v3 architecture model trained to classify 'ImageNet' images, and using its
-penultimate "bottleneck" layer, train a new top layer that can recognize other classes of images -- our own classes.
+Specifically, we will take an 'Inception v3' architecture model trained to classify images against 1000 different 'ImageNet' categories, and using its penultimate "bottleneck" layer, train a new top layer that can recognize other
+classes of images: your own classes.
 
-We'll see that our new top layer does not need to be very complex, and that we don't need to do much training of this
-new model, to get good results for our new image classifications.
+We'll see that our new top layer does not need to be very complex, and that we typically don't need much data or much
+training of this new model, to get good results for our new image classifications.
 
-![Image classification NN](./image-classification-3-1.png)
+![Transfer learning](./image-classification-3-1.png)
 
 In addition to the transfer learning, this example shows off several other interesting aspects of TensorFlow and Cloud
 ML. It shows how to use
 [Cloud Dataflow](https://cloud.google.com/dataflow/) ([Apache Beam](https://beam.apache.org/))
-to do image preprocessing -- which uses Inception v3 to generate the inputs to the new 'top layer' that we will train
--- and how to save those preprocessing results in [TFRecords](https://www.tensorflow.org/api_docs/python/python_io/).
+to do image preprocessing -- the Beam pipeline uses Inception v3 to generate the inputs to the new 'top layer' that we will train -- and how to save those preprocessing results in [TFRecords](https://www.tensorflow.org/api_docs/python/python_io/) for consumption by the training loop.
 
 The example also includes a little "prediction web server" that shows how you can
 **use the Cloud ML API for prediction** once your trained model is serving.
@@ -28,24 +27,30 @@ The example also includes a little "prediction web server" that shows how you ca
 (This example is based on the example
 [here](https://github.com/GoogleCloudPlatform/cloudml-samples/tree/master/flowers), but with a number of additional modifications).
 
-## The "hugs" image classification task
+## The "hugs/not-hugs" image classification task
 
-[** ... **]
+Just for fun, we'll show how we can train our NN to decide whether images are of 'huggable' or 'not huggable' things.
 
-[** ... also 'flower' alternatives... **]
+So, we'll use a training set of images that have been sorted into two categories -- whether or not one would want to hug the object in the photo.
+(Thanks to Julia Ferraioli for this dataset).
+
+The 'hugs' does not have a large number of images, but as we will see, prediction on new images still works surprisingly well.  This shows the power of 'bootstrapping' the pre-trained Inception model.
+
+(This directory also includes some scripts support training on a larger 'flowers classification' dataset too.)
 
 ### 1. Image Preprocessing
 
-We start with a set of labeled images in a Google Cloud Storage bucket and preprocess them to extract the image
-features from the "bottleneck" layer (typically the penultimate layer) of the Inception network. To do this, we load
-the saved Inception model and its variable values into TensorFlow, and run each image through that model.
+We start with a set of labeled images in a Google Cloud Storage bucket, and preprocess them to extract the image
+features from the "bottleneck" layer -- essentially, the penultimate layer -- of the Inception network. To do this, we
+load the saved Inception model and its variable values into TensorFlow, and run each image through that model. (This
+model has been open-sourced by Google).
 
 More specifically, we process each image to produce its feature representation (also known as an *embedding*) in the
 form of a k-dimensional vector of floats (in our case, 2,048 dimensions). The preprocessing includes converting the
 image format, resizing images, and running the converted image through a pre-trained model to get the embeddings.
 
-The reason this is so effective for bootstrapping new image classification is that these 'bottleneck' embeddings
-contain a lot of high-level feature information useful to Inception for its own image classification.
+The reason this approach is so effective for bootstrapping new image classification is that these 'bottleneck'
+embeddings contain a lot of high-level feature information useful to Inception for its own image classification.
 
 Although processing images in this manner can be reasonably expensive, each image can be processed independently and in
 parallel, making this task a great candidate for Cloud Dataflow.
@@ -61,28 +66,32 @@ First, set the `BUCKET` variable to point to your GCS bucket (replacing `your-bu
 BUCKET=gs://your-bucket-name
 ```
 
-Then, run the pre-processing script.  By default, it will launch two non-blocking Cloud Dataflow jobs to do the preprocessing for the eval and training datasets. By default it only uses 3 workers for each job, but you can change this if you have larger quota.
+Then, run the pre-processing script. The script is already set up with links to the 'hugs' image data. The script
+will launch two non-blocking Cloud Dataflow jobs to do the preprocessing for the eval and training datasets. By
+default it only uses 3 workers for each job, but you can change this if you have larger quota.
 
 ```shell
 ./hugs_preproc.sh $BUCKET
 ```
 
-If running in a docker container, instead run the script as follows, defining the `USER` environment var:
+If running in a docker container, instead run the script as follows, setting the `USER` environment var to some value:
 
 ```shell
 USER=xxx ./hugs_preproc.sh $BUCKET
 ```
 
-This script will generate a `GCS_PATH` (that it will display in STDOUT).
+This script will generate a timestamp-based `GCS_PATH`, that it will display in STDOUT.
 The pipelines will write the generated embeds, in the form of TFRecord protobuf files, to under `$GCS_PATH/preproc`.
 
-You can see your pipeline jobs running in the Dataflow panel of the [Cloud console](https://console.cloud.google.com/dataflow).
+You can see your pipeline jobs running in the 
+Dataflow panel of the [Cloud console](https://console.cloud.google.com/dataflow).
 Before you use these generated embeds, you'll want to make sure that the Dataflow jobs have finished.
 
 
 ### 2. Modeling: Training the classifier
 
-Once we've preprocessed our data, we can then train a simple classifier. The network will comprise a single fully-
+Once we've preprocessed our data, and have the generated image embeds, 
+we can then train a simple classifier. The network will comprise a single fully-
 connected layer with *RELU* activations and with one output for each label in the dictionary to replace the original
 output layer.
 The final output is computed using the [softmax](https://en.wikipedia.org/wiki/Softmax_function) function. In the
@@ -93,7 +102,7 @@ randomly ignores a subset of input weights to prevent over-fitting to the traini
 
 Because we have limited workshop time, we've saved a set of generated TFRecords for the "hugs" images that you can
 copy to your own bucket, so that you don't need to wait for Dataflow jobs to finish. If you didn't already copy this
-data as part of the [installation instructions](xxx), you can do it now.
+data as part of the [installation instructions](/INSTALL.md#set-up-some-data-files-used-in-the-examples), you can do it now.
 
 Copy a zip of the generated records to a directory on your local machine:
 
@@ -116,57 +125,94 @@ gsutil cp -r hugs_preproc_tfrecords/ $GCS_PATH/preproc
 
 Once you've done that you can delete the local zip and `hugs_preproc_tfrecords` directory.
 
-(As indicated above, if we had a bit more time in this workshop, you could wait for your Dataflow preprocessing jobs to finish running, then point to your own generated image embeds instead).
+(As indicated above, with more time, you could wait for your Dataflow preprocessing jobs to finish running, then point to your own generated image embeds instead).
 
 ### 2.2 Run the training script
 
 Now, using the value of `GCS_PATH` that you set above, run your training job in the cloud:
 
-```
+```shell
 ./hugs_train.sh $BUCKET $GCS_PATH
 ```
 
-This script .... results under ....${GCS_PATH}/preproc/train
+This script will output summary and model checkpoint information under `$GCS_PATH/training`.
 
 ### 2.3 Monitor the training
 
-You should see... if not, ...
+As the training runs, you should see the logs stream to STDOUT.  You can also view them with:
 
-```
+```shell
 gcloud beta ml jobs stream-logs "$JOB_ID"
 ```
 
-We can also monitor progress of the training using tensorboard. [** ... add image... **]
+[** how to see in cloud console **]
 
-### Distributed training
+We can also monitor the progress of the training using [Tensorboard](https://www.tensorflow.org/how_tos/summaries_and_tensorboard/).  
 
-[** alternately..... `config.yaml`... cluster takes a bit more time to spin up, but then is fast...**]
+To do this, start up Tensorboard in a new shell (don't forget to activate your virtual environment), pointing it to the training logs in GCS:
+
+```shell
+tensorboard --logdir=$GCS_PATH/training
+```
+
+Then, visit `http://localhost:6006`.
+
 
 ### 3. Prediction: Using the trained model
 
-For prediction, we don't want to separate the image preprocessing and inference into two separate steps because we need to perform both in sequence for every image. Instead, we create a single TensorFlow graph that produces the image embedding and does the classification using the trained model in one step.
+For prediction, we don't want to separate the image preprocessing and inference into two separate steps, because we need to perform both in sequence for every image. Instead, we create a single TensorFlow graph that produces the image embedding and does the classification using the trained model in one step.
 
 After training, the saved model information will be in `$GCS_PATH/training/model`.
 
-(E.g., if you used the pregenerated records, it will be here:
-$BUCKET/hugs_preproc_tfrecords/training/model)
-
 Our next step is to tell Cloud ML that we want to use and serve that model.
+We do that via the following script, where `v1` is our model version name, and `hugs` is our model name.
 
+
+```shell
 ./model.sh $GCS_PATH v1 hugs
+```
 
+The model is created first.  This only needs to happen once, and is done as follows:
+`gcloud beta ml models create <model_name>`
+
+Then, we create a 'version' of that model, based on the data in our model directory (`$GCS_PATH/training/model`), and set that version as the default.
+
+You can see what models and default versions we have in your project via:
 
 ```shell
 gcloud beta ml models list
 ```
 
-```shell
-gcloud beta ml models create hugs
+It will take a minute or so for the model version to start "serving".  Once our model is serving, we make prediction requests to it -- both from the command line and via the Cloud ML API.
+
+
+#### 3.1 Prediction from the command line using gcloud
+
+To make a prediction request from the command line, we need to encode the image(s) we want to send it into a json format.  See the `images_to_json.py` script for the details.  This command:
+
+```
+python images_to_json.py -o request.json <image1> <image2> ...
 ```
 
-#### 3.1 Run the prediction web server
+results in a `request.json` file with the encoded image info. Then, run this command:
 
-[** ... **]
+```shell
+gcloud beta ml predict --model $MODEL_NAME --json-instances request.json
+```
+
+You should see a result something along the lines of the following:
+
+```shell
+gcloud beta ml predict --model hugs --json-instances request.json 
+KEY                             PREDICTION  SCORES
+prediction_images/hedgehog.jpg  1           [4.091006485396065e-05, 0.9999591112136841, 1.8843516969013763e-08]
+```
+
+[** more TBD **]
+
+#### 3.2 Prediction using the Cloud ML API: The prediction web server
+
+[** TBD **]
 
 ## Appendix: Running training locally
 
