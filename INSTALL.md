@@ -147,6 +147,8 @@ To install the SDK, follow the setup instructions
 [on this page](https://cloud.google.com/ml/docs/how-tos/getting-set-up).
 (Assuming you've followed the instructions above, you will have already done some of these steps. **Install TensorFlow version 0.12** as described in [this section](#install-tensorflow-into-a-virtual-environment), not 0.11)
 
+**Note**: if you have issues with the pip install of `python-snappy`, and are running in a conda virtual environment, try `conda install python-snappy` instead.
+
 You don't need to download the Cloud ML samples or docs for this workshop, though you may find it useful to grab them
 anyway.
 
