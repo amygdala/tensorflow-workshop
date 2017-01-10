@@ -193,32 +193,14 @@ Because we have limited workshop time, we've saved a set of
 generated as part of the [Cloud ML transfer learning](workshop_sections/transfer_learning/cloudml)
 example. To save time, copy them now to your own bucket as follows.
 
-Copy a zip of the generated records to some directory on your local machine:
-
-```shell
-gsutil cp gs://oscon-tf-workshop-materials/transfer_learning/cloudml/hugs_preproc_tfrecords.zip .
-```
-
-and then expand the zip:
-
-```shell
-unzip hugs_preproc_tfrecords.zip
-```
-
-Set the `BUCKET` variable to point to your GCS bucket (replacing `your-bucket-name` with the actual name):
+Set the `BUCKET` variable to point to your GCS bucket (replacing `your-bucket-name` with the actual name), then copy the records to your bucket.  Then, set the GCS_PATH variable to the newly copied subdir.
 
 ```shell
 BUCKET=gs://your-bucket-name
-```
-
-Then set the `GCS_PATH` variable as follows, and copy the unzipped records to a `preproc` directory under that path:
-
-```shell
+gsutil cp -r gs://tf-ml-workshop/transfer_learning/hugs_preproc_tfrecords $BUCKET
 GCS_PATH=$BUCKET/hugs_preproc_tfrecords
-gsutil cp -r hugs_preproc_tfrecords/ $GCS_PATH/preproc
 ```
 
-Once you've done this, you can delete the local zip and `hugs_preproc_tfrecords` directory.
 
 ## Optional: Clone/Download the TensorFlow repo from GitHub
 
