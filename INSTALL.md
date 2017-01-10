@@ -19,6 +19,8 @@
     - [Transfer learning example](#transfer-learning-example)
   - [Optional: Clone/Download the TensorFlow repo from GitHub](#optional-clonedownload-the-tensorflow-repo-from-github)
 
+* * *
+
 You can set up for the workshop in two different, mutually-exclusive ways:
 
 - [Running in a docker container](#docker-based-installation).
@@ -64,7 +66,7 @@ Create a directory (called, say, `workshop-data`) to mount as a volume when you 
 Once you've downloaded the container image, you can run it like this:
 
 ```sh
-$ docker run -v `pwd`/workshop-data:/root/tensorflow-workshop-master/workshop-data -it \
+docker run -v `pwd`/workshop-data:/root/tensorflow-workshop-master/workshop-data -it \
     -p 6006:6006 -p 8888:8888 -p 5000:5000 gcr.io/google-samples/tf-workshop:v5
 ```
 
@@ -103,7 +105,7 @@ $ docker exec -it <container_id> bash
 
 ### Running the Docker container on a VM
 
-It is easy to set up a Google Compute Engine (GCE) VM in which to run the Docker container.
+It is easy to set up a Google Compute Engine (GCE) VM on which to run the Docker container. We sketch the steps below, or see [TLDR_CLOUD_INSTALL.md](TLDR_CLOUD_INSTALL.md) for more detail.
 
 First, make sure that your project has the GCE API enabled. An easy way to do this is to go to the [Cloud Console](https://console.cloud.google.com/), and visit the Compute Engine panel.  It should display a button to enable the API.
 
@@ -119,14 +121,26 @@ gcloud compute instances create mlworkshop \
     --machine-type n1-standard-1
 ```
 
-- Set up a default network firewall rule for: `tcp:8888;tcp:6006;tcp:5000`.  (This opens the ports we'll use for jupyter, Tensorboard, and Flask.)
+- Set up a default network firewall rule for: tcp:8888, tcp:6006, and tcp:5000.  (This opens the ports we'll use for jupyter, Tensorboard, and Flask.) E.g:
+
+```shell
+gcloud compute firewall-rules create mlworkshop --allow tcp:8888,tcp:6006,tcp:5000
+```
+
 - SSH to your image.  You can do this from the Cloud Console by visiting the Compute Engine panel, and clicking on the 'SSH' pulldown to the right of your instance.
 
 Then, once you've ssh'd to the VM, follow the instructions above to download and run the Docker container there.
 Note: **Docker is already installed** on the 'container-optimized' VMs.
 
-When you're done with the workshop, you may want to *stop* or *delete* your instance, and delete your firewall rule.
+When you're done with the workshop, you may want to *stop* or *delete* your VM instance.
 
+You can also delete your firewall rule:
+
+```shell
+gcloud compute firewall-rules delete mlworkshop
+```
+
+* * *
 ## Virtual environment-based installation
 
 (These steps are not necessary if you have already completed the instructions for running the Docker image.)
