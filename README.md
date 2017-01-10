@@ -7,10 +7,11 @@ The accompanying slides are
 
 Contributions are not currently accepted.  This is not an official Google product.
 
-This document points to more information for each step in the workshop.
+This document points to more information for each workshop lab.
 
 - [Installation](INSTALL.md)
 - [Building a small starter TensorFlow graph](workshop_sections/starter_tf_graph/README.md)
+- [XOR: A minimal training example](workshop_sections/xor/README.md)
 - [Introducing MNIST, and building a simple linear classifier in TensorFlow](workshop_sections/mnist_series/01_README_mnist_simple.md).
 - [Using TensorFlow's high-level APIs to build an MNIST DNN Classifier, and introducing TensorBoard](workshop_sections/mnist_series/02_README_mnist_tflearn.md).
 - [Building the same classifier using TensorFlow's "low-level" APIs](workshop_sections/mnist_series/the_hard_way).
