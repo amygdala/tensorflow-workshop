@@ -24,7 +24,7 @@ If you already have an account, and have run through your trial credits, see one
 1. Click on “Enable” (top-middle of page).
 1. Repeat steps 2 through 4 for: “Cloud Machine Learning” and “Dataflow”.
 
-![Hamburger menu](./assets/hamburger.png)
+![Hamburger menu](./assets/hamburger.png)  
 
 ![API Manager](./assets/api_manager.png)
 
