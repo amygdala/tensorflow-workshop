@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-r"""Make a request JSON from local images to send to CloudML serving API.
+
+"""Make a request JSON from local images to send to CloudML serving API.
 
 Example usage:
   $ python images_to_json.py -o request.json img1.jpg img2.jpg
