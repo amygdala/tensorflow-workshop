@@ -108,12 +108,24 @@ It is easy to set up a Google Compute Engine (GCE) VM in which to run the Docker
 First, make sure that your project has the GCE API enabled. An easy way to do this is to go to the [Cloud Console](https://console.cloud.google.com/), and visit the Compute Engine panel.  It should display a button to enable the API.
 
 - Connect to your project's [Cloud Shell](https://cloud.google.com/shell/).
-- From the Cloud Shell, create a container-optimized image as described [here](https://cloud.google.com/container-optimized-os/docs/how-to/create-configure-instance).
-- SSH to that image.  You can do this from the Cloud Console by visiting the Compute Engine panel, and clicking on the 'SSH' pulldown to the right of your instance.
+
+- From the Cloud Shell, create a container-optimized image as described [here](https://cloud.google.com/container-optimized-os/docs/how-to/create-configure-instance). E.g.:
+
+```
+gcloud compute instances create mlworkshop \
+    --image-family gci-stable \
+    --image-project google-containers \
+    --zone us-central1-b --boot-disk-size=100GB \
+    --machine-type n1-standard-1
+```
+
+- Set up a default network firewall rule for: `tcp:8888;tcp:6006;tcp:5000`.  (This opens the ports we'll use for jupyter, Tensorboard, and Flask.)
+- SSH to your image.  You can do this from the Cloud Console by visiting the Compute Engine panel, and clicking on the 'SSH' pulldown to the right of your instance.
 
 Then, once you've ssh'd to the VM, follow the instructions above to download and run the Docker container there.
 Note: **Docker is already installed** on the 'container-optimized' VMs.
 
+When you're done with the workshop, you may want to *stop* or *delete* your instance, and delete your firewall rule.
 
 ## Virtual environment-based installation
 
