@@ -1,6 +1,18 @@
 
 # Classifying your own images using *transfer learning*
 
+  - [The "hugs/not-hugs" image classification task](#the-hugsnot-hugs-image-classification-task)
+    - [1. Image Preprocessing](#1-image-preprocessing)
+      - [1.1 Deploy the preprocessing job to Cloud Dataflow](#11-deploy-the-preprocessing-job-to-cloud-dataflow)
+    - [2. Modeling: Training the classifier](#2-modeling-training-the-classifier)
+    - [2.1 For the workshop, use pre-generated TFRecords for training](#21-for-the-workshop-use-pre-generated-tfrecords-for-training)
+    - [2.2 Run the training script](#22-run-the-training-script)
+    - [2.3 Monitor the training](#23-monitor-the-training)
+    - [3. Prediction: Using the trained model](#3-prediction-using-the-trained-model)
+      - [3.1 Prediction from the command line using gcloud](#31-prediction-from-the-command-line-using-gcloud)
+      - [3.2 Prediction using the Cloud ML API: A prediction web server](#32-prediction-using-the-cloud-ml-api-a-prediction-web-server)
+  - [Appendix: Running training locally](#appendix-running-training-locally)
+
 The [Google Vision API](https://cloud.google.com/vision/) is great for identifying labels, or categories, for a given
 image. However, sometimes you want to further classify your own images, in more specialized categories that the Google
 Vision API hasn't been trained on.

@@ -26,7 +26,7 @@ RUN pip install --upgrade --force-reinstall https://storage.googleapis.com/cloud
 
 # RUN python -c "import nltk; nltk.download('punkt')"
 
-RUN curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-132.0.0-linux-x86_64.tar.gz | tar xvz
+RUN curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-138.0.0-linux-x86_64.tar.gz | tar xvz
 RUN ./google-cloud-sdk/install.sh -q
 RUN ./google-cloud-sdk/bin/gcloud components install beta
 
@@ -36,5 +36,7 @@ ADD download_git_repo.py download_git_repo.py
 EXPOSE 6006
 # IPython
 EXPOSE 8888
+# Flask
+EXPOSE 5000
 
 CMD ["sh", "-c", "python download_git_repo.py ; /bin/bash"]
