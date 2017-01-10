@@ -36,5 +36,7 @@ ADD download_git_repo.py download_git_repo.py
 EXPOSE 6006
 # IPython
 EXPOSE 8888
+# Flask
+EXPOSE 5000
 
 CMD ["sh", "-c", "python download_git_repo.py ; /bin/bash"]

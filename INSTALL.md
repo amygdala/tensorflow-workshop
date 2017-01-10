@@ -65,7 +65,7 @@ Once you've downloaded the container image, you can run it like this:
 
 ```sh
 $ docker run -v `pwd`/workshop-data:/root/tensorflow-workshop-master/workshop-data -it \
-    -p 6006:6006 -p 8888:8888 gcr.io/google-samples/tf-workshop:v5
+    -p 6006:6006 -p 8888:8888 -p 5000:5000 gcr.io/google-samples/tf-workshop:v5
 ```
 
 Edit the path to the directory you're mounting as appropriate. The first component of the `-v` arg is the local directory, and the second component is where you want to mount it in your running container.
