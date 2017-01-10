@@ -4,6 +4,7 @@
 This directory contains the workshop labs.
 
 - [Building a small starter TensorFlow graph](starter_tf_graph/README.md)
+- [XOR: A minimal training example](xor/README.md)
 - [Introducing MNIST, and building a simple linear classifier in TensorFlow](mnist_series/01_README_mnist_simple.md).
 - [Using TensorFlow's high-level APIs to build an MNIST DNN Classifier, and introducing TensorBoard](mnist_series/02_README_mnist_tflearn.md).
 - [Building the same classifier using TensorFlow's "low-level" APIs](mnist_series/the_hard_way).
