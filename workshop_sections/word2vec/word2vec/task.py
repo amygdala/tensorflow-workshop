@@ -24,25 +24,26 @@ from tensorflow.contrib.learn.python.learn import learn_runner
 import model
 import util
 
-
 tf.logging.set_verbosity(tf.logging.INFO)
 
 
 def make_experiment_fn(args):
   train_input_fn = util.make_input_fn(
-      args.train_data_paths,
+      args.train_data_file,
+      args.index_file,
       args.batch_size,
       args.num_skips,
       args.skip_window,
-      args.index_file,
+      args.vocab_size,
       num_epochs=args.num_epochs
   )
   eval_input_fn = util.make_input_fn(
-      args.eval_data_paths,
+      args.eval_data_file,
+      args.index_file,
       args.batch_size,
       args.num_skips,
       args.skip_window,
-      args.index_file,
+      args.vocab_size,
       num_epochs=args.num_epochs
   )
 
@@ -56,7 +57,7 @@ def make_experiment_fn(args):
         eval_input_fn=eval_input_fn,
         continuous_eval_throttle_secs=args.min_eval_seconds,
         min_eval_frequency=args.min_train_eval_rate,
-        # Until learn_runner is updated to use train_and_evaluate
+        # Until Experiment moves to train_and_evaluate call internally
         local_eval_frequency=args.min_train_eval_rate
     )
   return experiment_fn
@@ -65,17 +66,13 @@ def make_experiment_fn(args):
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
   parser.add_argument(
-      '--index-file',
-      help="""\
-      A .npy file in GCS which contains a single string vector,
-      the words in the vocabulary, ordered by frequency
-      """,
-      required=True
+      '--train-data-file',
+      help='Binary files for training',
+      type=str
   )
   parser.add_argument(
-      '--train-data-paths',
-      help='TFRecord files for training',
-      nargs='+',
+      '--index-file',
+      help='Binary file with sorted word index',
       type=str
   )
   parser.add_argument(
@@ -84,9 +81,8 @@ if __name__ == '__main__':
       required=True
   )
   parser.add_argument(
-      '--eval-data-paths',
-      help='TFRecord files for evaluation',
-      nargs='+',
+      '--eval-data-file',
+      help='Binary files for evaluation',
       type=str
   )
   parser.add_argument(

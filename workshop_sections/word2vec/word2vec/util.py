@@ -15,78 +15,60 @@
 from __future__ import division
 from __future__ import print_function
 
-import multiprocessing
-
-import nltk
-import numpy as np
 import tensorflow as tf
 
 tf.logging.set_verbosity(tf.logging.INFO)
 
 
-def tokenize_text_file(infile, outfile):
-  with open(infile, 'r') as reader:
-    words = np.array(nltk.word_tokenize(reader.read()))
-  
-  with open(outfile, 'wb') as writer:
-    writer.write(tf.contrib.util.make_tensor_proto(words).SerializeToString())
+def skipgrams(word_tensor,
+              num_skips,
+              skip_window,
+              batch_size,
+              num_epochs=None):
+  if not batch_size % num_skips == 0:
+    raise ValueError('Number of skips must evenly divide batch_size')
 
-def window_input_producer(tensor, window_size, capacity=32, num_epochs=None):
-  num_windows = tf.shape(tensor)[0] - window_size
+  window_size = 2 * skip_window + 1
+  num_windows = tf.shape(word_tensor)[0] - window_size
+  windows_per_batch = batch_size // num_skips
   range_queue = tf.train.range_input_producer(
       num_windows,
       shuffle=False,
-      capacity=capacity,
+      capacity=windows_per_batch * 2,
       num_epochs=num_epochs
   )
-  index = range_queue.dequeue()
-  window = tensor[index:index + window_size]
-  queue = tf.FIFOQueue(capacity=capacity,
-                       dtypes=[tensor.dtype.base_dtype],
-                       shapes=[window_size])
+  indices = range_queue.dequeue_many(windows_per_batch)
 
-  enq = queue.enqueue(window)
-  tf.train.add_queue_runner(
-      tf.train.QueueRunner(queue, [enq])
+  # Shape [batch_size]
+  # e.g. [1, 1, ... , 1, ..., windows_per_batch ..., windows_per_batch]
+  window_indices = tf.reshape(
+      tf.transpose(tf.tile(indices, [num_skips])),
+      [-1]
   )
 
-  return queue
+  possible_indices = range(window_size)
+  del possible_indices[skip_window]
 
-
-def skipgrams(word_tensor, num_skips, skip_window, num_epochs=None):
-  window_size = 2 * skip_window + 1
-  indices = range(window_size)
-  del indices[skip_window]
-
-  indices_tensor = tf.random_shuffle(
-      tf.constant(indices, dtype=tf.int32)
-  )[:num_skips]
-
-  windows = window_input_producer(word_tensor, window_size, num_epochs=num_epochs)
-  window = windows.dequeue()
-
-  targets = tf.tile([window[skip_window]], [num_skips])
-  contexts = tf.gather(window, indices_tensor)
-  return targets, contexts
-
-
-def build_vocab(word_tensor, vocab_size):
-  unique, idx = tf.unique(word_tensor)
-
-  counts = tf.foldl(
-      lambda counts, item: counts + tf.one_hot(
-          tf.reshape(item, [-1]),
-          tf.shape(unique)[0],
-          dtype=tf.int32)[0],
-      idx,
-      initializer=tf.zeros_like(unique, dtype=tf.int32),
-      back_prop=False
+  possible_indices_tensor = tf.constant(possible_indices, dtype=tf.int32)
+  index_indices = tf.random_uniform(
+      [batch_size],
+      maxval=window_size - 2,
+      dtype=tf.int32
   )
-  _, indices = tf.nn.top_k(counts, k=vocab_size)
-  return tf.gather(unique, indices)
+
+  skip_indices = tf.gather(possible_indices_tensor, index_indices)
+  true_skip_indices = skip_indices + window_indices
+  skips = tf.gather(word_tensor, true_skip_indices)
+
+  target_indices = tf.constant(skip_window, dtype=tf.int32, shape=[batch_size])
+  true_target_indices = target_indices + window_indices
+  targets = tf.gather(word_tensor, true_target_indices)
+
+  return targets, skips
 
 
 def make_input_fn(text_file,
+                  index_file,
                   batch_size,
                   num_skips,
                   skip_window,
@@ -96,54 +78,19 @@ def make_input_fn(text_file,
     with tf.name_scope('input'):
       word_tensor = tf.parse_tensor(tf.read_file(text_file), tf.string)
 
-#      corpus = tf.Print(corpus, [corpus], message='corpus:')
-#
-#      word_tensor = tf.py_func(
-#          lambda t: np.array(nltk.word_tokenize(t)),
-#          [corpus],
-#          tf.string,
-#          stateful=False,
-#          name='tokenize'
-#      )
-#
-#      word_tensor = tf.Print(word_tensor, [word_tensor], message='word_tensor:')
-
-      word_tensor = tf.Print(word_tensor, [word_tensor], message='word_tensor fine')
-
-      index = build_vocab(word_tensor, vocab_size)
+      index = tf.parse_tensor(tf.read_file(index_file), tf.string)
 
       targets, contexts = skipgrams(
           word_tensor,
           num_skips,
           skip_window,
+          batch_size,
           num_epochs=num_epochs
       )
 
-      thread_count = multiprocessing.cpu_count()
-
-      # The minimum number of instances in a queue from which examples are
-      # drawn randomly. The larger this number, the more randomness at the
-      # expense of higher memory requirements.
-      min_after_dequeue = batch_size * 10
-
-      # When batching data, the queue's capacity will be larger than the
-      # batch_size by some factor. The recommended formula is (num_threads +
-      # a small safety margin). For now, we use a single thread for reading,
-      # so this can be small.
-      queue_size_multiplier = thread_count + 3
-
-      target_batch, context_batch = tf.train.shuffle_batch(
-          [targets, contexts],
-          batch_size=batch_size,
-          num_threads=thread_count,
-          capacity=min_after_dequeue + queue_size_multiplier * batch_size,
-          min_after_dequeue=min_after_dequeue,
-          enqueue_many=True
-      )
-
       return {
-          'targets': target_batch,
+          'targets': targets,
           'index': index
-      }, context_batch
+      }, contexts
 
   return _input_fn

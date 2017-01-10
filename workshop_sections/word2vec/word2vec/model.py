@@ -48,7 +48,6 @@ def make_model_fn(args):
         0
     )
 
-    # tf.contrib.learn.Estimator.fit adds an addition dimension to input
     target_indices = reverse_index.lookup(target_words)
 
     with tf.device(tf.train.replica_device_setter()):
@@ -80,7 +79,10 @@ def make_model_fn(args):
       tensors, loss, train_op = ({}, None, None)
 
       if mode in [ModeKeys.TRAIN, ModeKeys.EVAL]:
-        context_indices = reverse_index.lookup(context_words)
+        context_indices = tf.expand_dims(
+            reverse_index.lookup(context_words),
+            -1
+        )
         embedded = tf.nn.embedding_lookup(embeddings, target_indices)
 
         loss = tf.reduce_mean(tf.nn.nce_loss(
