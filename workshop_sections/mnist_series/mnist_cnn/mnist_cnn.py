@@ -104,7 +104,7 @@ accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 loss_summary = tf.scalar_summary("loss", cross_entropy)
 train_summary_op = tf.merge_summary([loss_summary])
 
-sess.run(tf.initialize_all_variables())
+sess.run(tf.global_variables_initializer())
 
 # Create a saver for writing training checkpoints.
 saver = tf.train.Saver()

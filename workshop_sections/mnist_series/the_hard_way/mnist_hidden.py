@@ -161,7 +161,7 @@ def main(_):
         train_summary_op = tf.merge_summary([loss_summary, acc_summary])
 
         # Add the variable initializer Op.
-        init = tf.initialize_all_variables()
+        init = tf.global_variables_initializer()
 
         # Create a saver for writing training checkpoints.
         saver = tf.train.Saver()
