@@ -15,10 +15,6 @@ COLUMNS = ["age", "workclass", "fnlwgt", "education", "education_num", "marital_
   "occupation", "relationship", "race", "gender", "capital_gain", "capital_loss",
   "hours_per_week", "native_country", "income_bracket"]
 
-COLUMNS_KEEP = ["age", "workclass", "education", "education_num", "marital_status",
-  "occupation", "relationship", "race", "gender", "capital_gain", "capital_loss",
-  "hours_per_week", "native_country", "income_bracket"]
-
 
 def build_estimator(model_dir):
   """Build an estimator."""
@@ -97,14 +93,10 @@ def build_estimator(model_dir):
          model_dir=model_dir,
          linear_feature_columns=wide_columns,
          dnn_feature_columns=deep_columns,
-         dnn_hidden_units=[100, 50])
+         dnn_hidden_units=[100, 60, 30])
 
   return m
 
-# def read_parser(t):
-#   tf.Print(t, [t])
-#   print('example tensor',t)
-#   return t
 
 def generate_input_fn(filename):
   def _input_fn():
@@ -115,99 +107,24 @@ def generate_input_fn(filename):
     reader = tf.TextLineReader()
     key, value = reader.read_up_to(filename_queue, num_records=BATCH_SIZE)
 
-
-    # batch_reader = tf.TextLineReader()
-    # value = tf.contrib.learn.read_batch_examples(
-    #   file_pattern=["gs://run-wild-ml/adult.data",
-    #                 "gs://run-wild-ml/adult.test"],
-    #   batch_size=BATCH_SIZE,
-    #   reader = tf.TextLineReader,
-    #   num_epochs=1,
-    #   parse_fn=read_parser
-    # )
-
     record_defaults = [[0], [" "], [0], [" "], [0],
                     [" "], [" "], [" "], [" "], [" "],
                     [0], [0], [0], [" "], [" "]]
-    # shape of each col is BATCH_SIZE
-    # 39, State-gov, 77516, Bachelors, 13,
-    # Never-married, Adm-clerical, Not-in-family, White, Male,
-    # 2174, 0, 40, United-States, <=50K
-
-    # TODO: use indexing cleverness to remove fnlwgt to clean things up
-    # age, workclass, fnlwgt, education, education_num, marital_status, occupation, \
-    # relationship, race, gender, capital_gain, capital_loss, hours_per_week, native_country, \
-    # income_bracket
     columns = tf.decode_csv(
       value, record_defaults=record_defaults)
 
     features, income_bracket = dict(zip(COLUMNS, columns[:-1])), columns[-1]
-    # feature_cols = tf.decode_csv(value, record_defaults=record_defaults)
 
     # remove the fnlwgt key
-    # print('attempt fnlwgt key removal: ')
-    print(features.pop('fnlwgt', 'fnlwgt key not found'))
-
-    # feature_val = tf.pack([
-    #     age, workclass, education, education_num, marital_status, occupation, \
-    #     relationship, race, gender, capital_gain, capital_loss, hours_per_week, native_country
-    #   ], axis=1)
-    # print(feature_val)
-
-    # Doing it with tensors
-    for feature_name in CATEGORICAL_COLUMNS:
-      # features[feature_name] = tf.SparseTensor(
-      #   indices=tf.expand_dims(
-      #     tf.range(0,
-      #       # tf.to_int64(
-      #         tf.shape(features[feature_name])[0]#)
-      #       ), -1),
-      #   values=features[feature_name],
-      #   shape=tf.concat(0, [tf.shape(features[feature_name]), [1]])
-      # )
-
-      # feature_shape = tf.shape(features[feature_name], name="features_shape", out_type=tf.int64)[0]
-      # feature_range = tf.range(tf.to_int64(0), feature_shape)
-
-      # features[feature_name] = tf.SparseTensor(
-      #   indices=tf.pack([feature_range, tf.zeros_like(feature_range, dtype=tf.int64)], axis=1),
-      #   values = features[feature_name],
-      #   shape  =[feature_shape, 1]
-      # )
+    features.pop('fnlwgt', 'fnlwgt key not found')
 
     # works in 0.12 only
-    # for feature_name in CATEGORICAL_COLUMNS:
+    for feature_name in CATEGORICAL_COLUMNS:
       features[feature_name] = tf.expand_dims(features[feature_name], -1)
 
-
-      # Doing it with python
-      # features[feature_name] = tf.SparseTensor(
-      #   indices=[[i, 0] for i in range(BATCH_SIZE)],
-      #   values=features[feature_name],
-      #   shape=[BATCH_SIZE, 1]
-      # )
-
-
-    # features_array = [
-    #     age, workclass, education, education_num, marital_status, occupation, \
-    #     relationship, race, gender, capital_gain, capital_loss, hours_per_week, native_country
-    #   ]
-#     features = dict(zip(COLUMNS_KEEP, features_array))
-
-#     print(features)
-# #     df_train["income_bracket"].apply(lambda x: ">50K" in x)).astype(int)
-
     income_int = tf.to_int32(tf.equal(income_bracket, " >50K"))
-    # income_int = tf.to_int32(tf.equal(income_bracket, tf.constant(' >50K', dtype=tf.string)))
-
-    # print(income_int)
-
-    # features = dict(zip(COLUMNS, tf.constant(feature_cols[:-1])))
-    # print(feature_cols[:-1])
-    # features = dict(zip(COLUMNS, feature_cols[:-1]))
 
     return features, income_int
-    # return feature_val, feature_cols[-1]
 
   return _input_fn
 
@@ -231,10 +148,7 @@ def train_and_eval():
   results = m.evaluate(input_fn=generate_input_fn(test_file), steps=1)
   print('evaluate done')
 
-  for key in sorted(results):
-    print("%s: %s" % (key, results[key]))
-
-  # print('accuracy: ' + results['accuracy'])
+  print('Accuracy: %s' % results['accuracy'])
 
 
 if __name__ == "__main__":
