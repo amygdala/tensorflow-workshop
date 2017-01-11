@@ -77,6 +77,8 @@ The `gcloud` CLI ships with a set of commands for interacting with the Google Cl
 
 You can run the following command *using either local or cloud data files* to train your model.
 
+NOTE: The unnamed parameter `--` seperates user program args from `gcloud` args. Arguments after `--` are passed through to the user's program and ignored by `gcloud`.
+
 ```
 gcloud beta ml local train \
     --package-path word2vec \
@@ -94,33 +96,36 @@ This will run your model in 5 processes (2 parameter servers and 2 workers). You
 
 To train in the Cloud, we use `gcloud` to submit a training job. It's important to note that here we must use a Google Cloud Storage output directory. Make sure you have set up a Google Cloud Storage bucket and authorized the Google Cloud ML API to access it. See instructions [here](../../INSTALL.md#project-and-cloud-ml-setup).
 
-After you have completed this, set `MY_BUCKET=gs://my-bucket` with your name, for the commands below.
+After you have completed this, set `BUCKET=gs://my-bucket` with your bucket's name, for the commands below.
 
 Then submit a training job with:
 
 ```
 gcloud beta ml jobs submit training myword2vectraining \
-  --staging-bucket $MY_BUCKET \
+  --staging-bucket ${BUCKET} \
   --module-name word2vec.task \
   --package-path word2vec \
-  --config config.yaml \
   -- \
-  --output-path $MY_BUCKET/word2vec/output/run1 \
+  --output-path ${BUCKET}/word2vec/output/run1 \
   --vocab-file gs://tf-ml-workshop/word2vec/data/text8-vocab.tsv \
   --train-data-file gs://tf-ml-workshop/word2vec/data/text8-train.pb2 \
   --eval-data-file gs://tf-ml-workshop/word2vec/data/text8-eval.pb2
 ```
 
-This will output TensorBoard summaries, and model checkpoints to `$MY_BUCKET/word2vec/output/run1`
+This will output TensorBoard summaries, and model checkpoints to `${BUCKET}/word2vec/output/run1`
 
-Additional configuration can be added in the `config.yaml` file. For the schema of this file check out the [Google Cloud ML Docs](https://cloud.google.com/ml/reference/configuration-data-structures#yaml_configuration_file)
+NOTE: If you start multiple training jobs with the same `--output-path` they will load the trained model, and continue training. This can be useful for restarting canceled jobs, but if you wish to retrain a model from scratch, change the `--output-path`.
+
+If you want to control the parallelism of the training job you can use the `--scale-tier` flag to `gcloud`. Run `gcloud beta ml jobs submit training --help` for more info.
+
+Additional configuration can be added in a `config.yaml` file, which is passed with the `--config` flag. For the schema of this file check out the [Google Cloud ML Docs](https://cloud.google.com/ml/reference/configuration-data-structures#yaml_configuration_file)
 
 ## Viewing Embeddings With TensorBoard
 
 To view embeddings (and other summaries) with TensorBoard, simply start TensorBoard pointing it at your output directory (in the Cloud or locally). For example:
 
 ```
-tensorboard --logdir $MY_BUCKET/word2vec/output/run1
+tensorboard --logdir ${BUCKET}/word2vec/output/run1
 ```
 
 ## Loading Your Model For Prediction
@@ -170,12 +175,12 @@ NOTE: This will likely not work in the free trial due to quota restrictions on t
 
 ```
 gcloud beta ml jobs submit training myword2vechptuning4 \
-  --staging-bucket $MY_BUCKET \
+  --staging-bucket ${BUCKET} \
   --module-name word2vec.task \
   --package-path word2vec \
   --config hptuning_config.yaml \
   -- \
-  --output-path $MY_BUCKET/word2vec/output/hptuning2 \
+  --output-path ${BUCKET}/word2vec/output/hptuning2 \
   --vocab-file gs://tf-ml-workshop/word2vec/data/text8-vocab.tsv \
   --train-data-file gs://tf-ml-workshop/word2vec/data/text8-train.pb2 \
   --eval-data-file gs://tf-ml-workshop/word2vec/data/text8-eval.pb2
