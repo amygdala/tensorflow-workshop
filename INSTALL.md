@@ -157,7 +157,7 @@ Follow the instructions [here](https://www.continuum.io/downloads).  The [minico
 
 Follow the instructions [on the TensorFlow site](https://www.tensorflow.org/get_started/os_setup#anaconda_installation) to create a Conda environment with Python 2.7, *activate* it, and then install TensorFlow within it.
 
-**Note**: Install TensorFlow version 0.12.
+**Note**: Install TensorFlow version 0.12, by using the [**pip install steps**](https://www.tensorflow.org/get_started/os_setup#anaconda_installation#using_pip) for conda rather than conda-forge.
 
 If you'd prefer to use virtualenv, see [these instructions](https://www.tensorflow.org/get_started/os_setup#virtualenv_installation) instead.
 
