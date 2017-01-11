@@ -18,7 +18,7 @@ or if you want to try using the `gcloud beta ml local train` command the followi
 
 ```
 gcloud beta ml local train \
-    --package-path xor
+    --package-path xor \
     --module-name xor.xor_summaries \
     -- \
     --output-dir ${OUTPUT_DIR}
@@ -33,7 +33,7 @@ To run in the cloud you need a Google Cloud Storage bucket to which summaries ca
 ```
 gcloud beta ml jobs submit training myxorjob \
      --module-name xor.xor_summaries \
-     --package path xor
+     --package-path xor \
      --staging-bucket ${MY_BUCKET} \
      -- \
      --output-dir ${OUTPUT_DIR}
