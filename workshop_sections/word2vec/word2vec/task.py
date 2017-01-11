@@ -16,13 +16,16 @@ from __future__ import division
 from __future__ import print_function
 
 import argparse
+import json
+import os
 
 import tensorflow as tf
-from tensorflow.contrib.learn import Experiment, Estimator
+from tensorflow.contrib.learn import Estimator, Experiment
 from tensorflow.contrib.learn.python.learn import learn_runner
 
 import model
 import util
+
 
 tf.logging.set_verbosity(tf.logging.INFO)
 
@@ -131,4 +134,11 @@ if __name__ == '__main__':
   )
   model_args(parser)
   args = parser.parse_args()
+  # Extend output path with trial ID if it exists
+  args.output_path = os.path.join(
+      args.output_path,
+      json.loads(
+          os.environ.get('TF_CONFIG', '{}')
+      ).get('task', {}).get('trial', '')
+  )
   learn_runner.run(make_experiment_fn(args), args.output_path)

@@ -1,5 +1,7 @@
 # Building a Custom Estimator for word2vec
 
+The word2vec model produces vector embeddings of words, using proximity in a text corpus, and a sampling loss called "noise contrastive estimation". For more details check out [the tutorial on tensorflow.org](https://www.tensorflow.org/tutorials/word2vec/).
+
 This walkthrough assumes that your working directory is that of this `README` file.
 
 ## Getting set up
@@ -123,7 +125,7 @@ tensorboard --logdir $MY_BUCKET/word2vec/output/run1
 
 ## Loading Your Model For Prediction
 
-This word2vec model predicts similarities between words using it's trained embeddings.
+This word2vec model predicts similarities between words using its trained embeddings.
 
 When given a vector of words, the word2vec model outputs a generator of prediction tensors, and defers computation until `next()` is called on the generator.
 
@@ -164,14 +166,16 @@ print(results.next())
 
 To run hyperparameter tuning and search for the best `num_skips` and `skip_window` parameter you can use `hptuning_config.yaml` in the command.
 
+NOTE: This will likely not work in the free trial due to quota restrictions on trial accounts.
+
 ```
-gcloud beta ml jobs submit training myword2vechptuning \
+gcloud beta ml jobs submit training myword2vechptuning4 \
   --staging-bucket $MY_BUCKET \
   --module-name word2vec.task \
   --package-path word2vec \
   --config hptuning_config.yaml \
   -- \
-  --output-path $MY_BUCKET/word2vec/output/hptuning1 \
+  --output-path $MY_BUCKET/word2vec/output/hptuning2 \
   --vocab-file gs://tf-ml-workshop/word2vec/data/text8-vocab.tsv \
   --train-data-file gs://tf-ml-workshop/word2vec/data/text8-train.pb2 \
   --eval-data-file gs://tf-ml-workshop/word2vec/data/text8-eval.pb2
