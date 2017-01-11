@@ -25,10 +25,6 @@ def skipgrams(word_tensor,
               skip_window,
               batch_size,
               num_epochs=None):
-  if not batch_size % num_skips == 0:
-    raise ValueError('Number of skips per window '
-                     'must evenly divide batch_size')
-
   window_size = 2 * skip_window + 1
   num_windows = tf.shape(word_tensor)[0] - window_size
   windows_per_batch = batch_size // num_skips

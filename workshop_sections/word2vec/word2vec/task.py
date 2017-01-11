@@ -98,7 +98,10 @@ if __name__ == '__main__':
   )
   parser.add_argument(
       '--batch-size',
-      help='Batch size for TFRecord files',
+      help="""\
+      Batch size for skipgrams. Note that batch size may be approximate.
+      Actual batch_size is (batch_size // num_skips) * num_skips.\
+      """,
       type=int,
       default=512
   )

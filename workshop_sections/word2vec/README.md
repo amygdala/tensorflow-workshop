@@ -1,6 +1,6 @@
 # Building a Custom Estimator for word2vec
 
-This walkthrough assumes that your working directory is that of this `README` file. 
+This walkthrough assumes that your working directory is that of this `README` file.
 
 ## Getting set up
 
@@ -101,6 +101,7 @@ gcloud beta ml jobs submit training myword2vectraining \
   --staging-bucket $MY_BUCKET \
   --module-name word2vec.task \
   --package-path word2vec \
+  --config config.yaml \
   -- \
   --output-path $MY_BUCKET/word2vec/output/run1 \
   --vocab-file gs://tf-ml-workshop/word2vec/data/text8-vocab.tsv \
@@ -110,7 +111,7 @@ gcloud beta ml jobs submit training myword2vectraining \
 
 This will output TensorBoard summaries, and model checkpoints to `$MY_BUCKET/word2vec/output/run1`
 
-For additional configuration options you can pass a `--config config.yaml` file. For the schema of this file check out the [Google Cloud ML Docs](https://cloud.google.com/ml/reference/configuration-data-structures#yaml_configuration_file)
+Additional configuration can be added in the `config.yaml` file. For the schema of this file check out the [Google Cloud ML Docs](https://cloud.google.com/ml/reference/configuration-data-structures#yaml_configuration_file)
 
 ## Viewing Embeddings With TensorBoard
 
@@ -157,4 +158,21 @@ For example,
 ```
 results = word2vec_model.predict(x=np.array(['the', 'and']))
 print(results.next())
+```
+
+## Hyperparameter tuning
+
+To run hyperparameter tuning and search for the best `num_skips` and `skip_window` parameter you can use `hptuning_config.yaml` in the command.
+
+```
+gcloud beta ml jobs submit training myword2vechptuning \
+  --staging-bucket $MY_BUCKET \
+  --module-name word2vec.task \
+  --package-path word2vec \
+  --config hptuning_config.yaml \
+  -- \
+  --output-path $MY_BUCKET/word2vec/output/hptuning1 \
+  --vocab-file gs://tf-ml-workshop/word2vec/data/text8-vocab.tsv \
+  --train-data-file gs://tf-ml-workshop/word2vec/data/text8-train.pb2 \
+  --eval-data-file gs://tf-ml-workshop/word2vec/data/text8-eval.pb2
 ```

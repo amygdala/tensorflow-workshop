@@ -66,6 +66,7 @@ def prepare_data_files(infile, outfile, vocab_size):
   with open(infile, 'r') as reader:
     words = np.array(nltk.word_tokenize(reader.read()))
 
+  print('Tokenized {} words'.format(len(words)))
 
   print('Building String Index')
   index, word_indices = build_string_index(words)
