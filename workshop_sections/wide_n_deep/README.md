@@ -23,10 +23,10 @@ This repo presents 3 methods of running the model: locally, on a jupyter noteboo
 ### Google CloudML
 `cd workshop_sections/wide_n_deep`
 
-Run it locally:
+#### Test it locally:
 `gcloud beta ml local train --package-path=widendeep --module-name=widendeep.model`
 
-Run it in the cloud:
+#### Run it in the cloud:
 `gcloud config set compute/region us-central1`
 
 `gcloud config set compute/zone us-central1-c`
@@ -35,7 +35,7 @@ Run it in the cloud:
 
 `export JOB_NAME=widendeep_${USER}_$(date +%Y%m%d_%H%M%S)`
 
-`export PROJECT_ID=`gcloud config list project --format "value(core.project)"`
+`export PROJECT_ID=`gcloud config list project --format "value(core.project)"``
 
 `export TRAIN_BUCKET=gs://${PROJECT_ID}-ml`
 
