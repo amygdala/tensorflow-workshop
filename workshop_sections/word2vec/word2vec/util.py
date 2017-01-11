@@ -23,11 +23,11 @@ tf.logging.set_verbosity(tf.logging.INFO)
 def skipgrams(word_tensor,
               num_skips,
               skip_window,
-              batch_size,
+              windows_per_batch,
               num_epochs=None):
   window_size = 2 * skip_window + 1
   num_windows = tf.shape(word_tensor)[0] - window_size
-  windows_per_batch = batch_size // num_skips
+  batch_size = windows_per_batch * num_skips
   range_queue = tf.train.range_input_producer(
       num_windows,
       shuffle=False,
@@ -36,7 +36,7 @@ def skipgrams(word_tensor,
   )
   indices = range_queue.dequeue_many(windows_per_batch)
 
-  # Shape [batch_size]
+  # Shape [windows_per_batch * num_skips]
   # e.g. [1, 1, ... , 1, ..., windows_per_batch ..., windows_per_batch]
   window_indices = tf.reshape(
       tf.transpose(tf.tile(indices, [num_skips])),
@@ -81,7 +81,7 @@ def make_input_fn(word_indices_file,
           word_tensor,
           num_skips,
           skip_window,
-          batch_size,
+          batch_size // num_skips,
           num_epochs=num_epochs
       )
 
