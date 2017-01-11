@@ -9,10 +9,8 @@ trainingInput:
       - parameterName: num-skips
         minValue: 2
         maxValue: 32
-        scaleType: UNIT_SCALE
         type: INTEGER
       - parameterName: skip-window
         minValue: 4
         maxValue: 64
-        scaleType: UNIT_SCALE
         type: INTEGER
