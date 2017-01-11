@@ -103,7 +103,6 @@ gcloud beta ml jobs submit training myword2vectraining \
   --staging-bucket $MY_BUCKET \
   --module-name word2vec.task \
   --package-path word2vec \
-  --config config.yaml \
   -- \
   --output-path $MY_BUCKET/word2vec/output/run1 \
   --vocab-file gs://tf-ml-workshop/word2vec/data/text8-vocab.tsv \
@@ -113,7 +112,9 @@ gcloud beta ml jobs submit training myword2vectraining \
 
 This will output TensorBoard summaries, and model checkpoints to `$MY_BUCKET/word2vec/output/run1`
 
-Additional configuration can be added in the `config.yaml` file. For the schema of this file check out the [Google Cloud ML Docs](https://cloud.google.com/ml/reference/configuration-data-structures#yaml_configuration_file)
+To configure the distribution of your job you can use the `--scale-tier` flag. The addition of this flag is recent, so you may need to update your SDK version (to `139.0.0`) with `gcloud components update`.
+
+Additional configuration can be added in the `config.yaml` file with the `--config` flag. For the schema of this file check out the [Google Cloud ML Docs](https://cloud.google.com/ml/reference/configuration-data-structures#yaml_configuration_file)
 
 ## Viewing Embeddings With TensorBoard
 
