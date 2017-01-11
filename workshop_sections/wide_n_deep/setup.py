@@ -9,5 +9,4 @@ setup(name='widendeep',
       author_email='yfg@google.com',
       license='MIT',
       install_requires=['tensorflow==0.12.1'],
-      #dependency_links=['https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow-0.12.1-cp27-none-linux_x86_64.whl'],
       zip_safe=False)

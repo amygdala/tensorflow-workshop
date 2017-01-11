@@ -1,23 +1,32 @@
-# Copyright 2016 Google Inc. All Rights Reserved. Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+# Copyright 2016 Google Inc. All Rights Reserved. Licensed under the Apache
+# License, Version 2.0 (the "License"); you may not use this file except in
+# compliance with the License. You may obtain a copy of the License at
+# http://www.apache.org/licenses/LICENSE-2.0
 
-# Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations under
+# the License.
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tempfile
 import time
 
 import tensorflow as tf
 
-tf.logging.set_verbosity(tf.logging.ERROR);
+tf.logging.set_verbosity(tf.logging.ERROR)
 
-CATEGORICAL_COLUMNS = ["workclass", "education", "marital_status", "occupation", "relationship", "race", "gender", "native_country"]
+CATEGORICAL_COLUMNS = ["workclass", "education", "marital_status",
+                       "occupation", "relationship", "race", "gender",
+                       "native_country"]
 
-COLUMNS = ["age", "workclass", "fnlwgt", "education", "education_num", "marital_status",
-  "occupation", "relationship", "race", "gender", "capital_gain", "capital_loss",
-  "hours_per_week", "native_country", "income_bracket"]
+COLUMNS = ["age", "workclass", "fnlwgt", "education", "education_num",
+           "marital_status", "occupation", "relationship", "race", "gender",
+           "capital_gain", "capital_loss", "hours_per_week", "native_country",
+           "income_bracket"]
 
 
 def build_estimator(model_dir):
@@ -51,22 +60,21 @@ def build_estimator(model_dir):
   capital_loss = tf.contrib.layers.real_valued_column("capital_loss")
   hours_per_week = tf.contrib.layers.real_valued_column("hours_per_week")
 
-
   # Transformations.
-  age_buckets = tf.contrib.layers.bucketized_column(age,
-                boundaries=[ 18, 25, 30, 35, 40, 45, 50, 55, 60, 65 ])
-  education_occupation = tf.contrib.layers.crossed_column([education, occupation], hash_bucket_size=int(1e4))
-  age_race_occupation = tf.contrib.layers.crossed_column( [age_buckets, race, occupation], hash_bucket_size=int(1e6))
-  country_occupation = tf.contrib.layers.crossed_column([native_country, occupation], hash_bucket_size=int(1e4))
-
-
+  age_buckets = tf.contrib.layers.bucketized_column(
+      age, boundaries=[18, 25, 30, 35, 40, 45, 50, 55, 60, 65])
+  education_occupation = tf.contrib.layers.crossed_column(
+      [education, occupation], hash_bucket_size=int(1e4))
+  age_race_occupation = tf.contrib.layers.crossed_column(
+      [age_buckets, race, occupation], hash_bucket_size=int(1e6))
+  country_occupation = tf.contrib.layers.crossed_column(
+      [native_country, occupation], hash_bucket_size=int(1e4))
 
   # Wide columns and deep columns.
-  wide_columns = [gender, native_country,
-          education, occupation, workclass,
-          marital_status, relationship,
-          age_buckets, education_occupation,
-          age_race_occupation, country_occupation]
+  wide_columns = [gender, native_country, education, occupation, workclass,
+                  marital_status, relationship, age_buckets,
+                  education_occupation, age_race_occupation,
+                  country_occupation]
 
   deep_columns = [
       tf.contrib.layers.embedding_column(workclass, dimension=8),
@@ -79,14 +87,11 @@ def build_estimator(model_dir):
       tf.contrib.layers.embedding_column(native_country,
                                          dimension=8),
       tf.contrib.layers.embedding_column(occupation, dimension=8),
-      age,
-      education_num,
-      capital_gain,
-      capital_loss,
-      hours_per_week,
+      age, education_num, capital_gain, capital_loss, hours_per_week,
   ]
 
-  # m = tf.contrib.learn.LinearClassifier(model_dir=model_dir, feature_columns=wide_columns)
+  # m = tf.contrib.learn.LinearClassifier(
+  #   model_dir=model_dir, feature_columns=wide_columns)
 
   #  m = tf.contrib.learn.DNNClassifier(
   #         model_dir=model_dir,
@@ -94,10 +99,10 @@ def build_estimator(model_dir):
   #         hidden_units=[100, 50])
 
   m = tf.contrib.learn.DNNLinearCombinedClassifier(
-         model_dir=model_dir,
-         linear_feature_columns=wide_columns,
-         dnn_feature_columns=deep_columns,
-         dnn_hidden_units=[100, 60, 30])
+      model_dir=model_dir,
+      linear_feature_columns=wide_columns,
+      dnn_feature_columns=deep_columns,
+      dnn_hidden_units=[100, 60, 30])
 
   return m
 
@@ -110,10 +115,10 @@ def generate_input_fn(filename):
     key, value = reader.read_up_to(filename_queue, num_records=BATCH_SIZE)
 
     record_defaults = [[0], [" "], [0], [" "], [0],
-                    [" "], [" "], [" "], [" "], [" "],
-                    [0], [0], [0], [" "], [" "]]
+                       [" "], [" "], [" "], [" "], [" "],
+                       [0], [0], [0], [" "], [" "]]
     columns = tf.decode_csv(
-      value, record_defaults=record_defaults)
+        value, record_defaults=record_defaults)
 
     features, income_bracket = dict(zip(COLUMNS, columns[:-1])), columns[-1]
 
