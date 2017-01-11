@@ -128,6 +128,14 @@ To view embeddings (and other summaries) with TensorBoard, simply start TensorBo
 tensorboard --logdir ${BUCKET}/word2vec/output/run1
 ```
 
+If you want to play around in TensorBoard without training a model, you can use our pretrain model:
+
+```
+tensorboard --logdir gs://tf-ml-workshop/word2vec/example-output
+```
+
+NOTE: This will pull about 200 MB of data across the network, and may be initially slow.
+
 ## Loading Your Model For Prediction
 
 This word2vec model predicts similarities between words using its trained embeddings.
@@ -147,7 +155,15 @@ import model
 my_output_dir = 'YOUR OUTPUT DIRECTORY HERE (CLOUD OR LOCAL)'
 ```
 
+Alternatively if you want to try prediction without training your own model, you can use our pretrained model:
+
+```
+my_output_dir = 'gs://tf-ml-workshop/word2vec/example-output/'
+```
+
 Then initialize the trained estimator. You can make a new estimator object without retraining as long as you specify the same `model_dir` as your trained model. Trained parameters will be loaded from the most recent checkpoint!
+
+
 
 ```
 word2vec_model = tf.contrib.learn.Estimator(
