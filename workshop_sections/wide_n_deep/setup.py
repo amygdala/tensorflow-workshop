@@ -1,7 +1,7 @@
 from setuptools import setup
 
-setup(name='cloudml',
-      packages=['cloudml'],
+setup(name='widendeep',
+      packages=['widendeep'],
       version='0.1',
       description='TensorFlow Wide and Deep example',
       url='https://github.com/amygdala/tensorflow-workshop',
