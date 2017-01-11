@@ -14,5 +14,6 @@ This directory contains the workshop labs.
     + [Using Cloud ML](transfer_learning/cloudml)
     + [Using a custom Estimator](transfer_learning/TF_Estimator)
 - [Building a word2vec model using a Custom Estimator, and exploring the learned embeddings](word2vec/README.md). Introducing [TFRecords](https://www.tensorflow.org/versions/r0.11/api_docs/python/python_io.html#data-io-python-functions).
+- [Using a tf.learn estimator to train a Wide and Deep model](wide_n_deep/README.md).
 
 In addition, there is an [extras](extras/README.md) directory, that contains some older labs not currently used in this workshop, but which may be of interest.
