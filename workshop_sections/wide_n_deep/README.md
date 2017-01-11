@@ -30,11 +30,12 @@ This repo presents 3 methods of running the model: locally, on a jupyter noteboo
     gcloud config set compute/region us-central1
     gcloud config set compute/zone us-central1-c
     gcloud config set project gae-load-demo
-    export JOB_NAME=widendeep_${USER}_$(date +%Y%m%d_%H%M%S)
 
+    export JOB_NAME=widendeep_${USER}_$(date +%Y%m%d_%H%M%S)
     export PROJECT_ID=`gcloud config list project --format "value(core.project)"`
     export TRAIN_BUCKET=gs://${PROJECT_ID}-ml
     export TRAIN_PATH=${TRAIN_BUCKET}/${JOB_NAME}
+
     gcloud beta ml jobs submit training ${JOB_NAME} --package-path=widendeep --module-name=widendeep.model --staging-bucket=${TRAIN_BUCKET} --region=us-central1 -- --train_dir=${TRAIN_PATH}/train
 
 
