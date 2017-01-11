@@ -48,7 +48,7 @@ So, we'll use a training set of images that have been sorted into two categories
 
 The 'hugs' does not have a large number of images, but as we will see, prediction on new images still works surprisingly well.  This shows the power of 'bootstrapping' the pre-trained Inception model.
 
-(This directory also includes some scripts support training on a larger 'flowers classification' dataset too.)
+(This directory also includes some scripts that support training on a larger 'flowers classification' dataset too.)
 
 ### 1. Image Preprocessing
 
@@ -262,4 +262,7 @@ gcloud beta ml local train --package-path trainer/ --module-name trainer.task \
     --output_path output/
 ```
 
+## Appendix: image sources
+
+The source information for the 'hugs/no-hugs' images is here: gs://oscon-tf-workshop-materials/transfer_learning/hugs_photos_sources.csv.
 

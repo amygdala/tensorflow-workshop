@@ -6,3 +6,4 @@ Sources for the images in this directory:
 - https://goo.gl/images/W6gRxE
 - https://goo.gl/images/Gfr9i8
 - https://goo.gl/images/yuFM1C
+- and from gs://oscon-tf-workshop-materials/transfer_learning/hugs_photos_sources.csv
