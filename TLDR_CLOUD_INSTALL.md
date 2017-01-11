@@ -103,6 +103,10 @@ gcloud beta auth application-default login
 ```
 (and follow the subsequent instructions)
 
+```shell
+gcloud config set compute/region us-central1
+```
+
 ### 10. Copy some data for the 'transfer learning' example to your bucket:
 
 ```shell
@@ -123,6 +127,7 @@ Once the workshop container is running again, you can exec back into it like thi
 ```shell
 docker exec -it <container_id> bash
 ```
+Note you may need to define environment variables from step 9 when you reconnect. 
 
 ## Cleanup
 
