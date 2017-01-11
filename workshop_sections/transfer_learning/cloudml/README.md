@@ -113,10 +113,9 @@ randomly ignores a subset of input weights to prevent over-fitting to the traini
 
 ### 2.1 For the workshop, use pre-generated TFRecords for training
 
-Because we have limited workshop time, we've saved a set of
-[TFRecords]([TFRecords](https://www.tensorflow.org/api_docs/python/python_io/))
-generated as part of the [Cloud ML transfer learning](workshop_sections/transfer_learning/cloudml)
-example. Copy them now to your own bucket as follows.
+Because we have limited workshop time, we've saved a set of generated
+[TFRecords]([TFRecords](https://www.tensorflow.org/api_docs/python/python_io/)).
+If you didn't do this during installation, copy them now to your own bucket as follows.
 
 Set the `BUCKET` variable to point to your GCS bucket (replacing `your-bucket-name` with the actual name), then copy the records to your bucket.  Then, set the GCS_PATH variable to the newly copied GCS subfolder:
 
@@ -125,7 +124,6 @@ BUCKET=gs://your-bucket-name
 gsutil cp -r gs://tf-ml-workshop/transfer_learning/hugs_preproc_tfrecords $BUCKET
 GCS_PATH=$BUCKET/hugs_preproc_tfrecords
 ```
-
 
 (As indicated above, with more time, you could wait for your Dataflow preprocessing jobs to finish running, then point to your own generated image embeds instead).
 
@@ -146,8 +144,6 @@ As the training runs, you should see the logs stream to STDOUT.  You can also vi
 ```shell
 gcloud beta ml jobs stream-logs "$JOB_ID"
 ```
-
-[** how to see in cloud console **]
 
 We can also monitor the progress of the training using [Tensorboard](https://www.tensorflow.org/how_tos/summaries_and_tensorboard/).  
 
