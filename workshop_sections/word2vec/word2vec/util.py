@@ -26,7 +26,8 @@ def skipgrams(word_tensor,
               batch_size,
               num_epochs=None):
   if not batch_size % num_skips == 0:
-    raise ValueError('Number of skips must evenly divide batch_size')
+    raise ValueError('Number of skips per window '
+                     'must evenly divide batch_size')
 
   window_size = 2 * skip_window + 1
   num_windows = tf.shape(word_tensor)[0] - window_size
@@ -67,8 +68,7 @@ def skipgrams(word_tensor,
   return targets, skips
 
 
-def make_input_fn(text_file,
-                  index_file,
+def make_input_fn(word_indices_file,
                   batch_size,
                   num_skips,
                   skip_window,
@@ -76,9 +76,10 @@ def make_input_fn(text_file,
                   num_epochs=None):
   def _input_fn():
     with tf.name_scope('input'):
-      word_tensor = tf.parse_tensor(tf.read_file(text_file), tf.string)
-
-      index = tf.parse_tensor(tf.read_file(index_file), tf.string)
+      word_tensor = tf.parse_tensor(
+          tf.read_file(word_indices_file),
+          tf.int64
+      )
 
       targets, contexts = skipgrams(
           word_tensor,
@@ -88,9 +89,7 @@ def make_input_fn(text_file,
           num_epochs=num_epochs
       )
 
-      return {
-          'targets': targets,
-          'index': index
-      }, contexts
+      contexts_matrix = tf.expand_dims(contexts, -1)
+      return targets, contexts_matrix
 
   return _input_fn

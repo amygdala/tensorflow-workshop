@@ -30,7 +30,6 @@ tf.logging.set_verbosity(tf.logging.INFO)
 def make_experiment_fn(args):
   train_input_fn = util.make_input_fn(
       args.train_data_file,
-      args.index_file,
       args.batch_size,
       args.num_skips,
       args.skip_window,
@@ -39,7 +38,6 @@ def make_experiment_fn(args):
   )
   eval_input_fn = util.make_input_fn(
       args.eval_data_file,
-      args.index_file,
       args.batch_size,
       args.num_skips,
       args.skip_window,
@@ -50,7 +48,7 @@ def make_experiment_fn(args):
   def experiment_fn(output_dir):
     return Experiment(
         Estimator(
-            model_fn=model.make_model_fn(args),
+            model_fn=model.make_model_fn(**args.__dict__),
             model_dir=output_dir
         ),
         train_input_fn=train_input_fn,
@@ -62,17 +60,30 @@ def make_experiment_fn(args):
     )
   return experiment_fn
 
+def model_args(parser):
+  group = parser.add_argument_group(title='Model Arguments')
+  group.add_argument('--reference-words', nargs='*', type=str)
+  group.add_argument('--num-partitions', default=1, type=int)
+  group.add_argument('--embedding-size', default=128, type=int)
+  group.add_argument('--vocab-size', default=2 ** 15, type=int)
+  group.add_argument('--num-sim', default=8, type=int)
+  group.add_argument('--num-sampled', default=64, type=int)
+  group.add_argument('--num-skips', default=4, type=int)
+  group.add_argument('--skip-window', default=8, type=int)
+  group.add_argument('--learning-rate', default=0.1, type=float)
+  group.add_argument(
+      '--vocab-file',
+      required=True,
+      help='Path to a TSV file containing the vocab index'
+  )
+  return group
+
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
   parser.add_argument(
       '--train-data-file',
       help='Binary files for training',
-      type=str
-  )
-  parser.add_argument(
-      '--index-file',
-      help='Binary file with sorted word index',
       type=str
   )
   parser.add_argument(
@@ -115,6 +126,6 @@ if __name__ == '__main__':
       The number of steps between evaluations
       """
   )
-  model.model_args(parser)
+  model_args(parser)
   args = parser.parse_args()
   learn_runner.run(make_experiment_fn(args), args.output_path)

@@ -37,35 +37,59 @@ def build_vocab(word_tensor, vocab_size):
   _, indices = tf.nn.top_k(counts, k=vocab_size)
   return tf.gather(unique, indices)
 
+
 def build_string_index(word_array, vocab_size=2 ** 15):
-  unique, counts = np.unique(word_array, return_counts=True)
+  unique, inverse, counts = np.unique(
+    word_array, return_inverse=True, return_counts=True)
 
+  max_index = len(unique) - 1
   sort_unique = np.argsort(counts)
-  sorted_counts = counts[sort_unique][::-1][:vocab_size - 1]
-  unique_sorted = unique[sort_unique][::-1][:vocab_size - 1]
+  shuffle_idx = np.searchsorted(counts[sort_unique], counts)
+  unique_sorted = unique[sort_unique][::-1]
 
-  return unique_sorted, sorted_counts, word_array
+  index = np.concatenate((np.array(['UNK']), unique_sorted[:vocab_size - 1]))
+
+  indices = max_index - shuffle_idx + 1
+  indices = np.where(
+    indices > vocab_size - 1,
+    np.zeros(len(indices), dtype=np.int8),
+    indices
+  )
+
+  word_indices = indices[inverse]
+  return index, word_indices
+
+
 
 def prepare_data_files(infile, outfile, vocab_size):
+  print('Tokenizing Text File')
   with open(infile, 'r') as reader:
     words = np.array(nltk.word_tokenize(reader.read()))
 
+
+  print('Building String Index')
+  index, word_indices = build_string_index(words)
+
+  print('{} \ntransformed to\n{}\nwith\n{}'.format(
+      words, word_indices, index))
+
   train_eval_split = int(len(words) * .9)
-  train_words = words[:train_eval_split]
-  eval_words = words[train_eval_split:]
+  train_words = word_indices[:train_eval_split]
+  eval_words = word_indices[train_eval_split:]
+  print('Writing training data')
   with open('{}-train.pb2'.format(outfile), 'wb') as writer:
     writer.write(tf.contrib.util.make_tensor_proto(
         train_words).SerializeToString())
 
+  print('Writing eval data')
   with open('{}-eval.pb2'.format(outfile), 'wb') as writer:
     writer.write(tf.contrib.util.make_tensor_proto(
         eval_words).SerializeToString())
 
-  index, _, _ = build_string_index(words, vocab_size)
+  print('Writing vocab file')
+  with open('{}-vocab.tsv'.format(outfile), 'w') as writer:
+    writer.write('\n'.join(index.tolist()))
 
-  with open('{}-index.pb2'.format(outfile), 'wb') as writer:
-    writer.write(tf.contrib.util.make_tensor_proto(
-        index).SerializeToString())
 
 
 if __name__=='__main__':
