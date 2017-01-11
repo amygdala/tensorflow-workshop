@@ -113,30 +113,19 @@ randomly ignores a subset of input weights to prevent over-fitting to the traini
 
 ### 2.1 For the workshop, use pre-generated TFRecords for training
 
-Because we have limited workshop time, we've saved a set of generated TFRecords for the "hugs" images that you can
-copy to your own bucket, so that you don't need to wait for Dataflow jobs to finish. If you didn't already copy this
-data as part of the [installation instructions](/INSTALL.md#set-up-some-data-files-used-in-the-examples), you can do it now.
+Because we have limited workshop time, we've saved a set of
+[TFRecords]([TFRecords](https://www.tensorflow.org/api_docs/python/python_io/))
+generated as part of the [Cloud ML transfer learning](workshop_sections/transfer_learning/cloudml)
+example. Copy them now to your own bucket as follows.
 
-Copy a zip of the generated records to a directory on your local machine:
-
-```shell
-gsutil cp gs://oscon-tf-workshop-materials/transfer_learning/cloudml/hugs_preproc_tfrecords.zip .
-```
-
-and then expand the zip:
+Set the `BUCKET` variable to point to your GCS bucket (replacing `your-bucket-name` with the actual name), then copy the records to your bucket.  Then, set the GCS_PATH variable to the newly copied GCS subfolder:
 
 ```shell
-unzip hugs_preproc_tfrecords.zip
-```
-
-Set the `GCS_PATH` variable to point to a new directory under your own bucket, and copy the unzipped records to a `preproc` directory under that path:
-
-```shell
+BUCKET=gs://your-bucket-name
+gsutil cp -r gs://tf-ml-workshop/transfer_learning/hugs_preproc_tfrecords $BUCKET
 GCS_PATH=$BUCKET/hugs_preproc_tfrecords
-gsutil cp -r hugs_preproc_tfrecords/ $GCS_PATH/preproc
 ```
 
-Once you've done that you can delete the local zip and `hugs_preproc_tfrecords` directory.
 
 (As indicated above, with more time, you could wait for your Dataflow preprocessing jobs to finish running, then point to your own generated image embeds instead).
 
