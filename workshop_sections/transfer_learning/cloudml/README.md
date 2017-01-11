@@ -5,9 +5,9 @@
     - [1. Image Preprocessing](#1-image-preprocessing)
       - [1.1 Deploy the preprocessing job to Cloud Dataflow](#11-deploy-the-preprocessing-job-to-cloud-dataflow)
     - [2. Modeling: Training the classifier](#2-modeling-training-the-classifier)
-    - [2.1 For the workshop, use pre-generated TFRecords for training](#21-for-the-workshop-use-pre-generated-tfrecords-for-training)
-    - [2.2 Run the training script](#22-run-the-training-script)
-    - [2.3 Monitor the training](#23-monitor-the-training)
+      - [2.1 For the workshop, use pre-generated TFRecords for training](#21-for-the-workshop-use-pre-generated-tfrecords-for-training)
+      - [2.2 Run the training script](#22-run-the-training-script)
+      - [2.3 Monitor the training](#23-monitor-the-training)
     - [3. Prediction: Using the trained model](#3-prediction-using-the-trained-model)
       - [3.1 Prediction from the command line using gcloud](#31-prediction-from-the-command-line-using-gcloud)
       - [3.2 Prediction using the Cloud ML API: A prediction web server](#32-prediction-using-the-cloud-ml-api-a-prediction-web-server)
@@ -111,7 +111,7 @@ The final output is computed using the [softmax](https://en.wikipedia.org/wiki/S
 training stages, we're using the [*dropout*](https://en.wikipedia.org/wiki/Dropout_(neural_networks)) technique, which
 randomly ignores a subset of input weights to prevent over-fitting to the training dataset.
 
-### 2.1 For the workshop, use pre-generated TFRecords for training
+#### 2.1 For the workshop, use pre-generated TFRecords for training
 
 Because we have limited workshop time, we've saved a set of generated
 [TFRecords]([TFRecords](https://www.tensorflow.org/api_docs/python/python_io/)).
@@ -127,7 +127,7 @@ GCS_PATH=$BUCKET/hugs_preproc_tfrecords
 
 (As indicated above, with more time, you could wait for your Dataflow preprocessing jobs to finish running, then point to your own generated image embeds instead).
 
-### 2.2 Run the training script
+#### 2.2 Run the training script
 
 Now, using the value of `GCS_PATH` that you set above, run your training job in the cloud:
 
@@ -137,7 +137,7 @@ Now, using the value of `GCS_PATH` that you set above, run your training job in 
 
 This script will output summary and model checkpoint information under `$GCS_PATH/training`.
 
-### 2.3 Monitor the training
+#### 2.3 Monitor the training
 
 As the training runs, you should see the logs stream to STDOUT.  You can also view them with:
 
