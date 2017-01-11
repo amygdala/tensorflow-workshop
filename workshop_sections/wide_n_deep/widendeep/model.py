@@ -87,7 +87,11 @@ def build_estimator(model_dir):
       tf.contrib.layers.embedding_column(native_country,
                                          dimension=8),
       tf.contrib.layers.embedding_column(occupation, dimension=8),
-      age, education_num, capital_gain, capital_loss, hours_per_week,
+      age,
+      education_num,
+      capital_gain,
+      capital_loss,
+      hours_per_week,
   ]
 
   # m = tf.contrib.learn.LinearClassifier(
@@ -102,7 +106,7 @@ def build_estimator(model_dir):
       model_dir=model_dir,
       linear_feature_columns=wide_columns,
       dnn_feature_columns=deep_columns,
-      dnn_hidden_units=[100, 60, 30])
+      dnn_hidden_units=[100, 70, 50, 25])
 
   return m
 
@@ -138,11 +142,10 @@ def generate_input_fn(filename):
 
 def train_and_eval():
 
-  train_file = "gs://run-wild-ml/adult.data"
-  test_file = "gs://run-wild-ml/adult.test"
+  train_file = "gs://tf-ml-workshop/widendeep/adult.data"
+  test_file = "gs://tf-ml-workshop/widendeep/adult.test"
   train_steps = 1000
 
-  # model_dir = tempfile.mkdtemp()
   model_dir = 'models/model_' + str(int(time.time()))
   print("model directory = %s" % model_dir)
 
