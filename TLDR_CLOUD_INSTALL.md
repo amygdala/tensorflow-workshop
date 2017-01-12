@@ -78,7 +78,7 @@ gcloud compute instances create mlworkshop \
     --machine-type n1-standard-1
 ```
 
-You can ignore the "I/O performance warning for disks < 200GB for this example; it is not important in this context.
+You can ignore the "I/O performance warning for disks < 200GB" for this example; it is not important in this context.
 
 ### 6. Set up a firewall rule for your project that will allow access to the web services we will run
 
@@ -107,8 +107,12 @@ Then, run the following in the Docker container.
 
 (If you have forgotten your project ID, you can find it in the console by selecting the Home Dashboard.  It will be listed near the upper left of the main panel.)
 
+In the following, replace `<your-project-ID>` with your actual project ID.
+
 ```shell
 gcloud config set project <your-project-ID>
+gcloud config set compute/region us-central1
+gcloud config set compute/zone us-central1-b
 PROJECT_ID=$(gcloud config list project --format "value(core.project)")
 BUCKET=gs://${PROJECT_ID}-ml
 ```
