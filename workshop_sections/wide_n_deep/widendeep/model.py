@@ -163,4 +163,7 @@ def train_and_eval():
 
 if __name__ == "__main__":
   print("TensorFlow version %s" % (tf.__version__))
-  train_and_eval()
+  if tf.__version__ < '0.12.0':
+    raise ValueError('This code requires tensorflow >= 0.12.0: See bug https://github.com/tensorflow/tensorflow/issues/5886')
+
+   train_and_eval()
