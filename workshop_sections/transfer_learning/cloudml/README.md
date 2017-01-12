@@ -67,6 +67,8 @@ embeddings contain a lot of high-level feature information useful to Inception f
 Although processing images in this manner can be reasonably expensive, each image can be processed independently and in
 parallel, making this task a great candidate for Cloud Dataflow.
 
+**Important:** If you have not already, makes sure to follow [these instructions](https://github.com/amygdala/tensorflow-workshop/blob/master/TLDR_CLOUD_INSTALL.md#12-enable-the-necessary-apis) to enable the Cloud Dataflow API. 
+
 #### 1.1 Deploy the preprocessing job to Cloud Dataflow
 
 We need to run preprocessing for both our training and evaluation images.  We've defined a script, `hugs_preproc.sh`,
@@ -76,6 +78,11 @@ First, set the `BUCKET` variable to point to your GCS bucket (replacing `your-bu
 
 ```shell
 BUCKET=gs://your-bucket-name
+```
+
+You may need to change file permissions to allow execution:
+```
+chmod +755 *.sh
 ```
 
 Then, run the pre-processing script. The script is already set up with links to the 'hugs' image data. The script
