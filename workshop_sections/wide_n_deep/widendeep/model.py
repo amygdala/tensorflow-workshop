@@ -166,4 +166,4 @@ if __name__ == "__main__":
   if tf.__version__ < '0.12.0':
     raise ValueError('This code requires tensorflow >= 0.12.0: See bug https://github.com/tensorflow/tensorflow/issues/5886')
 
-   train_and_eval()
+  train_and_eval()
