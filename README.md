@@ -19,4 +19,4 @@ This document points to more information for each workshop lab.
 - [Running distributed MNIST using Cloud ML](workshop_sections/mnist_series/cloudml).
 - [Transfer learning: using a trained model to 'bootstrap' learning new classifications](workshop_sections/transfer_learning/README.md).
 - [Building a word2vec model using a Custom Estimator, and exploring the learned embeddings](workshop_sections/word2vec/README.md). Introducing [TFRecords](https://www.tensorflow.org/versions/r0.11/api_docs/python/python_io.html#data-io-python-functions).
-- [Using a tf.learn estimator to train a Wide and Deep model](wide_n_deep/README.md).
+- [Using a tf.learn estimator to train a Wide and Deep model](workshop_sections/wide_n_deep/README.md).
