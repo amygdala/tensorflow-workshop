@@ -89,11 +89,7 @@ Then, run the pre-processing script. The script is already set up with links to 
 will launch two non-blocking Cloud Dataflow jobs to do the preprocessing for the eval and training datasets. By
 default it only uses 3 workers for each job, but you can change this if you have larger quota.
 
-```shell
-./hugs_preproc.sh $BUCKET
-```
-
-If running in a docker container, instead run the script as follows, setting the `USER` environment var to some value:
+(Setting the `USER` environment variable allows Dataflow to distinguish multiple user's jobs.) 
 
 ```shell
 USER=xxx ./hugs_preproc.sh $BUCKET
