@@ -127,10 +127,6 @@ gcloud beta auth application-default login
 ```
 (and follow the subsequent instructions)
 
-```shell
-gcloud config set compute/region us-central1
-```
-
 ### 10. Copy some data for the 'transfer learning' example to your bucket:
 
 ```shell
