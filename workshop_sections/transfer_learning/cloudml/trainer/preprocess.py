@@ -212,8 +212,8 @@ class EmbeddingsGraph(object):
         image, [self.HEIGHT, self.WIDTH], align_corners=False)
 
     # Then rescale range to [-1, 1) for Inception.
-    image = tf.sub(image, 0.5)
-    inception_input = tf.mul(image, 2.0)
+    image = tf.subtract(image, 0.5)
+    inception_input = tf.multiply(image, 2.0)
 
     # Build Inception layers, which expect a tensor of type float from [-1, 1)
     # and shape [batch_size, height, width, channels].
