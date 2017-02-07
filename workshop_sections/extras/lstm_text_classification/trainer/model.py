@@ -87,7 +87,7 @@ def make_model_fn(args):
     )
 
     # Shape [sentence_length, batch_size]
-    outputs_concat = tf.squeeze(tf.pack(outputs))
+    outputs_concat = tf.squeeze(tf.stack(outputs))
 
     # Shape [batch_size]
     predictions = tf.reduce_mean(

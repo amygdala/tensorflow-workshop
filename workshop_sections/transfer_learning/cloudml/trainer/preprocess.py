@@ -178,7 +178,7 @@ class EmbeddingsGraph(object):
     # input_jpeg is the tensor that contains raw image bytes.
     # It is used to feed image bytes and obtain embeddings.
     self.input_jpeg, self.embedding = self.build_graph()
-    self.tf_session.run(tf.initialize_all_variables())
+    self.tf_session.run(tf.global_variables_initializer())
     self.restore_from_checkpoint(Default.IMAGE_GRAPH_CHECKPOINT_URI)
 
   def build_graph(self):
@@ -212,8 +212,8 @@ class EmbeddingsGraph(object):
         image, [self.HEIGHT, self.WIDTH], align_corners=False)
 
     # Then rescale range to [-1, 1) for Inception.
-    image = tf.sub(image, 0.5)
-    inception_input = tf.mul(image, 2.0)
+    image = tf.subtract(image, 0.5)
+    inception_input = tf.multiply(image, 2.0)
 
     # Build Inception layers, which expect a tensor of type float from [-1, 1)
     # and shape [batch_size, height, width, channels].

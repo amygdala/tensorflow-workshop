@@ -36,7 +36,7 @@ m4 = tf.add(m3, m3)
 # m4 = m3 + m3
 
 # Add variable initializer.
-init = tf.initialize_all_variables()
+init = tf.global_variables_initializer()
 
 with tf.Session() as session:
     # We must initialize all variables before we use them.

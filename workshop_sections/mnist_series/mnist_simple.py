@@ -57,7 +57,7 @@ def main(_):
     train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
 
     sess = tf.InteractiveSession()
-    tf.initialize_all_variables().run()
+    tf.global_variables_initializer().run()
     # Train
     print("training for %s steps" % FLAGS.num_steps)
     for _ in xrange(FLAGS.num_steps):
