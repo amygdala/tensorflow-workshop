@@ -53,11 +53,11 @@ def main(_):
     # So here we use tf.nn.softmax_cross_entropy_with_logits on the raw
     # outputs of 'y', and then average across the batch.
     cross_entropy = tf.reduce_mean(
-        tf.nn.softmax_cross_entropy_with_logits(y, y_))
+        tf.nn.softmax_cross_entropy_with_logits(logits=y, labels=y_))
     train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
 
     sess = tf.InteractiveSession()
-    tf.initialize_all_variables().run()
+    tf.global_variables_initializer().run()
     # Train
     print("training for %s steps" % FLAGS.num_steps)
     for _ in xrange(FLAGS.num_steps):

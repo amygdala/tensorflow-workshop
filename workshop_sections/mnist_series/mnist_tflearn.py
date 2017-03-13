@@ -28,6 +28,7 @@ import time
 import numpy
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
+from tensorflow.contrib.learn.python.learn.estimators.estimator import SKCompat
 
 ARGFLAGS = None
 DATA_SETS = None
@@ -41,14 +42,14 @@ def run_linear_classifier():
     global DATA_SETS
     feature_columns = tf.contrib.learn.infer_real_valued_columns_from_input(
         DATA_SETS.train.images)
-    classifier = tf.contrib.learn.LinearClassifier(
-        feature_columns=feature_columns, n_classes=10)
+    classifier = SKCompat(tf.contrib.learn.LinearClassifier(
+        feature_columns=feature_columns, n_classes=10))
     classifier.fit(DATA_SETS.train.images,
                    DATA_SETS.train.labels.astype(numpy.int64),
-                   batch_size=100, steps=10000)
+                   batch_size=100, steps=5000)
 
     # Evaluate accuracy.
-    accuracy_score = classifier.evaluate(
+    accuracy_score = classifier.score(
         DATA_SETS.test.images,
         DATA_SETS.test.labels.astype(numpy.int64))['accuracy']
     print('Linear Classifier Accuracy: {0:f}'.format(accuracy_score))
@@ -59,7 +60,7 @@ def define_and_run_dnn_classifier():
     global DATA_SETS
     feature_columns = tf.contrib.learn.infer_real_valued_columns_from_input(
         DATA_SETS.train.images)
-    classifier = tf.contrib.learn.DNNClassifier(
+    classifier = SKCompat(tf.contrib.learn.DNNClassifier(
         feature_columns=feature_columns, n_classes=10,
         hidden_units=[128, 32],
         # After you've done a training run with optimizer learning rate 0.1,
@@ -69,7 +70,7 @@ def define_and_run_dnn_classifier():
         #   tensorboard --logdir=/tmp/tfmodels/mnist_tflearn
         optimizer=tf.train.ProximalAdagradOptimizer(learning_rate=0.1),
         model_dir=ARGFLAGS.model_dir
-        )
+        ))
     classifier.fit(DATA_SETS.train.images,
                    DATA_SETS.train.labels.astype(numpy.int64),
                    batch_size=100, max_steps=ARGFLAGS.num_steps)
@@ -80,7 +81,7 @@ def define_and_run_dnn_classifier():
 def eval_dnn_classifier(classifier):
     # Evaluate classifier accuracy.
     global DATA_SETS
-    accuracy_score = classifier.evaluate(
+    accuracy_score = classifier.score(
         DATA_SETS.test.images,
         DATA_SETS.test.labels.astype(numpy.int64))['accuracy']
     print('DNN Classifier Accuracy: {0:f}'.format(accuracy_score))
@@ -113,7 +114,7 @@ if __name__ == '__main__':
                             str(int(time.time()))),
                         help='Directory for storing model info')
     parser.add_argument('--num_steps', type=int,
-                        default=25000,
+                        default=15000,
                         help='Number of training steps to run')
     ARGFLAGS = parser.parse_args()
     tf.app.run()
