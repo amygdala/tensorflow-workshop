@@ -55,7 +55,6 @@ def generate_input_fn(dataset, batch_size=BATCH_SIZE):
 
 def define_and_run_linear_classifier(num_steps, logdir, batch_size=BATCH_SIZE):
     """Run a linear classifier."""
-
     feature_columns = [tf.contrib.layers.real_valued_column(
         "pixels", dimension=784)]
     
@@ -115,10 +114,11 @@ def main(_):
 
     # Uncomment this if you'd like to run the linear classifier first.
     # print("\n-----Running linear classifier...")
-    # run_linear_classifier()
+    # model_dir = os.path.join("/tmp/tfmodels/mnist_tflearn", str(int(time.time())))
+    # define_and_run_linear_classifier(ARGFLAGS.num_steps, model_dir)
 
     print("\n---- Running DNN classifier...")
-    classifier = define_and_run_dnn_classifier()
+    define_and_run_dnn_classifier(ARGFLAGS.num_steps, ARGFLAGS.model_dir)
 
 
 if __name__ == '__main__':
