@@ -178,7 +178,7 @@ $ conda install jupyter
 (If you are using `virtualenv` instead of `conda`, install the packages using the equivalent `pip` commands instead).
 
 
-### Install the Google Cloud SDK
+### Install the Google Cloud (gcloud) SDK
 
 Follow the installation instructions [here](https://cloud.google.com/sdk/downloads), then run:
 

@@ -3,6 +3,8 @@
 
 This directory contains the workshop labs.
 
+**Note: These examples have not yet all been updated for TensorFlow 1.0, and some may not currently run.**
+
 - [Building a small starter TensorFlow graph](starter_tf_graph/README.md)
 - [XOR: A minimal training example](xor/README.md)
 - [Introducing MNIST, and building a simple linear classifier in TensorFlow](mnist_series/01_README_mnist_simple.md).
