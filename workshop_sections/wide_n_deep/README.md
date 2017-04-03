@@ -10,7 +10,7 @@ We will use the [Census Income Dataset](https://archive.ics.uci.edu/ml/datasets/
 The prediction task is to determine whether a person makes over 50K a year.
 
 # Training and evaluation
-This repo presents 3 methods of running the model: locally, on a jupyter notebook, and on Google CloudML.
+This repo presents 3 methods of running the model: locally, on a jupyter notebook, and on Google Cloud ML Engine.
 
 ### Local
 `python tensorflow-workshop/workshop_sections/wide_n_deep/widendeep/model.py`
@@ -24,7 +24,7 @@ This repo presents 3 methods of running the model: locally, on a jupyter noteboo
 `cd workshop_sections/wide_n_deep`
 
 #### Test it locally:
-`gcloud beta ml local train --package-path=widendeep --module-name=widendeep.model`
+`gcloud ml-engine local train --package-path=widendeep --module-name=widendeep.model`
 
 #### Run it in the cloud:
     gcloud config set compute/region us-central1
@@ -36,6 +36,6 @@ This repo presents 3 methods of running the model: locally, on a jupyter noteboo
     export BUCKET=gs://${PROJECT_ID}-ml
     export TRAIN_PATH=${BUCKET}/${JOB_NAME}
 
-    gcloud beta ml jobs submit training ${JOB_NAME} --package-path=widendeep --module-name=widendeep.model --staging-bucket=${BUCKET} --region=us-central1 -- --train_dir=${TRAIN_PATH}/train
+    gcloud ml-engine jobs submit training ${JOB_NAME} --package-path=widendeep --module-name=widendeep.model --staging-bucket=${BUCKET} --region=us-central1 -- --train_dir=${TRAIN_PATH}/train
 
 
