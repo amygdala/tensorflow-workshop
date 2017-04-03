@@ -142,8 +142,8 @@ def generate_input_fn(filename):
 
 def train_and_eval():
 
-  train_file = "gs://tf-ml-workshop/widendeep/adult.data"
-  test_file = "gs://tf-ml-workshop/widendeep/adult.test"
+  train_file = "gs://cloudml-public/census/data/adult.data.csv"
+  test_file  = "gs://cloudml-public/census/data/adult.test.csv"
   train_steps = 1000
 
   model_dir = 'models/model_' + str(int(time.time()))
@@ -160,6 +160,34 @@ def train_and_eval():
 
   print('Accuracy: %s' % results['accuracy'])
 
+  m.export_savedmodel(
+    export_dir_base='exports',
+    input_fn=serving_input_fn)
+
+def column_to_dtype(column):
+    if column in CATEGORICAL_COLUMNS:
+      return tf.string
+    else:
+      return tf.float32
+
+def serving_input_fn():
+  feature_placeholders = {
+    column: tf.placeholder(column_to_dtype(column), [None])
+      for column in FEATURE_COLUMNS
+  }
+  # DNNCombinedLinearClassifier expects rank 2 Tensors, but inputs should be
+  # rank 1, so that we can provide scalars to the server
+  features = {
+    key: tf.expand_dims(tensor, -1)
+      for key, tensor in feature_placeholders.items()
+  }
+  
+  return input_fn_utils.InputFnOps(
+    features, # input into graph
+    None,
+    feature_placeholders # tensor input converted from request 
+  )
+      
 
 if __name__ == "__main__":
   print("TensorFlow version %s" % (tf.__version__))
