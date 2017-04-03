@@ -1,6 +1,6 @@
 # Wide & Deep with TensorFlow
 
-This directory contains the code for running a Wide and Deep model. It also runs in Cloud ML, using TensorFlow 0.12.1. This code has been tested on Python 2.7 but should also run on Python 3.5
+This directory contains the code for running a Wide and Deep model. It also runs in Cloud ML Engine, using TensorFlow 1.0. This code has been tested on Python 3.5 but should also run on Python 2.7
 
 # About the dataset and model
 Wide and deep jointly trains wide linear models and deep neural networks -- to combine the benefits of memorization and generalization for recommender systems. See the [research paper](https://arxiv.org/abs/1606.07792) for more details. The code is based on the [TensorFlow wide and deep tutorial](https://www.tensorflow.org/tutorials/wide_and_deep/).
