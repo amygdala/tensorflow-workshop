@@ -60,16 +60,23 @@ Next, set the following environment variables and submit a training job.
     export TRAIN_PATH=${BUCKET}/${JOB_NAME}
 
     gcloud ml-engine jobs submit training ${JOB_NAME} --package-path=widendeep --module-name=widendeep.model --staging-bucket=${BUCKET} --region=us-central1 -- --train_dir=${TRAIN_PATH}/train
+    
+# Your trained model
+Whether you ran your training locally or in the cloud, you should now have a set of files exported. If you ran this locally, it will be located in someplace similar to `models/model_WIDE_AND_DEEP_1234567890/exports/1234567890`. If you ran it in the cloud, it will be located in the GCS bucket that you passed.
+
+The trained model files that were exported are ready to be used for prediction. 
 
 # Prediction
-You can run prediction jobs in Cloud ML Engine as well, using the Prediction Service.
+You can run prediction jobs in Cloud ML Engine as well, using the Prediction Service. 
 
-First, create a model
+Before we begin, if you trained a model locally, you should upload the contents that were exported (something like `saved_model.pb` and a folder called `variables`) to a Google Cloud Storage location and make a note of its address (`gs://<BUCKET_ID>/path/to/model`)
+
+Now we are ready to create a model
     
     export MODEL_NAME='my_model'
     gcloud ml-engine models create $MODEL_NAME
 
-Next, create a 'version' of the model
+Next, create a 'version' of that model
 
     export VERSION_NAME='my_version'
     export DEPLOYMENT_SOURCE='gs://LOCATION_OF_MODEL_FILES'
