@@ -1,6 +1,6 @@
 # Wide & Deep with TensorFlow
 
-This directory contains the code for running a Wide and Deep model. It also runs in Cloud ML Engine, using TensorFlow 1.0. This code has been tested on Python 3.5 but should also run on Python 2.7
+This directory contains the code for running a Wide and Deep model. It also runs in Cloud ML Engine, using TensorFlow 1.0. This code has been tested on Python 2.7 and 3.5
 
 # About the dataset and model
 Wide and deep jointly trains wide linear models and deep neural networks -- to combine the benefits of memorization and generalization for recommender systems. See the [research paper](https://arxiv.org/abs/1606.07792) for more details. The code is based on the [TensorFlow wide and deep tutorial](https://www.tensorflow.org/tutorials/wide_and_deep/).
@@ -9,27 +9,50 @@ We will use the [Census Income Dataset](https://archive.ics.uci.edu/ml/datasets/
 
 The prediction task is to determine whether a person makes over 50K a year.
 
+The dataset is downloaded as part of the script (and in the cloud directly uses the copy stored online).
+
 # Training and evaluation
 This repo presents 3 methods of running the model: locally, on a jupyter notebook, and on Google Cloud ML Engine.
 
+The commands below assume you are in this directory (wide_n_deep). 
+
+You should move to it with `cd workshop_sections/wide_n_deep`
+
 ### Local
-`python tensorflow-workshop/workshop_sections/wide_n_deep/widendeep/model.py`
+`python widendeep/model.py`
 
 ### Jupyter Notebook
-`cd workshop_sections/wide_n_deep`
+Run the notebook, and step through the cells.
 
 `jupyter notebook`
 
-### Google CloudML
+### Google Cloud Machine Learning Engine
+The workflow to run this on Cloud Machine Learning Engine is to do a local run first, then move to the cloud.
+
+First, let's go to our working directory: 
 `cd workshop_sections/wide_n_deep`
 
 #### Test it locally:
-`gcloud ml-engine local train --package-path=widendeep --module-name=widendeep.model`
+    $ gcloud ml-engine local train --package-path=widendeep --module-name=widendeep.model
+    TensorFlow version 1.0.0
+    model directory = models/model_WIDE_AND_DEEP_1491431579
+    estimator built
+    fit done
+    evaluate done
+    Accuracy: 0.84125
+    Model exported to models/model_WIDE_AND_DEEP_1491431579/exports
 
 #### Run it in the cloud:
+Ensure you have the project you want to work in selected. You can check using `gcloud config list`
+    
+If you need to set it to a new value, do so using `gcloud config set <YOUR_PROJECT_ID_HERE>`
+
+You should also make sure that the Cloud ML Engine API is turned on for your project. More info about getting setup is here: https://cloud.google.com/ml-engine/docs/quickstarts/command-line
+
+Next, set the following environment variables and submit a training job.
+
     gcloud config set compute/region us-central1
     gcloud config set compute/zone us-central1-c
-    gcloud config set project gae-load-demo
 
     export JOB_NAME=widendeep_${USER}_$(date +%Y%m%d_%H%M%S)
     export PROJECT_ID=`gcloud config list project --format "value(core.project)"`
@@ -38,4 +61,20 @@ This repo presents 3 methods of running the model: locally, on a jupyter noteboo
 
     gcloud ml-engine jobs submit training ${JOB_NAME} --package-path=widendeep --module-name=widendeep.model --staging-bucket=${BUCKET} --region=us-central1 -- --train_dir=${TRAIN_PATH}/train
 
+# Prediction
+You can run prediction jobs in Cloud ML Engine as well, using the Prediction Service.
 
+First, create a model
+    
+    export MODEL_NAME='my_model'
+    gcloud ml-engine models create $MODEL_NAME
+
+Next, create a 'version' of the model
+
+    export VERSION_NAME='my_version'
+    export DEPLOYMENT_SOURCE='gs://LOCATION_OF_MODEL_FILES'
+    gcloud ml-engine versions create $VERSION_NAME --model $MODEL_NAME --origin $DEPLOYMENT_SOURCE
+    
+Finally, make a prediction with your newly deployed version!
+
+    gcloud ml-engine predict --model $MODEL_NAME --version $VERSION_NAME --json-instances test_instance.json
