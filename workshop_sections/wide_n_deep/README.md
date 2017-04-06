@@ -54,12 +54,27 @@ Next, set the following environment variables and submit a training job.
     gcloud config set compute/region us-central1
     gcloud config set compute/zone us-central1-c
 
-    export JOB_NAME=widendeep_${USER}_$(date +%Y%m%d_%H%M%S)
     export PROJECT_ID=`gcloud config list project --format "value(core.project)"`
     export BUCKET=gs://${PROJECT_ID}-ml
+    export JOB_NAME=widendeep_${USER}_$(date +%Y%m%d_%H%M%S)
     export TRAIN_PATH=${BUCKET}/${JOB_NAME}
 
-    gcloud ml-engine jobs submit training ${JOB_NAME} --package-path=widendeep --module-name=widendeep.model --staging-bucket=${BUCKET} --region=us-central1 -- --train_dir=${TRAIN_PATH}/train
+    gcloud ml-engine jobs submit training ${JOB_NAME} --package-path=widendeep --module-name=widendeep.model  --region=us-central1 --job-dir=${TRAIN_PATH} 
+    
+    gcloud ml-engine jobs submit training ${JOB_NAME} --package-path=widendeep --module-name=widendeep.model --job-dir=${TRAIN_PATH} --config config.yaml
+    
+You can check the status of your training job with the command:
+
+    gcloud ml-engine jobs describe $JOB_NAME
+    
+You can also see it's progress in your cloud console and view the logs.
+
+To run another job (in your dev workflow), simply set a new `JOB_NAME` and `TRAIN_PATH` and then re-run the `jobs.summit` call. Job names must be unique.
+
+    export JOB_NAME=widendeep_${USER}_$(date +%Y%m%d_%H%M%S)
+    export TRAIN_PATH=${BUCKET}/${JOB_NAME}
+    gcloud ml-engine jobs submit training ${JOB_NAME} --package-path=widendeep --module-name=widendeep.model  --region=us-central1 --job-dir=${TRAIN_PATH}
+
     
 # Your trained model
 Whether you ran your training locally or in the cloud, you should now have a set of files exported. If you ran this locally, it will be located in someplace similar to `models/model_WIDE_AND_DEEP_1234567890/exports/1234567890`. If you ran it in the cloud, it will be located in the GCS bucket that you passed.
