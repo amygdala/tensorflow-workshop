@@ -52,7 +52,7 @@ set -v
 # Tell CloudML about a new type of model coming.  Think of a "model" here as
 # a namespace for deployed Tensorflow graphs.  This will give an error
 # if the model already exists.
-gcloud beta ml models create "$MODEL_NAME"
+gcloud ml-engine models create "$MODEL_NAME" --regions us-central1
 
 set -e
 
@@ -60,14 +60,14 @@ set -e
 # corresponds to a "version".  Creating a version actually deploys our
 # Tensorflow graph to a Cloud instance, and gets it ready to serve (predict).
 # This will give an error if the version name already exists.
-gcloud beta ml versions create "$VERSION_NAME" \
+gcloud ml-engine versions create "$VERSION_NAME" \
   --model "$MODEL_NAME" \
   --origin "${GCS_PATH}/training/model"
 
 # Models do not need a default version, but it's a great way to move
 # your production
 # service from one version to another with a single gcloud command.
-gcloud beta ml versions set-default "$VERSION_NAME" --model "$MODEL_NAME"
+gcloud ml-engine versions set-default "$VERSION_NAME" --model "$MODEL_NAME"
 
 # Now, generate a request json file with test image(s). If you trained a model
 # with the 'flower' images, edit the image list appropriately.
@@ -81,7 +81,7 @@ echo
 echo "Next, from the command line, run the following.  It might take a"
 echo "few moments for the prediction service to spin up."
 echo
-echo "gcloud beta ml predict --model ${MODEL_NAME} --json-instances request.json"
+echo "gcloud ml-engine predict --model ${MODEL_NAME} --json-instances request.json"
 
 
 

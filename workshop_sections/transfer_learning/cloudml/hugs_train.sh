@@ -50,7 +50,7 @@ set -v -e
 
 
 # Train on cloud ML.
-gcloud beta ml jobs submit training "$JOB_ID" \
+gcloud ml-engine jobs submit training "$JOB_ID" \
   --module-name trainer.task \
   --package-path trainer \
   --staging-bucket "$BUCKET" \
