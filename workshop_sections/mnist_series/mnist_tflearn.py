@@ -59,10 +59,10 @@ def define_and_run_linear_classifier(num_steps, logdir, batch_size=BATCH_SIZE):
         "pixels", dimension=784)]
     
     classifier = tf.contrib.learn.LinearClassifier(
-                feature_columns=feature_columns, 
-                n_classes=10,
-                model_dir=logdir
-                )
+        feature_columns=feature_columns, 
+        n_classes=10,
+        model_dir=logdir
+    )
     classifier.fit(
         input_fn=generate_input_fn(DATA_SETS.train, batch_size=batch_size), 
         steps=num_steps)
@@ -85,7 +85,7 @@ def define_and_run_dnn_classifier(num_steps, logdir, lr=.1, batch_size=40):
         hidden_units=[128, 32],
         optimizer=tf.train.ProximalAdagradOptimizer(learning_rate=lr),
         model_dir=logdir
-        )
+    )
     # After you've done a training run with optimizer learning rate 0.1,
         # change it to 0.5 and run the training again.  Use TensorBoard to take
         # a look at the difference.  You can see both runs by pointing it to the
