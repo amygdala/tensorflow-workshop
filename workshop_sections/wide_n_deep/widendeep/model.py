@@ -17,12 +17,11 @@ import time
 import argparse
 
 import tensorflow as tf
+from tensorflow.contrib import layers
 from tensorflow.contrib.learn.python.learn import learn_runner
 from tensorflow.contrib.learn.python.learn.datasets import base
 from tensorflow.contrib.learn.python.learn.utils import input_fn_utils
 from tensorflow.contrib.learn.python.learn.utils import saved_model_export_utils
-from tensorflow.contrib.layers import embedding_column
-from tensorflow.contrib.layers import real_valued_column
 
 
 tf.logging.set_verbosity(tf.logging.ERROR)
@@ -75,44 +74,44 @@ def generate_input_fn(filename):
 
 def build_feature_cols():
   # Sparse base columns.
-  gender = tf.contrib.layers.sparse_column_with_keys(
+  gender = layers.sparse_column_with_keys(
             column_name="gender",
             keys=["female", "male"])
-  race = tf.contrib.layers.sparse_column_with_keys(
+  race = layers.sparse_column_with_keys(
             column_name="race",
             keys=["Amer-Indian-Eskimo",
                   "Asian-Pac-Islander",
                   "Black", "Other",
                   "White"])
 
-  education = tf.contrib.layers.sparse_column_with_hash_bucket(
+  education = layers.sparse_column_with_hash_bucket(
       "education", hash_bucket_size=1000)
-  marital_status = tf.contrib.layers.sparse_column_with_hash_bucket(
+  marital_status = layers.sparse_column_with_hash_bucket(
       "marital_status", hash_bucket_size=100)
-  relationship = tf.contrib.layers.sparse_column_with_hash_bucket(
+  relationship = layers.sparse_column_with_hash_bucket(
       "relationship", hash_bucket_size=100)
-  workclass = tf.contrib.layers.sparse_column_with_hash_bucket(
+  workclass = layers.sparse_column_with_hash_bucket(
       "workclass", hash_bucket_size=100)
-  occupation = tf.contrib.layers.sparse_column_with_hash_bucket(
+  occupation = layers.sparse_column_with_hash_bucket(
       "occupation", hash_bucket_size=1000)
-  native_country = tf.contrib.layers.sparse_column_with_hash_bucket(
+  native_country = layers.sparse_column_with_hash_bucket(
       "native_country", hash_bucket_size=1000)
 
   # Continuous base columns.
-  age = real_valued_column("age")
-  education_num = real_valued_column("education_num")
-  capital_gain = real_valued_column("capital_gain")
-  capital_loss = real_valued_column("capital_loss")
-  hours_per_week = real_valued_column("hours_per_week")
+  age = layers.real_valued_column("age")
+  education_num = layers.real_valued_column("education_num")
+  capital_gain = layers.real_valued_column("capital_gain")
+  capital_loss = layers.real_valued_column("capital_loss")
+  hours_per_week = layers.real_valued_column("hours_per_week")
 
   # Transformations.
-  age_buckets = tf.contrib.layers.bucketized_column(
+  age_buckets = layers.bucketized_column(
       age, boundaries=[18, 25, 30, 35, 40, 45, 50, 55, 60, 65])
-  education_occupation = tf.contrib.layers.crossed_column(
+  education_occupation = layers.crossed_column(
       [education, occupation], hash_bucket_size=int(1e4))
-  age_race_occupation = tf.contrib.layers.crossed_column(
+  age_race_occupation = layers.crossed_column(
       [age_buckets, race, occupation], hash_bucket_size=int(1e6))
-  country_occupation = tf.contrib.layers.crossed_column(
+  country_occupation = layers.crossed_column(
       [native_country, occupation], hash_bucket_size=int(1e4))
 
   # Wide columns and deep columns.
@@ -125,18 +124,18 @@ def build_feature_cols():
                   country_occupation]
 
   deep_columns = [
-      embedding_column(gender, dimension=8),
-      embedding_column(native_country, dimension=8),
-      embedding_column(education, dimension=8),
-      embedding_column(occupation, dimension=8),
-      embedding_column(workclass, dimension=8),
-      embedding_column(race, dimension=8),
-      embedding_column(marital_status, dimension=8),
-      embedding_column(relationship, dimension=8),
-      embedding_column(age_buckets, dimension=8),
-      embedding_column(education_occupation, dimension=8),
-      embedding_column(age_race_occupation, dimension=8),
-      embedding_column(country_occupation, dimension=8),
+      layers.embedding_column(gender, dimension=8),
+      layers.embedding_column(native_country, dimension=8),
+      layers.embedding_column(education, dimension=8),
+      layers.embedding_column(occupation, dimension=8),
+      layers.embedding_column(workclass, dimension=8),
+      layers.embedding_column(race, dimension=8),
+      layers.embedding_column(marital_status, dimension=8),
+      layers.embedding_column(relationship, dimension=8),
+      # layers.embedding_column(age_buckets, dimension=8),
+      layers.embedding_column(education_occupation, dimension=8),
+      layers.embedding_column(age_race_occupation, dimension=8),
+      layers.embedding_column(country_occupation, dimension=8),
       age,
       education_num,
       capital_gain,
@@ -145,6 +144,7 @@ def build_feature_cols():
   ]
 
   return wide_columns, deep_columns
+
 
 def build_model(model_type, model_dir, wide_columns, deep_columns):
   m = None
@@ -171,7 +171,7 @@ def build_model(model_type, model_dir, wide_columns, deep_columns):
       dnn_feature_columns=deep_columns,
       dnn_hidden_units=deep_layers)
 
-  print('created %s model'.format(model_type))
+  print('created {} model'.format(model_type))
 
   return m
 
@@ -193,6 +193,7 @@ def column_to_dtype(column):
         return tf.string
     else:
         return tf.float32
+
 
 """
   This function maps input columns (feature_placeholders) to 
@@ -220,7 +221,8 @@ def serving_input_fn():
         None,
         feature_placeholders # tensor input converted from request 
     )
-    
+
+
 def generate_experiment(output_dir, train_file, test_file, model_type):
   def _experiment_fn(output_dir):
     train_input_fn = generate_input_fn(train_file)
