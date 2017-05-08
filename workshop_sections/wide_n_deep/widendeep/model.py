@@ -21,6 +21,8 @@ from tensorflow.contrib.learn.python.learn import learn_runner
 from tensorflow.contrib.learn.python.learn.datasets import base
 from tensorflow.contrib.learn.python.learn.utils import input_fn_utils
 from tensorflow.contrib.learn.python.learn.utils import saved_model_export_utils
+from tensorflow.contrib.layers import embedding_column
+from tensorflow.contrib.layers import real_valued_column
 
 
 tf.logging.set_verbosity(tf.logging.ERROR)
@@ -73,13 +75,15 @@ def generate_input_fn(filename):
 
 def build_feature_cols():
   # Sparse base columns.
-  gender = tf.contrib.layers.sparse_column_with_keys(column_name="gender",
-                                                     keys=["female", "male"])
-  race = tf.contrib.layers.sparse_column_with_keys(column_name="race",
-                                                   keys=["Amer-Indian-Eskimo",
-                                                         "Asian-Pac-Islander",
-                                                         "Black", "Other",
-                                                         "White"])
+  gender = tf.contrib.layers.sparse_column_with_keys(
+            column_name="gender",
+            keys=["female", "male"])
+  race = tf.contrib.layers.sparse_column_with_keys(
+            column_name="race",
+            keys=["Amer-Indian-Eskimo",
+                  "Asian-Pac-Islander",
+                  "Black", "Other",
+                  "White"])
 
   education = tf.contrib.layers.sparse_column_with_hash_bucket(
       "education", hash_bucket_size=1000)
@@ -95,11 +99,11 @@ def build_feature_cols():
       "native_country", hash_bucket_size=1000)
 
   # Continuous base columns.
-  age = tf.contrib.layers.real_valued_column("age")
-  education_num = tf.contrib.layers.real_valued_column("education_num")
-  capital_gain = tf.contrib.layers.real_valued_column("capital_gain")
-  capital_loss = tf.contrib.layers.real_valued_column("capital_loss")
-  hours_per_week = tf.contrib.layers.real_valued_column("hours_per_week")
+  age = real_valued_column("age")
+  education_num = real_valued_column("education_num")
+  capital_gain = real_valued_column("capital_gain")
+  capital_loss = real_valued_column("capital_loss")
+  hours_per_week = real_valued_column("hours_per_week")
 
   # Transformations.
   age_buckets = tf.contrib.layers.bucketized_column(
@@ -112,22 +116,27 @@ def build_feature_cols():
       [native_country, occupation], hash_bucket_size=int(1e4))
 
   # Wide columns and deep columns.
-  wide_columns = [gender, native_country, education, occupation, workclass,
-                  marital_status, relationship, age_buckets,
-                  education_occupation, age_race_occupation,
+  wide_columns = [gender, native_country, education, 
+                  occupation, workclass, race, 
+                  marital_status, relationship, 
+                  age_buckets,
+                  education_occupation, 
+                  age_race_occupation,
                   country_occupation]
 
   deep_columns = [
-      tf.contrib.layers.embedding_column(workclass, dimension=8),
-      tf.contrib.layers.embedding_column(education, dimension=8),
-      tf.contrib.layers.embedding_column(marital_status,
-                                         dimension=8),
-      tf.contrib.layers.embedding_column(gender, dimension=8),
-      tf.contrib.layers.embedding_column(relationship, dimension=8),
-      tf.contrib.layers.embedding_column(race, dimension=8),
-      tf.contrib.layers.embedding_column(native_country,
-                                         dimension=8),
-      tf.contrib.layers.embedding_column(occupation, dimension=8),
+      embedding_column(gender, dimension=8),
+      embedding_column(native_country, dimension=8),
+      embedding_column(education, dimension=8),
+      embedding_column(occupation, dimension=8),
+      embedding_column(workclass, dimension=8),
+      embedding_column(race, dimension=8),
+      embedding_column(marital_status, dimension=8),
+      embedding_column(relationship, dimension=8),
+      embedding_column(age_buckets, dimension=8),
+      embedding_column(education_occupation, dimension=8),
+      embedding_column(age_race_occupation, dimension=8),
+      embedding_column(country_occupation, dimension=8),
       age,
       education_num,
       capital_gain,
@@ -139,6 +148,8 @@ def build_feature_cols():
 
 def build_model(model_type, model_dir, wide_columns, deep_columns):
   m = None
+  deep_layers = [100, 70, 50, 25]
+
   # Linear Classifier
   if model_type == 'WIDE':
     m = tf.contrib.learn.LinearClassifier(
@@ -150,7 +161,7 @@ def build_model(model_type, model_dir, wide_columns, deep_columns):
     m = tf.contrib.learn.DNNClassifier(
       model_dir=model_dir,
       feature_columns=deep_columns,
-      hidden_units=[100, 50])
+      hidden_units=deep_layers)
 
   # Combined Linear and Deep Classifier
   elif model_type == 'WIDE_AND_DEEP':
@@ -158,7 +169,9 @@ def build_model(model_type, model_dir, wide_columns, deep_columns):
       model_dir=model_dir,
       linear_feature_columns=wide_columns,
       dnn_feature_columns=deep_columns,
-      dnn_hidden_units=[100, 70, 50, 25])
+      dnn_hidden_units=deep_layers)
+
+  print('created %s model'.format(model_type))
 
   return m
 
@@ -231,7 +244,7 @@ def generate_experiment(output_dir, train_file, test_file, model_type):
   return _experiment_fn
 
 
-def train_and_eval(job_dir=None):
+def train_and_eval(job_dir=None, model_type='WIDE_AND_DEEP'):
   print("Begin training and evaluation")
 
   # if local eval and no args passed, default
@@ -253,7 +266,6 @@ def train_and_eval(job_dir=None):
   training_mode = 'learn_runner'
   train_steps = 1000
   test_steps = 100
-  model_type = 'WIDE_AND_DEEP'
 
   model_dir = job_dir + 'model_' + model_type + '_' + str(int(time.time()))
   print("Saving model checkpoints to " + model_dir)
@@ -302,10 +314,6 @@ def version_is_less_than(a, b):
             return True
     return False
 
-  m.export_savedmodel(
-    export_dir_base='exports',
-    input_fn=serving_input_fn)
-
 def column_to_dtype(column):
     if column in CATEGORICAL_COLUMNS:
       return tf.string
@@ -339,6 +347,13 @@ def get_arg_parser():
       required=False
   )
 
+  parser.add_argument(
+      '--model-type',
+      help='Whether to run WIDE, DEEP, or WIDE_AND_DEEP model. Default is WIDE_AND_DEEP',
+      required=False,
+      default='WIDE_AND_DEEP'
+    )
+
   return parser
 
 if __name__ == "__main__":
@@ -349,4 +364,4 @@ if __name__ == "__main__":
 
   parser = get_arg_parser()
   args = parser.parse_args()
-  train_and_eval(args.job_dir)
+  train_and_eval(args.job_dir, model_type=args.model_type)
