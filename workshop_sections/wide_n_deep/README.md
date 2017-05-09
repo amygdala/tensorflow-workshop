@@ -2,6 +2,13 @@
 
 This directory contains the code for running a Wide and Deep model. It also runs in Cloud ML Engine, using TensorFlow 1.0. This code has been tested on Python 2.7 and 3.5
 
+# Installation
+This code runs on both Python 2.7 and 3.5, but [Google Cloud ML Engine](https://cloud.google.com/ml-engine/docs/) runs Python 2.7 exclusively, so if you want to leverage that, you may want to use Python 2.7 for your environment.
+* Tensorflow: https://www.tensorflow.org/install
+
+There are some Jupyter notebooks available for working through the code step by step.
+* Jupyter: https://jupyter.org/install.html
+
 # About the dataset and model
 Wide and deep jointly trains wide linear models and deep neural networks -- to combine the benefits of memorization and generalization for recommender systems. See the [research paper](https://arxiv.org/abs/1606.07792) for more details. The code is based on the [TensorFlow wide and deep tutorial](https://www.tensorflow.org/tutorials/wide_and_deep/).
 
@@ -19,6 +26,7 @@ The commands below assume you are in this directory (wide_n_deep).
 You should move to it with `cd workshop_sections/wide_n_deep`
 
 ### Local
+You can run the Python module directly on your local environment using:
 `python widendeep/model.py`
 
 ### Jupyter Notebook
