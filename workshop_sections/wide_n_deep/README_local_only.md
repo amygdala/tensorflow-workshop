@@ -1,9 +1,10 @@
 # Wide & Deep with TensorFlow
 
-This directory contains the code for running a Wide and Deep model. It also runs in Cloud ML Engine, using TensorFlow 1.0. This code has been tested on Python 2.7 and 3.5
+This directory contains the code for running a Wide and Deep model. 
+This code currently only works on Python 2.7.
 
 # Installation
-This code runs on both Python 2.7 and 3.5, but [Google Cloud ML Engine](https://cloud.google.com/ml-engine/docs/) runs Python 2.7 exclusively, so if you want to leverage that, you may want to use Python 2.7 for your environment.
+This code runs on both Python 2.7, so please use Python 2.7 for your environment.
 * Tensorflow: https://www.tensorflow.org/install
 
 There are some Jupyter notebooks available for working through the code step by step.
