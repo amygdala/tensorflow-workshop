@@ -1,3 +1,5 @@
 numpy>=1.11.2
 protobuf==3.0.0
 tensorflow>=1.0.1
+pandas==0.20.2
+jupyter==1.0.0
