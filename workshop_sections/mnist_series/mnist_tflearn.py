@@ -25,7 +25,6 @@ import argparse
 import os
 import time
 
-import numpy
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
@@ -41,10 +40,10 @@ tf.logging.set_verbosity(tf.logging.INFO)
 def generate_input_fn(dataset, batch_size=BATCH_SIZE):
     def _input_fn():
         X = tf.constant(dataset.images)
-        Y = tf.constant(dataset.labels.astype(numpy.int64))
-        image_batch, label_batch = tf.train.shuffle_batch([X,Y], 
-                               batch_size=batch_size, 
-                               capacity=8*batch_size, 
+        Y = tf.constant(dataset.labels, dtype=tf.int32)
+        image_batch, label_batch = tf.train.shuffle_batch([X,Y],
+                               batch_size=batch_size,
+                               capacity=8*batch_size,
                                min_after_dequeue=4*batch_size,
                                enqueue_many=True
                               )
@@ -57,30 +56,30 @@ def define_and_run_linear_classifier(num_steps, logdir, batch_size=BATCH_SIZE):
     """Run a linear classifier."""
     feature_columns = [tf.contrib.layers.real_valued_column(
         "pixels", dimension=784)]
-    
+
     classifier = tf.contrib.learn.LinearClassifier(
-        feature_columns=feature_columns, 
+        feature_columns=feature_columns,
         n_classes=10,
         model_dir=logdir
     )
     classifier.fit(
-        input_fn=generate_input_fn(DATA_SETS.train, batch_size=batch_size), 
+        input_fn=generate_input_fn(DATA_SETS.train, batch_size=batch_size),
         steps=num_steps)
-    
+
     print("Finished training.")
-    
+
     # Evaluate accuracy.
     accuracy_score = classifier.evaluate(input_fn=generate_input_fn(DATA_SETS.test, batch_size), steps=100)['accuracy']
-    
+
     print('Linear Classifier Accuracy: {0:f}'.format(accuracy_score))
 
 
 def define_and_run_dnn_classifier(num_steps, logdir, lr=.1, batch_size=40):
     """Run a DNN classifier."""
     feature_columns = [tf.contrib.layers.real_valued_column("pixels", dimension=784)]
-    
+
     classifier = tf.contrib.learn.DNNClassifier(
-        feature_columns=feature_columns, 
+        feature_columns=feature_columns,
         n_classes=10,
         hidden_units=[128, 32],
         optimizer=tf.train.ProximalAdagradOptimizer(learning_rate=lr),
@@ -92,14 +91,14 @@ def define_and_run_dnn_classifier(num_steps, logdir, lr=.1, batch_size=40):
         # parent model directory, which by default is:
         #
         #   tensorboard --logdir=/tmp/tfmodels/mnist_tflearn
-        
-    classifier.fit(input_fn=generate_input_fn(DATA_SETS.train, batch_size=batch_size), 
+
+    classifier.fit(input_fn=generate_input_fn(DATA_SETS.train, batch_size=batch_size),
                    steps=num_steps)
 
     print("Finished running the deep training via the fit() method")
-    
+
     print("\n---Evaluating DNN classifier accuracy...")
-    accuracy_score = classifier.evaluate(input_fn=generate_input_fn(DATA_SETS.test, batch_size=batch_size), 
+    accuracy_score = classifier.evaluate(input_fn=generate_input_fn(DATA_SETS.test, batch_size=batch_size),
                                          steps=100)['accuracy']
 
     print('DNN Classifier Accuracy: {0:f}'.format(accuracy_score))
