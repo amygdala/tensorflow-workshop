@@ -38,7 +38,7 @@ def make_graph(features, labels, num_hidden=8):
   # Shape [4, 2]
   logits = tf.matmul(hidden_activations, output_weights)
 
-  cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits, labels)
+  cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=labels)
   loss = tf.reduce_mean(cross_entropy)
   tf.summary.scalar('loss', loss)
 
