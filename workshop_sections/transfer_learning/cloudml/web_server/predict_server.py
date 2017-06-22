@@ -119,7 +119,7 @@ def create_client():
 
   credentials = GoogleCredentials.get_application_default()
   ml_service = discovery.build(
-      'ml', 'v1beta1', credentials=credentials)
+      'ml', 'v1', credentials=credentials)
   return ml_service
 
 
