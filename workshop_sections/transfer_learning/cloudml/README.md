@@ -142,10 +142,10 @@ This script will output summary and model checkpoint information under `$GCS_PAT
 
 #### 2.3 Monitor the training
 
-As the training runs, you should see the logs stream to STDOUT.  You can also view them with:
+As the training runs, you can view the logs with:
 
 ```shell
-gcloud beta ml jobs stream-logs "$JOB_ID"
+gcloud ml-engine jobs stream-logs "$JOB_ID"
 ```
 
 We can also monitor the progress of the training using [Tensorboard](https://www.tensorflow.org/how_tos/summaries_and_tensorboard/).  

@@ -34,8 +34,8 @@ When processing CSV file:
 To execute this pipeline locally using default options, run this script
 with no arguments. To execute on cloud pass single argument --cloud.
 
-To execute this pipeline on the cloud using the Dataflow service and
-non-default options:
+To execute this pipeline on the cloud using the Dataflow service and non-default
+options:
 python -E preprocess.py \
 --input_path=PATH_TO_INPUT_CSV_FILE \
 --input_dict=PATH_TO_INPUT_DIC_TXT_FILE \
@@ -45,11 +45,12 @@ python -E preprocess.py \
 For other flags, see PrepareImagesOptions() bellow.
 
 To run this pipeline locally run the above command without --cloud.
-
 """
+
 import argparse
 import csv
 import datetime
+import errno
 import io
 import logging
 import os
@@ -57,30 +58,37 @@ import subprocess
 import sys
 
 import apache_beam as beam
-from apache_beam.utils.options import PipelineOptions
-from google.cloud.ml.io import SaveFeatures
+from apache_beam.metrics import Metrics
+try:
+  try:
+    from apache_beam.options.pipeline_options import PipelineOptions
+  except ImportError:
+    from apache_beam.utils.pipeline_options import PipelineOptions
+except ImportError:
+  from apache_beam.utils.options import PipelineOptions
 from PIL import Image
-
 import tensorflow as tf
+
 from tensorflow.contrib.slim.python.slim.nets import inception_v3 as inception
 from tensorflow.python.framework import errors
 from tensorflow.python.lib.io import file_io
 
 slim = tf.contrib.slim
 
-error_count = beam.Aggregator('errorCount')
-missing_label_count = beam.Aggregator('missingLabelCount')
-csv_rows_count = beam.Aggregator('csvRowsCount')
-labels_count = beam.Aggregator('labelsCount')
-labels_without_ids = beam.Aggregator('labelsWithoutIds')
-existing_file = beam.Aggregator('existingFile')
-non_existing_file = beam.Aggregator('nonExistingFile')
-skipped_empty_line = beam.Aggregator('skippedEmptyLine')
-embedding_good = beam.Aggregator('embedding_good')
-embedding_bad = beam.Aggregator('embedding_bad')
-incompatible_image = beam.Aggregator('incompatible_image')
-invalid_uri = beam.Aggregator('invalid_file_name')
-ignored_unlabeled_image = beam.Aggregator('ignored_unlabeled_image')
+error_count = Metrics.counter('main', 'errorCount')
+missing_label_count = Metrics.counter('main', 'missingLabelCount')
+csv_rows_count = Metrics.counter('main', 'csvRowsCount')
+labels_count = Metrics.counter('main', 'labelsCount')
+labels_without_ids = Metrics.counter('main', 'labelsWithoutIds')
+existing_file = Metrics.counter('main', 'existingFile')
+non_existing_file = Metrics.counter('main', 'nonExistingFile')
+skipped_empty_line = Metrics.counter('main', 'skippedEmptyLine')
+embedding_good = Metrics.counter('main', 'embedding_good')
+embedding_bad = Metrics.counter('main', 'embedding_bad')
+incompatible_image = Metrics.counter('main', 'incompatible_image')
+invalid_uri = Metrics.counter('main', 'invalid_file_name')
+unlabeled_image = Metrics.counter('main', 'unlabeled_image')
+unknown_label = Metrics.counter('main', 'unknown_label')
 
 
 class Default(object):
@@ -92,45 +100,52 @@ class Default(object):
   # https://research.googleblog.com/2016/08/improving-inception-and-image.html
   IMAGE_GRAPH_CHECKPOINT_URI = (
       'gs://cloud-ml-data/img/flower_photos/inception_v3_2016_08_28.ckpt')
-  # The latest CloudML package.
-  CML_PACKAGE = 'gs://cloud-ml/sdk/cloudml.latest.tar.gz'
 
 
 class ExtractLabelIdsDoFn(beam.DoFn):
   """Extracts (uri, label_ids) tuples from CSV rows.
   """
 
-  def start_bundle(self, context, *unused_args, **unused_kwargs):
+  def start_bundle(self, context=None):
     self.label_to_id_map = {}
 
-  def process(self, context, all_labels):
+  # The try except is for compatiblity across multiple versions of the sdk
+  def process(self, row, all_labels):
+    try:
+      row = row.element
+    except AttributeError:
+      pass
     if not self.label_to_id_map:
       for i, label in enumerate(all_labels):
         label = label.strip()
         if label:
           self.label_to_id_map[label] = i
 
-    # Row format is:
-    # image_uri(,label_ids)*
-    row = context.element
+    # Row format is: image_uri(,label_ids)*
     if not row:
-      context.aggregate_to(skipped_empty_line, 1)
+      skipped_empty_line.inc()
       return
 
-    context.aggregate_to(csv_rows_count, 1)
+    csv_rows_count.inc()
     uri = row[0]
     if not uri or not uri.startswith('gs://'):
-      context.aggregate_to(invalid_uri, 1)
+      invalid_uri.inc()
       return
 
     # In a real-world system, you may want to provide a default id for labels
-    # that were not in the dictionary.  In this sample, we will throw an error.
+    # that were not in the dictionary.  In this sample, we simply skip it.
     # This code already supports multi-label problems if you want to use it.
-    label_ids = [self.label_to_id_map[label.strip()] for label in row[1:]]
-    context.aggregate_to(labels_count, len(label_ids))
+    label_ids = []
+    for label in row[1:]:
+      try:
+        label_ids.append(self.label_to_id_map[label.strip()])
+      except KeyError:
+        unknown_label.inc()
+
+    labels_count.inc(len(label_ids))
 
     if not label_ids:
-      context.aggregate_to(ignored_unlabeled_image, 1)
+      unlabeled_image.inc()
     yield row[0], label_ids
 
 
@@ -141,20 +156,30 @@ class ReadImageAndConvertToJpegDoFn(beam.DoFn):
   of channels.
   """
 
-  def process(self, context):
-    uri, label_ids = context.element
+  def process(self, element):
+    try:
+      uri, label_ids = element.element
+    except AttributeError:
+      uri, label_ids = element
+
+    # TF will enable 'rb' in future versions, but until then, 'r' is
+    # required.
+    def _open_file_read_binary(uri):
+      try:
+        return file_io.FileIO(uri, mode='rb')
+      except errors.InvalidArgumentError:
+        return file_io.FileIO(uri, mode='r')
 
     try:
-      with file_io.FileIO(uri, mode='r') as f:
+      with _open_file_read_binary(uri) as f:
         image_bytes = f.read()
         img = Image.open(io.BytesIO(image_bytes)).convert('RGB')
 
     # A variety of different calling libraries throw different exceptions here.
     # They all correspond to an unreadable file so we treat them equivalently.
-    # pylint: disable broad-except
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-except
       logging.exception('Error processing image %s: %s', uri, str(e))
-      context.aggregate_to(error_count, 1)
+      error_count.inc()
       return
 
     # Convert to desired format and output.
@@ -178,7 +203,9 @@ class EmbeddingsGraph(object):
     # input_jpeg is the tensor that contains raw image bytes.
     # It is used to feed image bytes and obtain embeddings.
     self.input_jpeg, self.embedding = self.build_graph()
-    self.tf_session.run(tf.initialize_all_variables())
+
+    init_op = tf.global_variables_initializer()
+    self.tf_session.run(init_op)
     self.restore_from_checkpoint(Default.IMAGE_GRAPH_CHECKPOINT_URI)
 
   def build_graph(self):
@@ -212,8 +239,8 @@ class EmbeddingsGraph(object):
         image, [self.HEIGHT, self.WIDTH], align_corners=False)
 
     # Then rescale range to [-1, 1) for Inception.
-    image = tf.sub(image, 0.5)
-    inception_input = tf.mul(image, 2.0)
+    image = tf.subtract(image, 0.5)
+    inception_input = tf.multiply(image, 2.0)
 
     # Build Inception layers, which expect a tensor of type float from [-1, 1)
     # and shape [batch_size, height, width, channels].
@@ -273,7 +300,7 @@ class TFExampleFromImageDoFn(beam.DoFn):
     self.graph = None
     self.preprocess_graph = None
 
-  def start_bundle(self, context):
+  def start_bundle(self, context=None):
     # There is one tensorflow session per instance of TFExampleFromImageDoFn.
     # The same instance of session is re-used between bundles.
     # Session is closed by the destructor of Session object, which is called
@@ -284,7 +311,7 @@ class TFExampleFromImageDoFn(beam.DoFn):
       with self.graph.as_default():
         self.preprocess_graph = EmbeddingsGraph(self.tf_session)
 
-  def process(self, context):
+  def process(self, element):
 
     def _bytes_feature(value):
       return tf.train.Feature(bytes_list=tf.train.BytesList(value=value))
@@ -292,19 +319,23 @@ class TFExampleFromImageDoFn(beam.DoFn):
     def _float_feature(value):
       return tf.train.Feature(float_list=tf.train.FloatList(value=value))
 
-    uri, label_ids, image_bytes = context.element
+    try:
+      element = element.element
+    except AttributeError:
+      pass
+    uri, label_ids, image_bytes = element
 
     try:
       embedding = self.preprocess_graph.calculate_embedding(image_bytes)
     except errors.InvalidArgumentError as e:
-      context.aggregate_to(incompatible_image, 1)
+      incompatible_image.inc()
       logging.warning('Could not encode an image from %s: %s', uri, str(e))
       return
 
     if embedding.any():
-      context.aggregate_to(embedding_good, 1)
+      embedding_good.inc()
     else:
-      context.aggregate_to(embedding_bad, 1)
+      embedding_bad.inc()
 
     example = tf.train.Example(features=tf.train.Features(feature={
         'image_uri': _bytes_feature([uri]),
@@ -320,35 +351,31 @@ class TFExampleFromImageDoFn(beam.DoFn):
 
 def configure_pipeline(p, opt):
   """Specify PCollection and transformations in pipeline."""
-  input_source = beam.io.TextFileSource(
+  read_input_source = beam.io.ReadFromText(
       opt.input_path, strip_trailing_newlines=True)
-  label_source = beam.io.TextFileSource(
+  read_label_source = beam.io.ReadFromText(
       opt.input_dict, strip_trailing_newlines=True)
-  labels = (p | 'Read dictionary' >> beam.Read(label_source))
+  labels = (p | 'Read dictionary' >> read_label_source)
   _ = (p
-       | 'Read input' >> beam.Read(input_source)
+       | 'Read input' >> read_input_source
        | 'Parse input' >> beam.Map(lambda line: csv.reader([line]).next())
        | 'Extract label ids' >> beam.ParDo(ExtractLabelIdsDoFn(),
                                            beam.pvalue.AsIter(labels))
        | 'Read and convert to JPEG'
        >> beam.ParDo(ReadImageAndConvertToJpegDoFn())
        | 'Embed and make TFExample' >> beam.ParDo(TFExampleFromImageDoFn())
-       | 'Save to disk' >> SaveFeatures(opt.output_path))
+       | 'SerializeToString' >> beam.Map(lambda x: x.SerializeToString())
+       | 'Save to disk'
+       >> beam.io.WriteToTFRecord(opt.output_path,
+                                  file_name_suffix='.tfrecord.gz'))
 
 
 def run(in_args=None):
   """Runs the pre-processing pipeline."""
 
   pipeline_options = PipelineOptions.from_dictionary(vars(in_args))
-  p = beam.Pipeline(options=pipeline_options)
-  configure_pipeline(p, in_args)
-  p.run()
-
-
-def get_cloud_project():
-  cmd = ['gcloud', 'config', 'list', 'project', '--format=value(core.project)']
-  with open(os.devnull, 'w') as dev_null:
-    return subprocess.check_output(cmd, stderr=dev_null).strip()
+  with beam.Pipeline(options=pipeline_options) as p:
+    configure_pipeline(p, in_args)
 
 
 def default_args(argv):
@@ -381,9 +408,7 @@ def default_args(argv):
       default='flowers-' + datetime.datetime.now().strftime('%Y%m%d-%H%M%S'),
       help='A unique job identifier.')
   parser.add_argument(
-      '--staging_location', type=str, help='Path to the staging location.')
-  parser.add_argument(
-      '--num_workers', default=10, type=int, help='The number of workers.')
+      '--num_workers', default=20, type=int, help='The number of workers.')
   parser.add_argument('--cloud', default=False, action='store_true')
   parser.add_argument(
       '--runner',
@@ -397,23 +422,17 @@ def default_args(argv):
     default_values = {
         'project':
             get_cloud_project(),
-        'staging_location':
-            os.path.join(os.path.dirname(parsed_args.output_path), 'staging'),
+        'temp_location':
+            os.path.join(os.path.dirname(parsed_args.output_path), 'temp'),
         'runner':
-            # Use this runner if you want to block:
-            # 'BlockingDataflowPipelineRunner',
-            # This runner does not block -- you can track the job progress in
-            # the developer's console.
-            'DataflowPipelineRunner',
-        'extra_package':
-            Default.CML_PACKAGE,
+            'DataflowRunner',
         'save_main_session':
             True,
     }
   else:
     # Flags which need to be set for local runs.
     default_values = {
-        'runner': 'DirectPipelineRunner',
+        'runner': 'DirectRunner',
     }
 
   for kk, vv in default_values.iteritems():
@@ -421,6 +440,29 @@ def default_args(argv):
       vars(parsed_args)[kk] = vv
 
   return parsed_args
+
+
+def get_cloud_project():
+  cmd = [
+      'gcloud', '-q', 'config', 'list', 'project',
+      '--format=value(core.project)'
+  ]
+  with open(os.devnull, 'w') as dev_null:
+    try:
+      res = subprocess.check_output(cmd, stderr=dev_null).strip()
+      if not res:
+        raise Exception('--cloud specified but no Google Cloud Platform '
+                        'project found.\n'
+                        'Please specify your project name with the --project '
+                        'flag or set a default project: '
+                        'gcloud config set project YOUR_PROJECT_NAME')
+      return res
+    except OSError as e:
+      if e.errno == errno.ENOENT:
+        raise Exception('gcloud is not installed. The Google Cloud SDK is '
+                        'necessary to communicate with the Cloud ML service. '
+                        'Please install and set up gcloud.')
+      raise
 
 
 def main(argv):
