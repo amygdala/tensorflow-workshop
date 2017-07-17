@@ -1,13 +1,12 @@
 
 # TensorFlow workshop materials
 
-This repo contains materials for use in a TensorFlow workshop.
-The accompanying slides are
-[here](https://storage.googleapis.com/amy-jo/talks/tf-workshop.pdf).
-
+This repo contains materials for use in a TensorFlow workshop.  
 Contributions are not currently accepted.  This is not an official Google product.
 
-This document points to more information for each workshop lab.
+This document points to more information for each workshop lab.  
+**Note: These examples have not yet all been updated for TensorFlow 1.0, and some may not currently run.**
+
 
 - [Installation](INSTALL.md)
 - [Building a small starter TensorFlow graph](workshop_sections/starter_tf_graph/README.md)
