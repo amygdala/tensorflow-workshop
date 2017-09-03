@@ -6,9 +6,10 @@ Each builds conceptually on the previous ones.  Start at the README numbered '01
 
 - [01_README_mnist_simple](./01_README_mnist_simple.md): A simple version of MNIST with no hidden layers.
 
-- [02_README_mnist_tflearn](./02_README_mnist_tflearn.md): Use the high-level TensorFlow API in `contrib.tflearn` to easily build DNNs with hidden layers. Introducing TensorBoard.
+- [02_README_mnist_estimator](./02_README_mnist_estimator.md): Use the high-level TensorFlow APIs in `tf.estimator` to easily build a `LinearClassifier` and a `DNNClassifier` with hidden layers. Introducing TensorBoard.
 
-**Note: These examples have not yet been updated for TensorFlow 1.0, and may not currently run.**
+
+**Note: The following examples have not yet been updated for TensorFlow 1.0+, and may not currently run.**
 
 - ["The hard way"](./the_hard_way/README.md): Next, we'll drop down into using the 'low-level' TensorFlow APIs, and see how we'd build the same model that way.
 
