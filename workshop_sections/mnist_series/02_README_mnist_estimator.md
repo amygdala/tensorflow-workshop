@@ -7,21 +7,22 @@
   - [Change the learning rate of your classifier](#change-the-learning-rate-of-your-classifier)
   - [Compare the DNNClassifier's performance on MNIST to a LinearClassifier](#compare-the-dnnclassifiers-performance-on-mnist-to-a-linearclassifier)
 
-This lab uses TensorFlow's high-level APIs, in `tf.contrib.learn`, in order to easily build a NN with hidden layers. It uses [`DNNClassifier`](https://www.tensorflow.org/versions/r0.11/api_docs/python/contrib.learn.html#DNNClassifier).
-As part of the lab, we'll explore what [TensorBoard](https://www.tensorflow.org/versions/r0.11/how_tos/summaries_and_tensorboard/index.html) can do.
+This lab uses TensorFlow's high-level APIs, in `tf.estimator`, in order to easily build a NN with hidden layers. It uses [`DNNClassifier`](https://www.tensorflow.org/api_docs/python/tf/estimator/DNNClassifier).
+As part of the lab, we'll explore what [TensorBoard](https://www.tensorflow.org/get_started/summaries_and_tensorboard) can do.
 
-It also includes a bonus demonstration of using a [LinearClassifier](https://www.tensorflow.org/versions/r0.11/api_docs/python/contrib.learn.html#LinearClassifier).
+The lab also includes a demonstration of using a [LinearClassifier](https://www.tensorflow.org/api_docs/python/tf/estimator/LinearClassifier).
 
 ## Running the example as a script
 
-The python script for this section is: [`mnist_tflearn.py`](./mnist_tflearn.py).
+The python script for this section is: [`mnist_estimator.py`](./mnist_estimator.py).
 Start the lab by running it like this:
 
 ```sh
-$ python mnist_tflearn.py
+$ python mnist_estimator.py
 ```
 
-By default, it writes summary and model checkpoint info to a (timestamp-based) subdir of `/tmp/tfmodels/mnist_tflearn`.
+By default, it writes summary and model checkpoint info to a (timestamp-based) subdir
+of `/tmp/tfmodels/mnist_estimators`.
 
 ## Running the example in a Jupyter notebook
 
@@ -33,25 +34,26 @@ $ jupyter notebook
 ```
 
 When the server starts up, it may bring up a tab automatically in your browser. If not, visit
-`http://localhost:8888/`.  Then select `mnist_tflearn.ipynb`.
+`http://localhost:8888/`.  Then select `mnist_estimator.ipynb`.
 
 ## TensorBoard
 
 After the script/notebook runs, or while it's running, start up TensorBoard as follows in a new terminal window. (If you get a 'not found' error, make sure you've activated your virtual environment in that new window):
 
 ```sh
-$ tensorboard --logdir=/tmp/tfmodels/mnist_tflearn
+$ tensorboard --logdir=/tmp/tfmodels/mnist_estimators
 ```
 
-Note: This tells TensorBoard to grab summary information from all directories under `/tmp/tfmodels/mnist_tflearn`.  So, we can do multiple runs, and compare the results -- TensorBoard will automatically pull in data on additional runs as it is added.
+Note: This tells TensorBoard to grab summary information from all directories under `/tmp/tfmodels/mnist_estimators`.  So, we can do multiple runs, and compare the results -- TensorBoard will automatically pull in data on additional runs as it is added.
 
 Once TensorBoard is running, then in your browser, visit the address indicated (probably `localhost:6006`).
 
-[At this point in the lab, we'll take some time to explore TensorBoard and see what kind of information it can display].
+[At this point in the lab, we'll take some time to explore TensorBoard and see what kind of information
+it can display].
 
 ## Change the learning rate of your classifier
 
-Next, edit `mnist_tflearn.py` to change the learning rate used by the optimizer, as defined in the
+Next, edit `mnist_estimator.py` to change the learning rate used by the optimizer, as defined in the
 `DNNClassifier` initialization method. **Change the learning rate from 0.1 to 0.5**.
 Then rerun the script.
 
@@ -62,7 +64,7 @@ See whether the different learning rates caused different 'eval' results.
 
 ## Compare the DNNClassifier's performance on MNIST to a LinearClassifier
 
-In `mnist_tflearn.py` you may have noticed that a linear classifier is also defined, using the
+In `mnist_estimator.py` you may have noticed that a linear classifier is also defined, using the
 [`LinearClassifier`](https://www.tensorflow.org/versions/r0.11/api_docs/python/contrib.learn.html#LinearClassifier) class.  This class defines a model that is essentially the same as that defined in
 `mnist_simple.py`, which we explored in our previous lab-- it does not use any hidden layers.
 
