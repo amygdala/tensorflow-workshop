@@ -12,7 +12,7 @@ This document points to more information for each workshop lab.
 - [Building a small starter TensorFlow graph](workshop_sections/starter_tf_graph/README.md)
 - [XOR: A minimal training example](workshop_sections/xor/README.md)
 - [Introducing MNIST, and building a simple linear classifier in TensorFlow](workshop_sections/mnist_series/01_README_mnist_simple.md).
-- [Using TensorFlow's high-level APIs to build an MNIST DNN Classifier, and introducing TensorBoard](workshop_sections/mnist_series/02_README_mnist_tflearn.md).
+- [Using TensorFlow's high-level APIs to build an MNIST DNN Classifier, and introducing TensorBoard](workshop_sections/mnist_series/02_README_mnist_estimator.md).
 - [Building the same classifier using TensorFlow's "low-level" APIs](workshop_sections/mnist_series/the_hard_way).
 - [Building custom `Estimator`s for a version of MNIST that uses CNNs](workshop_sections/mnist_series/mnist_cnn/README.md).
 - [Running distributed MNIST using Cloud ML](workshop_sections/mnist_series/cloudml).
