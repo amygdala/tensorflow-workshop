@@ -67,7 +67,7 @@ embeddings contain a lot of high-level feature information useful to Inception f
 Although processing images in this manner can be reasonably expensive, each image can be processed independently and in
 parallel, making this task a great candidate for Cloud Dataflow.
 
-**Important:** If you have not already, makes sure to follow [these instructions](https://github.com/amygdala/tensorflow-workshop/blob/master/TLDR_CLOUD_INSTALL.md#12-enable-the-necessary-apis) to enable the Cloud Dataflow API. 
+**Important:** If you have not already, makes sure to follow [these instructions](https://github.com/amygdala/tensorflow-workshop/blob/master/TLDR_CLOUD_INSTALL.md#12-enable-the-necessary-apis) to enable the Cloud Dataflow API.
 
 #### 1.1 Deploy the preprocessing job to Cloud Dataflow
 
@@ -89,7 +89,7 @@ Then, run the pre-processing script. The script is already set up with links to 
 will launch two non-blocking Cloud Dataflow jobs to do the preprocessing for the eval and training datasets. By
 default it only uses 3 workers for each job, but you can change this if you have larger quota.
 
-(Setting the `USER` environment variable allows Dataflow to distinguish multiple user's jobs.) 
+(Setting the `USER` environment variable allows Dataflow to distinguish multiple user's jobs.)
 
 ```shell
 USER=xxx ./hugs_preproc.sh $BUCKET
@@ -99,14 +99,14 @@ This script will generate a timestamp-based `GCS_PATH`, that it will display in 
 The pipelines will write the generated embeds into
 [TFRecords files containing tf.train.Example protocol buffers](https://www.tensorflow.org/how_tos/reading_data/), under `$GCS_PATH/preproc`.
 
-You can see your pipeline jobs running in the 
+You can see your pipeline jobs running in the
 Dataflow panel of the [Cloud console](https://console.cloud.google.com/dataflow).
 Before you use these generated embeds, you'll want to make sure that the Dataflow jobs have finished.
 
 
 ### 2. Modeling: Training the classifier
 
-Once we've preprocessed our data, and have the generated image embeds, 
+Once we've preprocessed our data, and have the generated image embeds,
 we can then train a simple classifier. The network will comprise a single fully-
 connected layer with *RELU* activations and with one output for each label in the dictionary to replace the original
 output layer.
@@ -148,7 +148,7 @@ As the training runs, you can view the logs with:
 gcloud ml-engine jobs stream-logs "$JOB_ID"
 ```
 
-We can also monitor the progress of the training using [Tensorboard](https://www.tensorflow.org/how_tos/summaries_and_tensorboard/).  
+We can also monitor the progress of the training using [Tensorboard](https://www.tensorflow.org/how_tos/summaries_and_tensorboard/).
 
 To do this, start up Tensorboard in a new shell (don't forget to activate your virtual environment), pointing it to the training logs in GCS:
 
@@ -181,7 +181,7 @@ Then, we create a 'version' of that model, based on the data in our model direct
 You can see what models and default versions we have in your project via:
 
 ```shell
-gcloud beta ml models list
+gcloud ml-engine models list
 ```
 
 It will take a minute or so for the model version to start "serving".  Once our model is serving, we make prediction requests to it -- both from the command line and via the Cloud ML API.
@@ -198,13 +198,13 @@ python images_to_json.py -o request.json <image1> <image2> ...
 results in a `request.json` file with the encoded image info. Then, run this command:
 
 ```shell
-gcloud beta ml predict --model $MODEL_NAME --json-instances request.json
+gcloud ml-engine predict --model $MODEL_NAME --json-instances request.json
 ```
 
 You should see a result something along the lines of the following:
 
 ```shell
-gcloud beta ml predict --model hugs --json-instances request.json 
+gcloud ml-engine predict --model hugs --json-instances request.json
 KEY                             PREDICTION  SCORES
 prediction_images/hedgehog.jpg  1           [4.091006485396065e-05, 0.9999591112136841, 1.8843516969013763e-08]
 ```

@@ -96,7 +96,7 @@ def define_and_run_dnn_classifier(num_steps, logdir, lr=.1, batch_size=40):
     classifier.train(input_fn=generate_input_fn(DATA_SETS.train, batch_size=batch_size),
                    steps=num_steps)
 
-    print("Finished running the deep training via the fit() method")
+    print("Finished running the deep training via the train() method")
 
     print("\n---Evaluating DNN classifier accuracy...")
     accuracy_score = classifier.evaluate(input_fn=generate_input_fn(DATA_SETS.test, batch_size=batch_size),
