@@ -5,17 +5,32 @@ This repo contains materials for use in a TensorFlow workshop.
 Contributions are not currently accepted.  This is not an official Google product.
 
 This document points to more information for each workshop lab.  
-**Note: These examples have not yet all been updated for TensorFlow 1.0, and some may not currently run.**
+[** add note re: TF versions tested with **].
 
+## Getting Started
 
-- [Installation](INSTALL.md)
 - [Building a small starter TensorFlow graph](workshop_sections/starter_tf_graph/README.md)
 - [XOR: A minimal training example](workshop_sections/xor/README.md)
+
+## The MNIST (& 'fashion MNIST') series
+
 - [Introducing MNIST, and building a simple linear classifier in TensorFlow](workshop_sections/mnist_series/01_README_mnist_simple.md).
-- [Using TensorFlow's high-level APIs to build an MNIST DNN Classifier, and introducing TensorBoard](workshop_sections/mnist_series/02_README_mnist_estimator.md).
-- [Building the same classifier using TensorFlow's "low-level" APIs](workshop_sections/mnist_series/the_hard_way).
-- [Building custom `Estimator`s for a version of MNIST that uses CNNs](workshop_sections/mnist_series/mnist_cnn/README.md).
-- [Running distributed MNIST using Cloud ML](workshop_sections/mnist_series/cloudml).
+- [Using TensorFlow's high-level APIs to build an MNIST DNN Classifier, and introducing TensorBoard](workshop_sections/mnist_series/02_README_mnist_tflearn.md).
+- [Building custom `Estimator`s for a version of MNIST that uses CNNs](workshop_sections/mnist_series/mnist_cnn_custom_estimator/README.md), using either TensorFlow or [Keras](https://keras.io/) layers.
+
+
+## 'Wide & Deep'
+
+- [Using a tf.estimator to train a 'Wide & Deep' model](workshop_sections/wide_n_deep/README.md).
+
+## Transfer Learning
+
 - [Transfer learning: using a trained model to 'bootstrap' learning new classifications](workshop_sections/transfer_learning/README.md).
-- [Building a word2vec model using a Custom Estimator, and exploring the learned embeddings](workshop_sections/word2vec/README.md). Introducing [TFRecords](https://www.tensorflow.org/versions/r0.11/api_docs/python/python_io.html#data-io-python-functions).
-- [Using a tf.learn estimator to train a Wide and Deep model](workshop_sections/wide_n_deep/README.md).
+    + [Using Cloud ML](workshop_sections/transfer_learning/cloudml)
+    + **move this?** [Using a custom Estimator](workshop_sections/transfer_learning/TF_Estimator)
+
+- **move this?** [Building a word2vec model using a Custom Estimator, and exploring the learned embeddings](workshop_sections/word2vec/README.md). Introducing [TFRecords](https://www.tensorflow.org/versions/r0.11/api_docs/python/python_io.html#data-io-python-functions).
+
+## Extras
+
+In addition, there is an [extras](workshop_sections/extras/README.md) directory, that contains some older labs not currently used in this workshop (and which may not necessarily run with the latest version of TF), but which may be of interest.

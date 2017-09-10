@@ -33,15 +33,38 @@ from tensorflow.contrib.learn import ModeKeys
 from tensorflow.examples.tutorials.mnist import input_data
 
 FLAGS = None
+DATA_SETS = None
+BATCH_SIZE = 40
 
 # comment out for less info during the training runs.
 tf.logging.set_verbosity(tf.logging.INFO)
 
+def generate_input_fn(dataset, batch_size=BATCH_SIZE):
+    def _input_fn():
+        X = tf.constant(dataset.images)
+        Y = tf.constant(dataset.labels, dtype=tf.int32)
+        image_batch, label_batch = tf.train.shuffle_batch([X,Y],
+                               batch_size=batch_size,
+                               capacity=8*batch_size,
+                               min_after_dequeue=4*batch_size,
+                               enqueue_many=True
+                              )
+        return {'inputs': image_batch} , label_batch
 
-def model_fn(x, target, mode, params):
+    return _input_fn
+
+
+def model_fn(features, labels, mode, params):
     """Model function for Estimator."""
 
-    y_ = tf.cast(target, tf.float32)
+    # labels = tf.Print(labels, [labels], message="labels is: ")
+
+    y_ = tf.cast(labels, tf.float32)  # is this still necessary?
+    # hmmm
+    # y_ = tf.reshape(y_, [-1])
+    x = features.get('inputs')
+    # x = tf.Print(x, [x], message="x is: ")
+
 
     x_image = tf.reshape(x, [-1, 28, 28, 1])
 
@@ -64,47 +87,70 @@ def model_fn(x, target, mode, params):
     y_conv = layers.fully_connected(h_fc1_drop, 10, activation_fn=None)
 
     cross_entropy = tf.reduce_mean(
-        tf.nn.softmax_cross_entropy_with_logits(y_conv, y_))
-    train_op = tf.contrib.layers.optimize_loss(
+        tf.nn.softmax_cross_entropy_with_logits(logits=y_conv, labels=y_))
+    global_step = tf.train.get_global_step()
+    train_op = tf.contrib.layers.optimize_loss(  # change this?
         loss=cross_entropy,
-        global_step=tf.contrib.framework.get_global_step(),
+        global_step=global_step,
         learning_rate=params["learning_rate"],
         optimizer="Adam")
 
     predictions = tf.argmax(y_conv, 1)
-    return predictions, cross_entropy, train_op
+    prediction_output = tf.estimator.export.PredictOutput({'accuracy': predictions})
+    return tf.estimator.EstimatorSpec(
+            mode=mode,
+            predictions=predictions,
+            loss=cross_entropy,
+            train_op=train_op,
+            export_outputs={tf.saved_model.signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY: prediction_output}
+        )
+    # return predictions, cross_entropy, train_op
 
 
 def run_cnn_classifier():
     """Run a CNN classifier using a custom Estimator."""
 
-    print("Downloading and reading data sets...")
-    mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=True)
+    # print("Downloading and reading data sets...")
+    # mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=True)
 
     # Set model params
     model_params = {"learning_rate": 1e-4, "dropout": 0.5}
 
-    cnn = tf.contrib.learn.Estimator(
+    cnn = tf.estimator.Estimator(
         model_fn=model_fn, params=model_params,
         model_dir=FLAGS.model_dir)
 
     print("Starting training for %s steps max" % FLAGS.num_steps)
-    cnn.fit(x=mnist.train.images,
-            y=mnist.train.labels, batch_size=50,
-            max_steps=FLAGS.num_steps)
+    cnn.train(generate_input_fn(DATA_SETS.train, batch_size=BATCH_SIZE), steps=FLAGS.num_steps)
+    # cnn.train(x=mnist.train.images,
+    #         y=mnist.train.labels, batch_size=50,
+    #         max_steps=FLAGS.num_steps)
 
     # Evaluate accuracy.
-    print(cnn.evaluate(mnist.test.images, mnist.test.labels))
+    # Evaluate accuracy.
+    result = cnn.evaluate(
+        input_fn=generate_input_fn(DATA_SETS.test, batch_size=BATCH_SIZE), steps=100)['accuracy']
+    print("eval result: %s" % result)
+    # accuracy_score = cnn.evaluate(
+        # input_fn=generate_input_fn(DATA_SETS.test, batch_size=BATCH_SIZE), steps=100)['accuracy']
+    # print('DNN Classifier Accuracy: {0:f}'.format(accuracy_score))
+
+    # print(cnn.evaluate(DATA_SETS.test.images, DATA_SETS.test.labels))
 
     # Print out some predictions, just drawn from the test data.
-    batch = mnist.test.next_batch(20)
-    predictions = cnn.predict(x=batch[0], as_iterable=True)
-    for i, p in enumerate(predictions):
-        print("Prediction: %s for correct answer %s" %
-              (p, list(batch[1][i]).index(1)))
+    # batch = DATA_SETS.test.next_batch(20)
+    # predictions = cnn.predict(x=batch[0], as_iterable=True)
+    # for i, p in enumerate(predictions):
+    #     print("Prediction: %s for correct answer %s" %
+    #           (p, list(batch[1][i]).index(1)))
 
 
 def main(_):
+
+    # read in data, downloading first if necessary
+    global DATA_SETS
+    print("Downloading and reading data sets...")
+    DATA_SETS = input_data.read_data_sets(FLAGS.data_dir, one_hot=True)
     run_cnn_classifier()
 
 
@@ -114,11 +160,11 @@ if __name__ == '__main__':
                         help='Directory for storing data')
     parser.add_argument('--model_dir', type=str,
                         default=os.path.join(
-                            "/tmp/tfmodels/mnist_estimator",
+                            "/tmp/tfmodels/mnist_cnn_estimator",
                             str(int(time.time()))),
                         help='Directory for storing model info')
     parser.add_argument('--num_steps', type=int,
-                        default=20000,
+                        default=5000,
                         help='Number of training steps to run')
     FLAGS = parser.parse_args()
     tf.app.run()
