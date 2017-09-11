@@ -18,6 +18,11 @@ import numpy as np
 
 import tensorflow as tf
 
+try:
+  import itertools.zip as zip
+except ImportError:
+  pass
+
 tf.logging.set_verbosity(tf.logging.INFO)
 
 def make_graph(features, labels, num_hidden=8):
@@ -52,7 +57,7 @@ def make_graph(features, labels, num_hidden=8):
 
   grads_and_vars = optimizer.compute_gradients(loss)
 
-  gradients = zip(grads_and_vars)[0]
+  gradients = list(zip(grads_and_vars))[0]
   tf.summary.histogram('gradients', gradients)
 
   train_op = optimizer.apply_gradients(grads_and_vars, global_step=gs)
@@ -93,7 +98,7 @@ def main(output_dir, summaries_every, num_steps):
       )
       if step % summaries_every == 0:
         writer.add_summary(summaries, global_step=step)
-        tf.logging.info('Wrote summaries at step {}'.format(step))
+        # tf.logging.info('Wrote summaries at step {}'.format(step))
 
 
 if __name__ == '__main__':
@@ -106,4 +111,5 @@ if __name__ == '__main__':
   )
   parser.add_argument('--summaries-every', type=int, default=5)
   args = parser.parse_args()
+  print("Training for %s steps" % args.num_steps)
   main(args.output_dir, args.summaries_every, args.num_steps)

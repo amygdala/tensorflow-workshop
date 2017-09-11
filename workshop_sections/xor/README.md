@@ -11,13 +11,13 @@ To run locally, first choose either:
 
 
 ```
-python xor_summaries.py --output-dir ${OUTPUT_DIR}
+python -m xor.xor_summaries --output-dir ${OUTPUT_DIR}
 ```
 
 or if you want to try using the `gcloud beta ml local train` command the following will work:
 
 ```
-gcloud beta ml local train \
+gcloud ml-engine local train \
     --package-path xor \
     --module-name xor.xor_summaries \
     -- \
@@ -31,7 +31,7 @@ The `gcloud beta ml local train` command runs your python code locally in an env
 To run in the cloud you need a Google Cloud Storage bucket to which summaries can be written. You will also need a bucket where the `gcloud` tool can stage your code for execution e.g. `MY_BUCKET=gs://my-bucket`. This can be the same bucket to which you write summaries.
 
 ```
-gcloud beta ml jobs submit training myxorjob \
+gcloud ml-engine jobs submit training myxorjob \
      --module-name xor.xor_summaries \
      --package-path xor \
      --staging-bucket ${MY_BUCKET} \
