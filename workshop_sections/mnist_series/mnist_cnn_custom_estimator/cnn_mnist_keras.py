@@ -11,7 +11,9 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-"""Convolutional Neural Network Estimator for MNIST, built with tf.layers."""
+
+"""Convolutional Neural Network Custom Estimator for MNIST,
+built with keras.layers."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -40,6 +42,7 @@ tf.logging.set_verbosity(tf.logging.INFO)
 
 def cnn_model_fn(features, labels, mode):
   """Model function for CNN."""
+
   # Input Layer
   # Reshape X to 4-D tensor: [batch_size, width, height, channels]
   # MNIST images are 28x28 pixels, and have one color channel
@@ -79,7 +82,10 @@ def cnn_model_fn(features, labels, mode):
   onehot_labels = tf.one_hot(indices=tf.cast(labels, tf.int32), depth=10)
   loss = tf.losses.softmax_cross_entropy(
       onehot_labels=onehot_labels, logits=logits)
+  # Generate some summary info
   tf.summary.scalar('loss', loss)
+  tf.summary.histogram('conv1', conv1)
+  tf.summary.histogram('dense', dense)
 
 
   # Configure the Training Op (for TRAIN mode)
@@ -115,7 +121,6 @@ def generate_input_fn(dataset, batch_size=BATCH_SIZE):
 
 def main(unused_argv):
   # Load training and eval data
-  # mnist = tf.contrib.learn.datasets.load_dataset("mnist")
   mnist = input_data.read_data_sets(FLAGS.data_dir)
 
   train_data = mnist.train.images  # Returns np.array
@@ -135,16 +140,7 @@ def main(unused_argv):
   logging_hook = tf.train.LoggingTensorHook(
       tensors=tensors_to_log, every_n_iter=FLAGS.logging_hook_iter)
 
-  # Train the model
-  # train_input_fn = tf.estimator.inputs.numpy_input_fn(
-  #     x={"x": train_data},
-  #     y=train_labels,
-  #     batch_size=100,
-  #     num_epochs=None,
-  #     shuffle=True)
-
   mnist_classifier.train(
-      # input_fn=train_input_fn,
       input_fn=generate_input_fn(mnist.train, batch_size=BATCH_SIZE),
       steps=FLAGS.num_steps,
       hooks=[logging_hook]
@@ -167,8 +163,6 @@ def main(unused_argv):
   predict_results = mnist_classifier.predict(input_fn=predict_input_fn)
   for i, p in enumerate(predict_results):
       print(p)
-      # print("Prediction: %s for correct answer %s" %
-      # (p, list(predict_data_batch[1][i]).index(1)))
 
 
   def serving_input_receiver_fn():

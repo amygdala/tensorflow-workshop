@@ -9,8 +9,8 @@ This document points to more information for each workshop lab.
 
 ## Getting Started
 
-- [Building a small starter TensorFlow graph](workshop_sections/starter_tf_graph/README.md)
-- [XOR: A minimal training example](workshop_sections/xor/README.md)
+- [Building a small starter TensorFlow graph](workshop_sections/getting_started/starter_tf_graph/README.md)
+- [XOR: A minimal training example](workshop_sections/getting_started/xor/README.md)
 
 ## The MNIST (& 'fashion MNIST') series
 

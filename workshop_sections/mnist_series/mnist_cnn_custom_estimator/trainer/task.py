@@ -22,8 +22,8 @@ import os
 import numpy as np
 import time
 
-import trainer.utils
-from trainer.utils import read_data_sets
+import trainer.mnist_input
+from trainer.mnist_input import read_data_sets
 
 import tensorflow as tf
 # from tensorflow.examples.tutorials.mnist import input_data
@@ -123,6 +123,8 @@ def cnn_model_fn(features, labels, mode):
   loss = tf.losses.softmax_cross_entropy(
       onehot_labels=onehot_labels, logits=logits)
   tf.summary.scalar('loss', loss)
+  tf.summary.histogram('conv1', conv1)
+  tf.summary.histogram('dense', dense)
 
 
   # Configure the Training Op (for TRAIN mode)
@@ -200,7 +202,6 @@ def main(unused_argv):
   learn_runner.run(
       generate_experiment_fn(
           min_eval_frequency=1,
-          eval_delay_secs=10,
           train_steps=FLAGS.num_steps,
           eval_steps=FLAGS.eval_steps,
           export_strategies=[saved_model_export_utils.make_export_strategy(
@@ -208,7 +209,7 @@ def main(unused_argv):
               exports_to_keep=1
           )]
       ),
-      run_config=tf.contrib.learn.RunConfig(model_dir=FLAGS.job_dir),
+      run_config = tf.contrib.learn.RunConfig().replace(model_dir=FLAGS.job_dir, save_checkpoints_steps=1000),
       hparams=hparam.HParams(dataset=mnist.train, eval_data=eval_data, eval_labels=eval_labels),
   )
 

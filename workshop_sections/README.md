@@ -5,8 +5,8 @@ This directory contains the workshop labs. [** add note re: TF versions tested w
 
 ## Getting Started
 
-- [Building a small starter TensorFlow graph](starter_tf_graph/README.md)
-- [XOR: A minimal training example](xor/README.md)
+- [Building a small starter TensorFlow graph](getting_started/starter_tf_graph/README.md)
+- [XOR: A minimal training example](getting_started/xor/README.md)
 
 ## The MNIST (& 'fashion MNIST') series
 
