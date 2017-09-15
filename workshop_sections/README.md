@@ -11,6 +11,8 @@ This directory contains the workshop labs.
 
 - [Building a small starter TensorFlow graph](getting_started/starter_tf_graph/README.md)
 - [XOR: A minimal training example](getting_started/xor/README.md)
+- A [LinearRegressor example](linear_regressor_datasets) that uses Datasets.
+
 
 ## The MNIST (& 'fashion MNIST') series
 

@@ -14,6 +14,7 @@ This document points to more information for each workshop lab.
 
 - [Building a small starter TensorFlow graph](workshop_sections/getting_started/starter_tf_graph/README.md)
 - [XOR: A minimal training example](workshop_sections/getting_started/xor/README.md)
+- A [LinearRegressor example](workshop_sections/linear_regressor_datasets) that uses Datasets.
 
 ## The MNIST (& 'fashion MNIST') series
 

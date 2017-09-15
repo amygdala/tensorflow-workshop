@@ -127,12 +127,9 @@ def cnn_model_fn(features, labels, mode):
   # Configure the Training Op (for TRAIN mode)
   if mode == tf.estimator.ModeKeys.TRAIN:
     optimizer = tf.train.AdamOptimizer(learning_rate=1e-4)
-    # optimizer = tf.train.AdamOptimizer(epsilon=0.1)
-    update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-    with tf.control_dependencies(update_ops):
-      train_op = optimizer.minimize(
-          loss=loss,
-          global_step=tf.train.get_global_step())
+    train_op = optimizer.minimize(
+        loss=loss,
+        global_step=tf.train.get_global_step())
 
     return tf.estimator.EstimatorSpec(mode=mode, loss=loss, train_op=train_op)
 
