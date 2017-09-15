@@ -5,7 +5,10 @@ This repo contains materials for use in a TensorFlow workshop.
 Contributions are not currently accepted.  This is not an official Google product.
 
 This document points to more information for each workshop lab.  
+
+<!---
 [** add note re: TF versions tested with **].
+-->
 
 ## Getting Started
 
@@ -27,9 +30,9 @@ This document points to more information for each workshop lab.
 
 - [Transfer learning: using a trained model to 'bootstrap' learning new classifications](workshop_sections/transfer_learning/README.md).
     + [Using Cloud ML](workshop_sections/transfer_learning/cloudml)
-    + **move this?** [Using a custom Estimator](workshop_sections/transfer_learning/TF_Estimator)
+    + **(possibly outdated)** [Using a custom Estimator](workshop_sections/transfer_learning/TF_Estimator)
 
-- **move this?** [Building a word2vec model using a Custom Estimator, and exploring the learned embeddings](workshop_sections/word2vec/README.md). Introducing [TFRecords](https://www.tensorflow.org/versions/r0.11/api_docs/python/python_io.html#data-io-python-functions).
+- **(possibly outdated)** [Building a word2vec model using a Custom Estimator, and exploring the learned embeddings](workshop_sections/word2vec/README.md). Introducing [TFRecords](https://www.tensorflow.org/api_guides/python/python_io).
 
 ## Extras
 

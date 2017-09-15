@@ -1,7 +1,11 @@
 
 # TensorFlow workshop lab sections
 
-This directory contains the workshop labs. [** add note re: TF versions tested with **].
+This directory contains the workshop labs.
+
+<!---
+[** add note re: TF versions tested with **].
+-->
 
 ## Getting Started
 
@@ -23,9 +27,9 @@ This directory contains the workshop labs. [** add note re: TF versions tested w
 
 - [Transfer learning: using a trained model to 'bootstrap' learning new classifications](transfer_learning/README.md).
     + [Using Cloud ML](transfer_learning/cloudml)
-    + **move this?** [Using a custom Estimator](transfer_learning/TF_Estimator)
+    + **(possibly outdated)** [Using a custom Estimator](transfer_learning/TF_Estimator)
 
-- **move this?** [Building a word2vec model using a Custom Estimator, and exploring the learned embeddings](word2vec/README.md). Introducing [TFRecords](https://www.tensorflow.org/versions/r0.11/api_docs/python/python_io.html#data-io-python-functions).
+- **(possibly outdated)** [Building a word2vec model using a Custom Estimator, and exploring the learned embeddings](word2vec/README.md). Introducing [TFRecords](https://www.tensorflow.org/api_guides/python/python_io).
 
 
 ## Extras
