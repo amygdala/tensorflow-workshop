@@ -36,6 +36,22 @@ $ jupyter notebook
 When the server starts up, it may bring up a tab automatically in your browser. If not, visit
 `http://localhost:8888/`.  Then select `mnist_estimator.ipynb`.
 
+## Using 'fashion MNIST' instead of 'regular' MNIST for your dataset
+
+Fashion-MNIST is a direct drop-in replacement for the original MNIST dataset.
+
+<img src="https://github.com/zalandoresearch/fashion-mnist/blob/master/doc/img/fashion-mnist-sprite.png" width=600 />
+
+You can read more about it, and why it was created, [here](https://github.com/zalandoresearch/fashion-mnist). It is a more challenging dataset than 'regular' MNIST, which has become overused, and is too easy.
+
+Download Fashion-MNIST [here](https://github.com/zalandoresearch/fashion-mnist#get-the-data), and put the files in a known directory. Then, find the line in your code which reads in the MNIST datasets, which will look something like this:
+
+```python
+DATA_SETS = input_data.read_data_sets(DATA_DIR)
+```
+
+If you're running the notebook, point `DATA_DIR` to the Fashion-MNIST directory you just created. If you're running the python script version, set the `--data_dir` command-line arg to this directory.
+
 ## TensorBoard
 
 After the script/notebook runs, or while it's running, start up TensorBoard as follows in a new terminal window. (If you get a 'not found' error, make sure you've activated your virtual environment in that new window):
@@ -44,12 +60,9 @@ After the script/notebook runs, or while it's running, start up TensorBoard as f
 $ tensorboard --logdir=/tmp/tfmodels/mnist_estimators
 ```
 
-Note: This tells TensorBoard to grab summary information from all directories under `/tmp/tfmodels/mnist_estimators`.  So, we can do multiple runs, and compare the results -- TensorBoard will automatically pull in data on additional runs as it is added.
+Note: This tells TensorBoard to grab summary information from all directories under `/tmp/tfmodels/mnist_estimators`.  So, we can do multiple runs, and compare the results. TensorBoard will automatically pull in data on additional runs as it is added.
 
 Once TensorBoard is running, then in your browser, visit the address indicated (probably `localhost:6006`).
-
-[At this point in the lab, we'll take some time to explore TensorBoard and see what kind of information
-it can display].
 
 ## Change the learning rate of your classifier
 
@@ -65,7 +78,7 @@ See whether the different learning rates caused different 'eval' results.
 ## Compare the DNNClassifier's performance on MNIST to a LinearClassifier
 
 In `mnist_estimator.py` you may have noticed that a linear classifier is also defined, using the
-[`LinearClassifier`](https://www.tensorflow.org/versions/r0.11/api_docs/python/contrib.learn.html#LinearClassifier) class.  This class defines a model that is essentially the same as that defined in
+[`LinearClassifier`](https://www.tensorflow.org/api_docs/python/tf/estimator/LinearClassifier) class.  This class defines a model that is essentially the same as that defined in
 `mnist_simple.py`, which we explored in our previous lab-- it does not use any hidden layers.
 
 Try uncommenting `run_linear_classifier()` in `main()` to run it. (You may want to also comment out
@@ -78,6 +91,9 @@ To do this, you can point tensorboard to a *set* of directories, like this (repl
 tensorboard --logdir=name1:<path1>,name2:<path2>
 ```
 
+If you've done runs using both 'regular' MNIST and training MNIST, it is interesting to compare those as well.
+
+<a href="https://storage.googleapis.com/amy-jo/images/tf-workshop/dnn_fashion_and_reg_mnist.png" target="_blank"><img src="https://storage.googleapis.com/amy-jo/images/tf-workshop/dnn_fashion_and_reg_mnist.png" width="600"/></a>
 
 
 
