@@ -11,7 +11,8 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-"""Convolutional Neural Network Estimator for MNIST, built with tf.layers."""
+
+"""Convolutional Neural Network Estimator for MNIST, built with keras.layers."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -31,7 +32,6 @@ import trainer.mnist_input
 from trainer.mnist_input import read_data_sets
 
 import tensorflow as tf
-# from tensorflow.examples.tutorials.mnist import input_data
 
 from tensorflow.contrib.learn import learn_runner
 from tensorflow.contrib.learn.python.learn.utils import (saved_model_export_utils)

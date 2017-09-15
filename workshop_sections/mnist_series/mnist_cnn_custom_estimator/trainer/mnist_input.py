@@ -231,7 +231,7 @@ def read_data_sets(train_dir,
   if not source_url:  # empty string check
     source_url = DEFAULT_SOURCE_URL
 
-  print("using %s" % source_url)
+  # print("using %s" % source_url)
   TRAIN_IMAGES = 'train-images-idx3-ubyte.gz'
   TRAIN_LABELS = 'train-labels-idx1-ubyte.gz'
   TEST_IMAGES = 't10k-images-idx3-ubyte.gz'
