@@ -93,5 +93,7 @@ tensorboard --logdir=name1:<path1>,name2:<path2>
 
 If you've done runs using both 'regular' MNIST and training MNIST, it is interesting to compare those as well.
 
+<a href="https://storage.googleapis.com/amy-jo/images/tf-workshop/dnn_fashion_and_reg_mnist.png" target="_blank"><img src="https://storage.googleapis.com/amy-jo/images/tf-workshop/dnn_fashion_and_reg_mnist.png" width="600"/></a>
+
 
 
