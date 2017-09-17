@@ -14,7 +14,7 @@ To run locally, first choose either:
 python -m xor.xor_summaries --output-dir ${OUTPUT_DIR}
 ```
 
-or if you want to try using the `gcloud beta ml local train` command the following will work:
+or if you want to try using the `gcloud ml-engine local train` command, the following will work:
 
 ```
 gcloud ml-engine local train \
@@ -24,7 +24,7 @@ gcloud ml-engine local train \
     --output-dir ${OUTPUT_DIR}
 ```
 
-The `gcloud beta ml local train` command runs your python code locally in an environment that emulates that of the Google Cloud Machine Learning API. This is primarily useful for distributed execution, where the local tool can serve as validation, that your code will run properly.
+The `gcloud ml-engine local train` command runs your python code locally in an environment that emulates that of the Google Cloud Machine Learning API. This is primarily useful for distributed execution, where the local tool can serve as validation, that your code will run properly.
 
 ### Running in the Cloud
 

@@ -1,4 +1,6 @@
 
+**Note**: you do not need to follow these instructions for the [O'Reilly AI Conf workshop](https://conferences.oreilly.com/artificial-intelligence/ai-ca/public/schedule/detail/60305).  For that workshop, you just need [TensorFlow installed](https://www.tensorflow.org/install/) on your laptop.
+
 # Installation instructions for the TensorFlow/Cloud ML workshop
 
   - [Project and Cloud ML setup](#project-and-cloud-ml-setup)
@@ -52,7 +54,7 @@ If you like, you can start up a Google Compute Engine (GCE) VM with docker insta
 Once Docker is installed and running, download the workshop image:
 
 ```sh
-$ docker pull gcr.io/google-samples/tf-workshop:v6
+$ docker pull gcr.io/google-samples/tf-workshop:v7
 ```
 
 [Here's the Dockerfile](https://github.com/amygdala/tensorflow-workshop/tree/master/workshop_image) used to build this image.
@@ -67,7 +69,7 @@ Once you've downloaded the container image, you can run it like this:
 
 ```sh
 docker run -v `pwd`/workshop-data:/root/tensorflow-workshop-master/workshop-data -it \
-    -p 6006:6006 -p 8888:8888 -p 5000:5000 gcr.io/google-samples/tf-workshop:v6
+    -p 6006:6006 -p 8888:8888 -p 5000:5000 gcr.io/google-samples/tf-workshop:v7
 ```
 
 Edit the path to the directory you're mounting as appropriate. The first component of the `-v` arg is the local directory, and the second component is where you want to mount it in your running container.
@@ -80,7 +82,7 @@ For the second two, you will get a URL to paste in your browser, to obtain an au
 ```shell
 gcloud config set project <your-project-name>
 gcloud auth login
-gcloud beta auth application-default login
+gcloud auth application-default login
 ```
 
 ### Restarting the container later
@@ -105,7 +107,7 @@ $ docker exec -it <container_id> bash
 
 ### Running the Docker container on a VM
 
-It is easy to set up a Google Compute Engine (GCE) VM on which to run the Docker container. We sketch the steps below, or see [TLDR_CLOUD_INSTALL.md](TLDR_CLOUD_INSTALL.md) for more detail.
+It is easy to set up a Google Compute Engine (GCE) VM on which to run the Docker container. We sketch the steps below.
 
 First, make sure that your project has the GCE API enabled. An easy way to do this is to go to the [Cloud Console](https://console.cloud.google.com/), and visit the Compute Engine panel.  It should display a button to enable the API.
 

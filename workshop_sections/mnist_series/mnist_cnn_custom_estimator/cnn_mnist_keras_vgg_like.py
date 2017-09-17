@@ -12,8 +12,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-"""Convolutional Neural Network Custom Estimator for MNIST,
-built with keras.layers."""
+"""Convolutional Neural Network Estimator for MNIST, built with keras.layers.
+Based on: http://www.sas-programming.com/2017/09/a-vgg-like-cnn-for-fashion-mnist-with.html
+"""
 
 from __future__ import absolute_import
 from __future__ import division
