@@ -12,12 +12,19 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-"""Convolutional Neural Network Custom Estimator for MNIST,
-built with tf.layers."""
+"""Convolutional Neural Network Estimator for MNIST, built with keras.layers.
+Based on: http://www.sas-programming.com/2017/09/a-vgg-like-cnn-for-fashion-mnist-with.html
+"""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+
+from keras.models import Sequential
+from keras.layers import Dense, Dropout, Activation, Flatten, LeakyReLU
+from keras.layers import Conv2D, MaxPooling2D
+from keras import backend as K
+
 
 import argparse
 import os
@@ -27,6 +34,7 @@ import time
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
+# tf.python.control_flow_ops = tf
 FLAGS = None
 BATCH_SIZE = 100
 
@@ -39,64 +47,30 @@ def cnn_model_fn(features, labels, mode):
   # Input Layer
   # Reshape X to 4-D tensor: [batch_size, width, height, channels]
   # MNIST images are 28x28 pixels, and have one color channel
+
   input_layer = tf.reshape(features["x"], [-1, 28, 28, 1])
 
-  # Convolutional Layer #1
-  # Computes 32 features using a 5x5 filter with ReLU activation.
-  # Padding is added to preserve width and height.
-  # Input Tensor Shape: [batch_size, 28, 28, 1]
-  # Output Tensor Shape: [batch_size, 28, 28, 32]
-  conv1 = tf.layers.conv2d(
-      inputs=input_layer,
-      filters=32,
-      kernel_size=[5, 5],
-      padding="same",
-      activation=tf.nn.relu)
+  if mode == tf.estimator.ModeKeys.TRAIN:
+    K.set_learning_phase(1)
+  else:
+    K.set_learning_phase(0)
 
-  # Pooling Layer #1
-  # First max pooling layer with a 2x2 filter and stride of 2
-  # Input Tensor Shape: [batch_size, 28, 28, 32]
-  # Output Tensor Shape: [batch_size, 14, 14, 32]
-  pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=[2, 2], strides=2)
-
-  # Convolutional Layer #2
-  # Computes 64 features using a 5x5 filter.
-  # Padding is added to preserve width and height.
-  # Input Tensor Shape: [batch_size, 14, 14, 32]
-  # Output Tensor Shape: [batch_size, 14, 14, 64]
-  conv2 = tf.layers.conv2d(
-      inputs=pool1,
-      filters=64,
-      kernel_size=[5, 5],
-      padding="same",
-      activation=tf.nn.relu)
-
-  # Pooling Layer #2
-  # Second max pooling layer with a 2x2 filter and stride of 2
-  # Input Tensor Shape: [batch_size, 14, 14, 64]
-  # Output Tensor Shape: [batch_size, 7, 7, 64]
-  pool2 = tf.layers.max_pooling2d(inputs=conv2, pool_size=[2, 2], strides=2)
-
-  # Flatten tensor into a batch of vectors
-  # Input Tensor Shape: [batch_size, 7, 7, 64]
-  # Output Tensor Shape: [batch_size, 7 * 7 * 64]
-  pool2_flat = tf.reshape(pool2, [-1, 7 * 7 * 64])
-
-  # Dense Layer
-  # Densely connected layer with 1024 neurons
-  # Input Tensor Shape: [batch_size, 7 * 7 * 64]
-  # Output Tensor Shape: [batch_size, 1024]
-  dense = tf.layers.dense(inputs=pool2_flat, units=1024, activation=tf.nn.relu, name="dense1")
-
-  # Add dropout operation; 0.6 probability that element will be kept
-  dropout = tf.layers.dropout(
-      inputs=dense, rate=0.4, training=mode == tf.estimator.ModeKeys.TRAIN)
-
-
-  # Logits layer
-  # Input Tensor Shape: [batch_size, 1024]
-  # Output Tensor Shape: [batch_size, 10]
-  logits = tf.layers.dense(inputs=dropout, units=10)
+  conv1 = Conv2D(filters=32, kernel_size=(3, 3), padding="same",
+            input_shape=(28,28,1), activation='relu')(input_layer)
+  conv2 = Conv2D(filters=64, kernel_size=(3, 3), padding="same", activation='relu')(conv1)
+  pool1 = MaxPooling2D(pool_size=(2, 2))(conv2)
+  dropout1 = Dropout(0.5)(pool1)
+  conv3 = Conv2D(filters=128, kernel_size=(3, 3), padding="same", activation='relu')(dropout1)
+  conv4 = Conv2D(filters=256, kernel_size=(3, 3), padding="valid", activation='relu')(conv3)
+  pool2 = MaxPooling2D(pool_size=(3, 3))(conv4)
+  dropout2 = Dropout(0.5)(pool2)
+  pool2_flat = Flatten()(dropout2)
+  dense1 = Dense(256)(pool2_flat)
+  lrelu = LeakyReLU()(dense1)
+  dropout3 = Dropout(0.5)(lrelu)
+  dense2 = Dense(256)(dropout3)
+  lrelu2 = LeakyReLU()(dense2)
+  logits = Dense(10, activation='linear')(lrelu2)
 
   predictions = {
       # Generate predictions (for PREDICT and EVAL mode)
@@ -120,6 +94,7 @@ def cnn_model_fn(features, labels, mode):
   tf.summary.scalar('loss', loss)
   tf.summary.histogram('conv1', conv1)
   tf.summary.histogram('dense', dense)
+
 
   # Configure the Training Op (for TRAIN mode)
   if mode == tf.estimator.ModeKeys.TRAIN:
@@ -154,7 +129,6 @@ def generate_input_fn(dataset, batch_size=BATCH_SIZE):
 
 def main(unused_argv):
   # Load training and eval data
-  # mnist = tf.contrib.learn.datasets.load_dataset("mnist")
   mnist = input_data.read_data_sets(FLAGS.data_dir)
 
   train_data = mnist.train.images  # Returns np.array
@@ -174,7 +148,6 @@ def main(unused_argv):
   logging_hook = tf.train.LoggingTensorHook(
       tensors=tensors_to_log, every_n_iter=FLAGS.logging_hook_iter)
 
-  # Train the model
   mnist_classifier.train(
       input_fn=generate_input_fn(mnist.train, batch_size=BATCH_SIZE),
       steps=FLAGS.num_steps,
@@ -213,7 +186,7 @@ if __name__ == "__main__":
                       help='Directory for storing data')
   parser.add_argument('--model_dir', type=str,
                       default=os.path.join(
-                          "/tmp/tfmodels/mnist_cnn_estimator",
+                          "/tmp/tfmodels/keras_mnist_cnn_estimator",
                           str(int(time.time()))),
                       help='Directory for storing model info')
   parser.add_argument('--num_steps', type=int,

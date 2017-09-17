@@ -1,5 +1,7 @@
 # Building a Custom Estimator for word2vec
 
+**Note: this lab is outdated and may not run.**
+
 The word2vec model produces vector embeddings of words, using proximity in a text corpus, and a sampling loss called "noise contrastive estimation". For more details check out [the tutorial on tensorflow.org](https://www.tensorflow.org/tutorials/word2vec/).
 
 This walkthrough assumes that your working directory is that of this `README` file.

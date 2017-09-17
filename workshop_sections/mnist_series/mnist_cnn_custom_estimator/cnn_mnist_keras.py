@@ -162,7 +162,8 @@ def main(unused_argv):
       shuffle=False)
   predict_results = mnist_classifier.predict(input_fn=predict_input_fn)
   for i, p in enumerate(predict_results):
-      print(p)
+      print("Correct label: %s" % predict_data_batch[1][i])
+      print("Prediction: %s" % p)
 
 
   def serving_input_receiver_fn():
