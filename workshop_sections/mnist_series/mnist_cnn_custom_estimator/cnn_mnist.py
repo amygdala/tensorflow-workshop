@@ -192,7 +192,8 @@ def main(unused_argv):
 
   predict_input_fn = tf.estimator.inputs.numpy_input_fn(
       x={"x": predict_data_batch[0]},
-      y=np.asarray(predict_data_batch[1], dtype=np.int32),
+      y=None,  # when predicting, we don't need labels
+      # y=np.asarray(predict_data_batch[1], dtype=np.int32),
       num_epochs=1,
       shuffle=False)
   predict_results = mnist_classifier.predict(input_fn=predict_input_fn)

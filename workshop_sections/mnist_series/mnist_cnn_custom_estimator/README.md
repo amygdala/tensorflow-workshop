@@ -104,6 +104,7 @@ complex CNN.
 
 Once the `gcloud` SDK is installed, you can run training locally via the SDK as follows.
 This can be useful for debugging.
+Note: this requires running in a py2.7 (virtual) environment.
 
 ```
 gcloud ml-engine local train --package-path trainer --module-name trainer.task \
