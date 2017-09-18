@@ -1,4 +1,6 @@
 
+**Note: this lab is outdated and may not run.** Instead see the [cloudml](../cloudml) variant, which is more up to date.
+
 # Transfer learning
 
   - [Introduction](#introduction)
