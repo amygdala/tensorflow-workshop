@@ -174,7 +174,7 @@ We do that via the following script, where `v1` is our model version name, and `
 ```
 
 The model is created first.  This only needs to happen once, and is done as follows:
-`gcloud beta ml models create <model_name>`
+`gcloud ml-engine models create <model_name>`
 
 Then, we create a 'version' of that model, based on the data in our model directory (`$GCS_PATH/training/model`), and set that version as the default.
 
@@ -241,7 +241,7 @@ export GOOGLE_APPLICATION_CREDENTIALS=/path/to/credentials/file.json
 Then initiate the local training like this, defining a local output path to use:
 
 ```shell
-gcloud beta ml local train --package-path trainer/ --module-name trainer.task \
+gcloud gcloud ml-engine local train --package-path trainer/ --module-name trainer.task \
     -- \
     --max-steps 1000 \
     --train_data_paths "$GCS_PATH/preproc/train*" \

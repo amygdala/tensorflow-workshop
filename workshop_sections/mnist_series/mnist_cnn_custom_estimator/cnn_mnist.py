@@ -52,7 +52,6 @@ def cnn_model_fn(features, labels, mode):
       kernel_size=[5, 5],
       padding="same",
       activation=tf.nn.relu)
-  # conv1 = tf.layers.batch_normalization(conv1)
 
   # Pooling Layer #1
   # First max pooling layer with a 2x2 filter and stride of 2
@@ -71,7 +70,6 @@ def cnn_model_fn(features, labels, mode):
       kernel_size=[5, 5],
       padding="same",
       activation=tf.nn.relu)
-  # conv2 = tf.layers.batch_normalization(conv2)
 
   # Pooling Layer #2
   # Second max pooling layer with a 2x2 filter and stride of 2
@@ -194,12 +192,13 @@ def main(unused_argv):
 
   predict_input_fn = tf.estimator.inputs.numpy_input_fn(
       x={"x": predict_data_batch[0]},
-      y=np.asarray(predict_data_batch[1], dtype=np.int32),
+      y=None,  # when predicting, we don't need labels
       num_epochs=1,
       shuffle=False)
   predict_results = mnist_classifier.predict(input_fn=predict_input_fn)
   for i, p in enumerate(predict_results):
-      print(p)
+      print("Correct label: %s" % predict_data_batch[1][i])
+      print("Prediction: %s" % p)
 
 
   def serving_input_receiver_fn():

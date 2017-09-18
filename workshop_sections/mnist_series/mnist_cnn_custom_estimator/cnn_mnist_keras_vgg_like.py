@@ -12,16 +12,17 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-"""Convolutional Neural Network Custom Estimator for MNIST,
-built with keras.layers."""
+"""Convolutional Neural Network Estimator for MNIST, built with keras.layers.
+Based on: http://www.sas-programming.com/2017/09/a-vgg-like-cnn-for-fashion-mnist-with.html
+"""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
 from keras.models import Sequential
-from keras.layers import Dense, Dropout, Activation, Flatten
-from keras.layers import Convolution2D, MaxPooling2D
+from keras.layers import Dense, Dropout, Activation, Flatten, LeakyReLU
+from keras.layers import Conv2D, MaxPooling2D
 from keras import backend as K
 
 
@@ -54,15 +55,22 @@ def cnn_model_fn(features, labels, mode):
   else:
     K.set_learning_phase(0)
 
-  conv1 = Convolution2D(32, (5, 5), activation='relu', input_shape=(28,28,1))(input_layer)
-  pool1 = MaxPooling2D(pool_size=(2,2))(conv1)
-  conv2 = Convolution2D(64, (5, 5), activation='relu')(pool1)
-  pool2 = MaxPooling2D(pool_size=(2,2))(conv2)
-  pool2_flat = Flatten()(pool2)
-  dense = Dense(1024, activation='relu')(pool2_flat)
-  dropout = Dropout(0.4)(dense)
-  logits = Dense(10, activation='linear')(dropout)
-
+  conv1 = Conv2D(filters=32, kernel_size=(3, 3), padding="same",
+            input_shape=(28,28,1), activation='relu')(input_layer)
+  conv2 = Conv2D(filters=64, kernel_size=(3, 3), padding="same", activation='relu')(conv1)
+  pool1 = MaxPooling2D(pool_size=(2, 2))(conv2)
+  dropout1 = Dropout(0.5)(pool1)
+  conv3 = Conv2D(filters=128, kernel_size=(3, 3), padding="same", activation='relu')(dropout1)
+  conv4 = Conv2D(filters=256, kernel_size=(3, 3), padding="valid", activation='relu')(conv3)
+  pool2 = MaxPooling2D(pool_size=(3, 3))(conv4)
+  dropout2 = Dropout(0.5)(pool2)
+  pool2_flat = Flatten()(dropout2)
+  dense1 = Dense(256)(pool2_flat)
+  lrelu = LeakyReLU()(dense1)
+  dropout3 = Dropout(0.5)(lrelu)
+  dense2 = Dense(256)(dropout3)
+  lrelu2 = LeakyReLU()(dense2)
+  logits = Dense(10, activation='linear')(lrelu2)
 
   predictions = {
       # Generate predictions (for PREDICT and EVAL mode)
@@ -85,7 +93,7 @@ def cnn_model_fn(features, labels, mode):
   # Generate some summary info
   tf.summary.scalar('loss', loss)
   tf.summary.histogram('conv1', conv1)
-  tf.summary.histogram('dense', dense)
+  tf.summary.histogram('dense', dense1)
 
 
   # Configure the Training Op (for TRAIN mode)

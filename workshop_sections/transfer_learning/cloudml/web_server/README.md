@@ -10,7 +10,7 @@ However, it is easily modified if you have done the transfer learning training o
 This code assumes that you have installed the gcloud SDK and have run:
 
 ```shell
-gcloud beta auth application-default login
+gcloud auth application-default login
 ```
 
 ## Running the server
@@ -24,7 +24,7 @@ pip install -r requirements.txt
 Start the server like this:
 
 ```shell
-python predict_server.py --model_name hugs --project aju-vtests2 --dict static/dict.txt
+python predict_server.py --model_name hugs --project <your-project-name> --dict static/dict.txt
 ```
 
 Then, upload an image (it must be of JPEG format) and see what category is predicted for it.
