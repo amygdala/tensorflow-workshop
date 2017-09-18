@@ -81,6 +81,10 @@ So this new model gives a bit of an improvement!
 But with more complex models, and the harder dataset, it's getting harder to train locally in a
 reasonable time period (at least on CPUs).
 
+## Exercise
+
+Try adding code to [cnn_mnist.ipynb](cnn_mnist.ipynb) to run model predictions and display the results.  The solution is [here](cnn_mnist_solution.ipynb) (as well as in some of the other notebooks and scripts) if you need it.
+
 ## Distributed training with Estimator models: using Cloud ML Engine
 
 [Note: This section and the GCP setup is not an official part of this workshop, though you might
