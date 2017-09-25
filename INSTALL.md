@@ -1,5 +1,5 @@
 
-**Note**: you do not need to follow these instructions for the [O'Reilly AI Conf workshop](https://conferences.oreilly.com/artificial-intelligence/ai-ca/public/schedule/detail/60305).  For that workshop, you just need [TensorFlow installed](https://www.tensorflow.org/install/) on your laptop.
+**Note**: you do not need to follow these instructions for the [Strata workshop](https://conferences.oreilly.com/strata/strata-ny/public/schedule/detail/60847).  For that workshop, you just need [TensorFlow](https://www.tensorflow.org/install/) and [Jupyter notebook](http://jupyter.org/install.html) installed on your laptop.
 
 # Installation instructions for the TensorFlow/Cloud ML workshop
 
