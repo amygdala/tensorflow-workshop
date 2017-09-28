@@ -1,5 +1,5 @@
 
-**Note**: you do not need to follow these instructions for the [Strata workshop](https://conferences.oreilly.com/strata/strata-ny/public/schedule/detail/60847).  For that workshop, you just need [TensorFlow](https://www.tensorflow.org/install/) and [Jupyter notebook](http://jupyter.org/install.html) installed on your laptop.
+**Note**: you do not need to follow these instructions for the [Strata workshop](https://conferences.oreilly.com/strata/strata-ny/public/schedule/detail/60847) or the [Strange Loop](https://www.thestrangeloop.com) workshop.  For those workshops, you just need [TensorFlow](https://www.tensorflow.org/install/) and [Jupyter notebook](http://jupyter.org/install.html) installed on your laptop.
 
 # Installation instructions for the TensorFlow/Cloud ML workshop
 
