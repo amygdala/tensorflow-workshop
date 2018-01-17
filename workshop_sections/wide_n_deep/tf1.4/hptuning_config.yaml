@@ -1,0 +1,22 @@
+trainingInput:
+  hyperparameters:
+    goal: MAXIMIZE
+    hyperparameterMetricTag: accuracy
+    maxTrials: 6
+    maxParallelTrials: 2
+    params:
+      - parameterName: first-layer-size
+        type: INTEGER
+        minValue: 50
+        maxValue: 400
+        scaleType: UNIT_LINEAR_SCALE
+      - parameterName: num-layers
+        type: INTEGER
+        minValue: 1
+        maxValue: 10
+        scaleType: UNIT_LINEAR_SCALE
+      - parameterName: scale-factor
+        type: DOUBLE
+        minValue: 0.1
+        maxValue: 0.9
+        scaleType: UNIT_REVERSE_LOG_SCALE
