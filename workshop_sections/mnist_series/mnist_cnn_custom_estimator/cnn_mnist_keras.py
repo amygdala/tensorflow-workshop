@@ -19,19 +19,18 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, Activation, Flatten
-from keras.layers import Convolution2D, MaxPooling2D
-from keras import backend as K
-
-
 import argparse
 import os
 import numpy as np
 import time
 
 import tensorflow as tf
+from tensorflow import keras
 from tensorflow.examples.tutorials.mnist import input_data
+
+from tensorflow.python.keras.layers import Dense, Dropout, Activation, Flatten
+from tensorflow.python.keras.layers import Convolution2D, MaxPooling2D
+from tensorflow.python.keras import backend as K
 
 # tf.python.control_flow_ops = tf
 FLAGS = None
@@ -50,9 +49,9 @@ def cnn_model_fn(features, labels, mode):
   input_layer = tf.reshape(features["x"], [-1, 28, 28, 1])
 
   if mode == tf.estimator.ModeKeys.TRAIN:
-    K.set_learning_phase(1)
+    K.set_learning_phase(True)
   else:
-    K.set_learning_phase(0)
+    K.set_learning_phase(False)
 
   conv1 = Convolution2D(32, (5, 5), activation='relu', input_shape=(28,28,1))(input_layer)
   pool1 = MaxPooling2D(pool_size=(2,2))(conv1)
