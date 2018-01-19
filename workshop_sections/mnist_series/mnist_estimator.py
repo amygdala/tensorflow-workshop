@@ -110,7 +110,12 @@ def main(_):
     # read in data, downloading first if necessary
     global DATA_SETS
     print("Downloading and reading data sets...")
-    DATA_SETS = input_data.read_data_sets(ARGFLAGS.data_dir)
+    DATA_SETS = input_data.read_data_sets(ARGFLAGS.data_dir,
+        # Specifying the following source URL should let you directly pull down the Fashion-MNIST files
+        # instead of the default MNIST dataset. You probably want to specify a different
+        # (non-default) local directory if you do so.
+        # source_url="http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/"
+        )
 
     # Uncomment this if you'd like to run the linear classifier first.
     # print("\n-----Running linear classifier...")
