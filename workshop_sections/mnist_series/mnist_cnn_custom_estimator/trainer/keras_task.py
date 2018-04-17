@@ -28,8 +28,7 @@ import os
 import numpy as np
 import time
 
-import trainer.mnist_input
-from trainer.mnist_input import read_data_sets
+import trainer.dataset as dataset
 
 import tensorflow as tf
 
@@ -43,12 +42,34 @@ BATCH_SIZE = 100
 tf.logging.set_verbosity(tf.logging.INFO)
 
 
+def train_input_fn(data_dir, batch_size=100):
+  """Prepare data for training."""
+
+  # When choosing shuffle buffer sizes, larger sizes result in better
+  # randomness, while smaller sizes use less memory. MNIST is a small
+  # enough dataset that we can easily shuffle the full epoch.
+  ds = dataset.train(data_dir)
+  ds = ds.cache().shuffle(buffer_size=50000).batch(batch_size=batch_size)
+
+  # Iterate through the dataset a set number of times
+  # during each training session.
+  ds = ds.repeat(40)
+  features = ds.make_one_shot_iterator().get_next()
+  return {'pixels': features[0]}, features[1]
+
+
+def eval_input_fn(data_dir, batch_size=100):
+  features = dataset.test(data_dir).batch(
+      batch_size=batch_size).make_one_shot_iterator().get_next()
+  return {'pixels': features[0]}, features[1]
+
+
 def cnn_model_fn(features, labels, mode):
   """Model function for CNN."""
   # Input Layer
   # Reshape X to 4-D tensor: [batch_size, width, height, channels]
   # MNIST images are 28x28 pixels, and have one color channel
-  input_layer = tf.reshape(features["x"], [-1, 28, 28, 1])
+  input_layer = tf.reshape(features["pixels"], [-1, 28, 28, 1])
 
   if mode == tf.estimator.ModeKeys.TRAIN:
     K.set_learning_phase(1)
@@ -117,60 +138,49 @@ def generate_input_fn(dataset, batch_size=BATCH_SIZE):
     return _input_fn
 
 
-def generate_experiment_fn(**experiment_args):
-
-  def _experiment_fn(run_config, hparams):
-
-    eval_input_fn = tf.estimator.inputs.numpy_input_fn(
-        x={"x": hparams.eval_data},
-        y=hparams.eval_labels,
-        num_epochs=1,
-        shuffle=False)
-
-    train_input = generate_input_fn(
-        hparams.dataset,
-        batch_size=BATCH_SIZE,
-    )
-    return tf.contrib.learn.Experiment(
-    tf.estimator.Estimator(
-        model_fn=cnn_model_fn, model_dir=FLAGS.job_dir, config=run_config),
-        train_input_fn=train_input,
-        eval_input_fn=eval_input_fn,
-        **experiment_args
-    )
-  return _experiment_fn
-
-
 def main(unused_argv):
 
-  # Load training and eval data
-  mnist = read_data_sets(FLAGS.data_dir,
-      source_url=FLAGS.datasource_url)
+  # Create the Estimator
+  mnist_classifier = tf.estimator.Estimator(
+      model_fn=cnn_model_fn, model_dir=FLAGS.job_dir)
 
-  train_data = mnist.train.images  # Returns np.array
-  train_labels = np.asarray(mnist.train.labels, dtype=np.int32)
-  eval_data = mnist.test.images  # Returns np.array
-  eval_labels = np.asarray(mnist.test.labels, dtype=np.int32)
+  # Train and evaluate the model
+  train_input = lambda: train_input_fn(
+      FLAGS.data_dir,
+      batch_size=BATCH_SIZE
+  )
+  eval_input = lambda: eval_input_fn(
+      FLAGS.data_dir,
+      batch_size=BATCH_SIZE
+  )
 
-  predict_data_batch = mnist.test.next_batch(20)
+  # Set up logging for predictions
+  # Log the values in the "Softmax" tensor with label "probabilities"
+  tensors_to_log = {"probabilities": "softmax_tensor"}
+  logging_hook = tf.train.LoggingTensorHook(
+      tensors=tensors_to_log, every_n_iter=2000)
 
+  train_spec = tf.estimator.TrainSpec(train_input,
+                                    max_steps=FLAGS.num_steps,
+                                    hooks=[logging_hook]
+                                    )
   def serving_input_receiver_fn():
       feature_tensor = tf.placeholder(tf.float32, [None, 784])
-      return tf.estimator.export.ServingInputReceiver({'x': feature_tensor}, {'x': feature_tensor})
+      return tf.estimator.export.ServingInputReceiver(
+          {'pixels': feature_tensor}, {'pixels': feature_tensor})
 
-  learn_runner.run(
-      generate_experiment_fn(
-          min_eval_frequency=1,
-          train_steps=FLAGS.num_steps,
-          eval_steps=FLAGS.eval_steps,
-          export_strategies=[saved_model_export_utils.make_export_strategy(
-              serving_input_receiver_fn,
-              exports_to_keep=1
-          )]
-      ),
-      run_config = tf.contrib.learn.RunConfig().replace(model_dir=FLAGS.job_dir, save_checkpoints_steps=1000),
-      hparams=hparam.HParams(dataset=mnist.train, eval_data=eval_data, eval_labels=eval_labels),
-  )
+  exporter = tf.estimator.FinalExporter('cnn_mnist', serving_input_receiver_fn)
+
+  # While not shown here, we can also add a model 'exporter' to the EvalSpec.
+  eval_spec = tf.estimator.EvalSpec(eval_input,
+                                  steps=FLAGS.eval_steps,
+                                  exporters=[exporter],
+                                  name='cnn_mnist_keras'
+                                  )
+
+  tf.estimator.train_and_evaluate(mnist_classifier,
+                                  train_spec,
+                                  eval_spec)
 
 
 if __name__ == "__main__":
@@ -191,7 +201,5 @@ if __name__ == "__main__":
   parser.add_argument('--logging_hook_iter', type=int,
                       default=5000,
                       help='How frequently to run the logging hook')
-  parser.add_argument('--datasource_url', type=str,
-                      help='MNIST data source URL')
-  FLAGS = parser.parse_args()
+    FLAGS = parser.parse_args()
   tf.app.run()

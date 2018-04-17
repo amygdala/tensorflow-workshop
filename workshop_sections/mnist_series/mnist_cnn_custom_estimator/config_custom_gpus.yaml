@@ -1,0 +1,7 @@
+trainingInput:
+  scaleTier: CUSTOM
+  masterType: standard_p100
+  workerType: standard_p100
+  parameterServerType: standard
+  workerCount: 3
+  parameterServerCount: 3
