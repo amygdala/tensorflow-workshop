@@ -201,5 +201,5 @@ if __name__ == "__main__":
   parser.add_argument('--logging_hook_iter', type=int,
                       default=5000,
                       help='How frequently to run the logging hook')
-    FLAGS = parser.parse_args()
+  FLAGS = parser.parse_args()
   tf.app.run()
