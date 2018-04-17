@@ -142,7 +142,8 @@ def main(unused_argv):
 
   # Create the Estimator
   mnist_classifier = tf.estimator.Estimator(
-      model_fn=cnn_model_fn, model_dir=FLAGS.job_dir)
+      model_fn=cnn_model_fn, model_dir=FLAGS.job_dir
+      )
 
   # Train and evaluate the model
   train_input = lambda: train_input_fn(
@@ -169,13 +170,14 @@ def main(unused_argv):
       return tf.estimator.export.ServingInputReceiver(
           {'pixels': feature_tensor}, {'pixels': feature_tensor})
 
-  exporter = tf.estimator.FinalExporter('cnn_mnist', serving_input_receiver_fn)
+  exporter = tf.estimator.LatestExporter('cnn_mnist', serving_input_receiver_fn)
 
   # While not shown here, we can also add a model 'exporter' to the EvalSpec.
   eval_spec = tf.estimator.EvalSpec(eval_input,
                                   steps=FLAGS.eval_steps,
                                   exporters=[exporter],
-                                  name='cnn_mnist_keras'
+                                  name='cnn_mnist_keras',
+                                  throttle_secs=60
                                   )
 
   tf.estimator.train_and_evaluate(mnist_classifier,
