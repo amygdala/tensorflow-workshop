@@ -26,24 +26,25 @@ shown in the current code.]
 ## Building a Custom Estimator
 
 When you're building a custom Estimator, you need to specify a `model_fn` that describes your model
-logic, as well as input function(s) that specify how your data is fed into the model for training, evaluation, and prediction.
-We can use both TF and/or Keras layers in defining the `model_fn`.
+logic, in addition to the input function(s) that specify how your data is fed into the model.
 
-See [this great guide for a detailed Estimator walkthrough](https://github.com/GoogleCloudPlatform/ml-on-gcp/blob/master/tensorflow/tf-estimators.ipynb).
-
-
-### A Custom Estimator CNN that uses tf.layers
-
-Here's a custom Estimator that implements a small CNN for MNIST data. The notebook version is
-here: [cnn_mnist.ipynb](cnn_mnist.ipynb), or [cnn_mnist.py](cnn_mnist.py) for the script version.
+We can Keras layers to define the `model_fn`; or interchangeably, we can use `tf.layers`.
 
 ### A Custom Estimator CNN that uses keras.layers
 
+Here's a custom Estimator that implements a convolutional neural net for MNIST data, using Keras layers: [cnn_mnist_keras.ipynb](cnn_mnist_keras.ipynb).
+
+[Open this notebook in colab](https://colab.sandbox.google.com/github/amygdala/tensorflow-workshop/blob/master/workshop_sections/mnist_series/mnist_cnn_custom_estimator/cnn_mnist_keras.ipynb).
+
+### A Custom Estimator CNN that uses tf.layers
+
 We've also built a version that uses Keras layers instead of TF layers.
-The notebook is here: [cnn_mnist_keras.ipynb](cnn_mnist_keras.ipynb), or
-[cnn_mnist_keras.py](cnn_mnist_keras.py) for the script version.
-The Estimator 'boilerplate' remains the same, but this time Keras layers are used for
+The notebook is here: [cnn_mnist_tf.ipynb](cnn_mnist_tf.ipynb).
+
+The custom Estimator 'boilerplate' remains the same, but this time TensorFlow layers are used for
 constructing the inference model.
+
+[Open this notebook in colab](https://colab.sandbox.google.com/github/amygdala/tensorflow-workshop/blob/master/workshop_sections/mnist_series/mnist_cnn_custom_estimator/cnn_mnist_tf.ipynb).
 
 You can see that these two models give similar results when trained on 'regular' MNIST data:
 
@@ -68,9 +69,11 @@ recognition developed and trained by Oxford's Visual Geometry Group, which achie
 good performance on the ImageNet dataset.)
 
 Our custom Estimator implementation is here:
-[cnn_mnist_keras_vgg_like.py](cnn_mnist_keras_vgg_like.py).  To create it, we just replaced our
+[cnn_mnist_keras_vgg_like.ipynb](cnn_mnist_keras_vgg_like.ipynb).  To create it, we replaced our
 original Keras layers with the 'VGG-like' Keras layers.  The custom Estimator lets us do easy
 distributed training of this model.
+
+[Open this notebook in colab](https://colab.sandbox.google.com/github/amygdala/tensorflow-workshop/blob/master/workshop_sections/mnist_series/mnist_cnn_custom_estimator/cnn_mnist_keras_vgg_like.ipynb).
 
 We can see from the comparison graph below that the VGG-like model gets better prediction accuracy even though its loss values are not so low (our original CNN models look to be overfitting on this dataset).
 
@@ -81,11 +84,7 @@ So this new model gives a bit of an improvement!
 But with more complex models, and the harder dataset, it's getting harder to train locally in a
 reasonable time period (at least on CPUs).
 
-## Exercise
-
-Try adding code to [cnn_mnist.ipynb](cnn_mnist.ipynb) to run model predictions and display the results.  The solution is [here](cnn_mnist_solution.ipynb) (as well as in some of the other notebooks and scripts) if you need it.
-
-## Distributed training with Estimator models: using Cloud ML Engine
+## Optional: Distributed training with Estimator models: using Cloud ML Engine
 
 [Note: This section and the GCP setup is not an official part of this workshop, though you might
 [want to play around with this stuff later on your own.]
@@ -94,8 +93,7 @@ Distributed training lets us get results faster, and we need to train for more s
 been to see whether the VGG-like CNN gives improved results.
 
 The [trainer](trainer) directory shows how you'd set things up to do distributed training of your
-models. [Note: some of what's shown, that makes use of `contrib` APIs, will become deprecated once
-TF 1.4 is out, replaced by an easier construction.]
+models. 
 
 To run the examples below, first
 [set up your environment for working with Cloud Machine Learning Engine](https://cloud.google.com/ml-engine/docs/quickstarts/command-line)
@@ -108,21 +106,14 @@ complex CNN.
 
 Once the `gcloud` SDK is installed, you can run training locally via the SDK as follows.
 This can be useful for debugging.
-Note: this requires running in a py2.7 (virtual) environment.
 
-```
-gcloud ml-engine local train --package-path trainer --module-name trainer.task \
-  -- --num_steps=10000
-```
-
-or to use the Keras layers version:
 
 ```
 gcloud ml-engine local train --package-path trainer --module-name trainer.keras_task \
   -- --num_steps=10000
 ```
 
-You can point the `--data_dir` flag to your downloaded Fashion-MNIST data to train on that dataset.
+You can point the `--data_dir` flag to your downloaded Fashion-MNIST directory to train on that dataset.
 
 ### Training on CMLE (& Using Fashion-MNIST)
 
@@ -132,40 +123,17 @@ configurations, including use of GPUs.
 See the [documentation](https://cloud.google.com/ml-engine/docs/) for more info.)
 
 To use Fashion-MNIST for the dataset,
-point `--datasource_url` to a directory containing the Fashion-MNIST datasets, as suggested below.
-(An easy way to do this is to put the datasets under a [Google Cloud Storage bucket](https://cloud.google.com/storage/)
-and then make the link to that directory public).
-If you omit the `--datasource_url` argument, the training will use 'regular' MNIST.
+point `--data_dir` to a GCS directory containing the *unzipped* Fashion-MNIST dataset files, as indicated below.
+If you omit the `--data_dir` argument, the training will use 'regular' MNIST.
 
-The `tf.layers` version...
+This trains the Keras-layer-based version of the first CNN model.
 
 ```
 gcloud ml-engine jobs submit training cnn_mnist_$(date -u +%y%m%d_%H%M%S) \
   --job-dir gs://<your-gcs-bucket-name>/cnn_tests_$(date -u +%y%m%d_%H%M%S) --scale-tier STANDARD_1 \
-  --runtime-version 1.2 \
-  --module-name trainer.task \
-  --package-path trainer \
-  --region us-east1 -- --num_steps 65000  --datasource_url='https://<path to Fashion-MNIST dataset>'
-```
-
-... and the Keras layers version of the 'original' CNN model.
-
-```
-gcloud ml-engine jobs submit training cnn_mnist_$(date -u +%y%m%d_%H%M%S) \
-  --job-dir gs://<your-gcs-bucket-name>/cnn_tests_$(date -u +%y%m%d_%H%M%S) --scale-tier STANDARD_1 \
-  --runtime-version 1.2 \
+  --runtime-version 1.6 \
   --module-name trainer.keras_task \
-  --package-path trainer \
-  --region us-east1 -- --num_steps 65000  --datasource_url='https://<path to Fashion-MNIST dataset>'
+  --package-path trainer --config config_custom_gpus.yaml\
+  --region us-east1 -- --num_steps 65000  --data_dir=gs://<your-gcs-bucket-name>/path/to/fashion_mnist/ --num_steps=1000
 ```
 
-Here's the 'VGG-like CNN' model, which does indeed perform a bit better on Fashion-MNIST:
-
-```
-gcloud ml-engine jobs submit training cnn_mnist_$(date -u +%y%m%d_%H%M%S) \
-  --job-dir gs://<your-gcs-bucket-name>/cnn_tests_$(date -u +%y%m%d_%H%M%S) --scale-tier STANDARD_1 \
-  --runtime-version 1.2 \
-  --module-name trainer.keras_vgg_task \
-  --package-path trainer \
-  --region us-east1 -- --num_steps 65000  --datasource_url='https://<path to Fashion-MNIST dataset>'
-```
