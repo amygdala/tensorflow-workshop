@@ -53,7 +53,7 @@ def train_input_fn(data_dir, batch_size=100):
 
   # Iterate through the dataset a set number of times
   # during each training session.
-  ds = ds.repeat(40)
+  ds = ds.repeat(70)
   features = ds.make_one_shot_iterator().get_next()
   return {'pixels': features[0]}, features[1]
 
@@ -123,26 +123,16 @@ def cnn_model_fn(features, labels, mode):
   return tf.estimator.EstimatorSpec(
       mode=mode, loss=loss, eval_metric_ops=eval_metric_ops)
 
-def generate_input_fn(dataset, batch_size=BATCH_SIZE):
-    def _input_fn():
-        X = tf.constant(dataset.images)
-        Y = tf.constant(dataset.labels, dtype=tf.int32)
-        image_batch, label_batch = tf.train.shuffle_batch([X,Y],
-                               batch_size=batch_size,
-                               capacity=8*batch_size,
-                               min_after_dequeue=4*batch_size,
-                               enqueue_many=True
-                              )
-        return {'x': image_batch} , label_batch
-
-    return _input_fn
-
 
 def main(unused_argv):
 
   # Create the Estimator
+  run_config = tf.estimator.RunConfig(
+    # save_summary_steps=100,
+    save_checkpoints_steps=500, keep_checkpoint_max=20)
   mnist_classifier = tf.estimator.Estimator(
-      model_fn=cnn_model_fn, model_dir=FLAGS.job_dir
+      model_fn=cnn_model_fn, model_dir=FLAGS.job_dir,
+      config=run_config
       )
 
   # Train and evaluate the model
@@ -177,7 +167,7 @@ def main(unused_argv):
                                   steps=FLAGS.eval_steps,
                                   exporters=[exporter],
                                   name='cnn_mnist_keras',
-                                  throttle_secs=60
+                                  throttle_secs=30
                                   )
 
   tf.estimator.train_and_evaluate(mnist_classifier,
