@@ -25,12 +25,10 @@ This directory contains the workshop labs.
 
 - [Using a tf.estimator to train a 'Wide & Deep' model](wide_n_deep/README.md).
 
-## Transfer Learning
-
-- [Transfer learning: using a trained model to 'bootstrap' learning new classifications](transfer_learning/README.md).
-    + [Using Cloud ML](transfer_learning/cloudml)
 
 ## Extras
+
+- [Transfer learning: using a trained model to 'bootstrap' learning new classifications](transfer_learning/README.md) [using Cloud ML Engine](transfer_learning/cloudml). This example still works (and is fun to play with), but uses TensorFlow v1.2.  So it doesn't demonstrate current best practices.
 
 - **(probably outdated)** [Building a word2vec model using a Custom Estimator, and exploring the learned embeddings](word2vec/README.md). Introducing [TFRecords](https://www.tensorflow.org/api_guides/python/python_io).
 

@@ -2,6 +2,8 @@
 
 This directory contains an example of transfer learning using the "Inception V3" image classification model.
 
+**Note**: This example still works (and is fun to play with), but uses TensorFlow v1.2.  So it doesn't demonstrate current best practices.
+
 The [cloudml](cloudml) example shows how to use [Cloud Dataflow](https://cloud.google.com/dataflow/) ([Apache
 Beam](https://beam.apache.org/)) to do image preprocessing, then train and serve your model on Cloud ML.  It supports
 distributed training on Cloud ML.
