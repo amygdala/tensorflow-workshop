@@ -1,4 +1,4 @@
-#  Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+#  Copyright 2017 Google Inc. All Rights Reserved.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -18,11 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, Activation, Flatten
-from keras.layers import Convolution2D, MaxPooling2D
-from keras import backend as K
-
 import argparse
 import os
 import numpy as np
@@ -31,10 +26,12 @@ import time
 import trainer.dataset as dataset
 
 import tensorflow as tf
+from tensorflow import keras
 
-from tensorflow.contrib.learn import learn_runner
-from tensorflow.contrib.learn.python.learn.utils import (saved_model_export_utils)
-from tensorflow.contrib.training.python.training import hparam
+from tensorflow.python.keras.layers import Dense, Dropout, Activation, Flatten
+from tensorflow.python.keras.layers import Convolution2D, MaxPooling2D
+from tensorflow.python.keras import backend as K
+
 
 FLAGS = None
 BATCH_SIZE = 100

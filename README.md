@@ -20,7 +20,8 @@ This document points to more information for each workshop lab.
 
 - [Introducing MNIST, and building a simple linear classifier in TensorFlow](workshop_sections/mnist_series/01_README_mnist_simple.md).
 - [Using TensorFlow's high-level APIs to build an MNIST DNN Classifier, and introducing TensorBoard](workshop_sections/mnist_series/02_README_mnist_tflearn.md).
-- [Building custom `Estimator`s for a version of MNIST that uses CNNs](workshop_sections/mnist_series/mnist_cnn_custom_estimator/README.md), using either TensorFlow or [Keras](https://keras.io/) layers.
+- [An example of using Keras with TensorFlow eager mode, on the'Fashion MNIST' dataset](workshop_sections/mnist_series/mnist_eager_keras.ipynb): This notebook shows an example of using Keras with TensorFlow eager mode, on the 'Fashion MNIST' dataset. This notebook requires TensorFlow >=1.7.
+- [Building Custom `Estimator`s for a version of MNIST that uses CNNs](workshop_sections/mnist_series/mnist_cnn_custom_estimator/README.md), using either TensorFlow or [Keras](https://keras.io/) layers.
 
 
 ## 'Wide & Deep'

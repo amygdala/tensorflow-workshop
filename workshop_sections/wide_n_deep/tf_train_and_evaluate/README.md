@@ -14,7 +14,7 @@ The primary steps necessary to do this, in addition to building your Estimator m
 
 Then we'll look at how to **use your trained model to make predictions**. 
 
-The example also includes the use of [**Datasets**](https://www.tensorflow.org/api_docs/python/tf/data/Dataset) to manage our input data. This API is part of TensorFlow 1.4, and is an easier and more performant way to create input pipelines to TensorFlow models. (See [this article](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/docs_src/performance/datasets_performance.md) for more on why input pipelining is so important, particularly when using accelerators).
+The example also includes the use of [**Datasets**](https://www.tensorflow.org/api_docs/python/tf/data/Dataset) to manage our input data. This API is part of TensorFlow 1.4 onwards, and is an easier and more performant way to create input pipelines to TensorFlow models. (See [this article](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/docs_src/performance/datasets_performance.md) for more on why input pipelining is so important, particularly when using accelerators).
 
 For our example, we'll use the The [Census Income Data
 Set](https://archive.ics.uci.edu/ml/datasets/Census+Income) hosted by the [UC Irvine Machine Learning
