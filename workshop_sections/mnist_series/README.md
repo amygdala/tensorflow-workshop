@@ -11,9 +11,9 @@ This directory contains a series of labs/examples that introduce the the high-le
 
    Run this example as a [colab notebook](https://colab.research.google.com/github/amygdala/tensorflow-workshop/blob/master/workshop_sections/mnist_series/mnist_estimator.ipynb)
 
-- [mnist_eager_keras.ipynb](./mnist_eager_keras.ipynb): This notebook shows an example of using Keras with TensorFlow eager mode, on the 'Fashion MNIST' dataset. This notebook requires TensorFlow >=1.7.
+- [mnist_eager_keras-debug.ipynb](./mnist_eager_keras-debug.ipynb) and [mnist_eager_keras.ipynb](./mnist_eager_keras.ipynb): This pair of notebooks show an example of using Keras with TensorFlow eager mode, on the 'Fashion MNIST' dataset. These notebooks require TensorFlow >=1.7.
 
-  Run this example as a [colab notebook](https://colab.research.google.com/github/amygdala/tensorflow-workshop/blob/master/workshop_sections/mnist_series/mnist_eager_keras.ipynb)
+  Run these examples as colab notebooks: [mnist_eager_keras-debug.ipynb](https://colab.research.google.com/github/amygdala/tensorflow-workshop/blob/master/workshop_sections/mnist_series/mnist_eager_keras-debug.ipynb) or [mnist_eager_keras.ipynb](https://colab.research.google.com/github/amygdala/tensorflow-workshop/blob/master/workshop_sections/mnist_series/mnist_eager_keras.ipynb). (We'll start with the "debug" version in the workshop).
 
 - [Building Custom CNN Estimators](mnist_cnn_custom_estimator): Where 'canned' Estimators aren't available for your use case, you can build a custom one, to get all the advantages of using an Estimator, including support for distributed training. You can use Keras layers to do this. Examples show how to do this for variants of CNNs, with both Keras and TensorFlow layers.  
 Click through to the [README](mnist_cnn_custom_estimator/README.md) for links to run these examples as colab notebooks.
