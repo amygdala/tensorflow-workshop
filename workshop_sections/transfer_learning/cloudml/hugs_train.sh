@@ -54,13 +54,13 @@ gcloud ml-engine jobs submit training "$JOB_ID" \
   --module-name trainer.task \
   --package-path trainer \
   --staging-bucket "$BUCKET" \
-  --region us-central1 \
+  --region us-central1 --runtime-version 1.2 \
   -- \
   --output_path "${GCS_PATH}/training" \
   --eval_data_paths "${GCS_PATH}/preproc/eval*" \
   --train_data_paths "${GCS_PATH}/preproc/train*" \
   --eval_set_size 19 --eval_batch_size 19 \
-  --classifier_label_count 2 --runtime-version 1.2
+  --classifier_label_count 2
 
 
 # You can also separately run:

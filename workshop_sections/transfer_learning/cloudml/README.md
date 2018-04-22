@@ -1,6 +1,8 @@
 
 # Classifying your own images using *transfer learning*
 
+**Note**: This example works (and is fun to play with), but uses TensorFlow v1.2.  So it doesn't demonstrate current best practices.
+
   - [The "hugs/not-hugs" image classification task](#the-hugsnot-hugs-image-classification-task)
     - [1. Image Preprocessing](#1-image-preprocessing)
       - [1.1 Deploy the preprocessing job to Cloud Dataflow](#11-deploy-the-preprocessing-job-to-cloud-dataflow)

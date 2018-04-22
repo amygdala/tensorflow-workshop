@@ -61,7 +61,7 @@ set -e
 # Tensorflow graph to a Cloud instance, and gets it ready to serve (predict).
 # This will give an error if the version name already exists.
 gcloud ml-engine versions create "$VERSION_NAME" \
-  --model "$MODEL_NAME" \
+  --model "$MODEL_NAME" --runtime-version 1.2 \
   --origin "${GCS_PATH}/training/model"
 
 # Models do not need a default version, but it's a great way to move
@@ -76,7 +76,7 @@ python images_to_json.py -o request.json prediction_images/knife.jpg prediction_
 set +v
 echo
 echo "You can run this command to see all your models:"
-echo "gcloud beta ml models list"
+echo "gcloud ml-engine models list"
 echo
 echo "Next, from the command line, run the following.  It might take a"
 echo "few moments for the prediction service to spin up."
