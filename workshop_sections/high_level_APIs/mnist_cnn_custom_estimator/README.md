@@ -34,7 +34,7 @@ We can Keras layers to define the `model_fn`; or interchangeably, we can use `tf
 
 Here's a custom Estimator that implements a convolutional neural net for MNIST data, using Keras layers: [cnn_mnist_keras.ipynb](cnn_mnist_keras.ipynb).
 
-[Open this notebook in colab](https://colab.research.google.com/github/amygdala/tensorflow-workshop/blob/master/workshop_sections/mnist_series/mnist_cnn_custom_estimator/cnn_mnist_keras.ipynb).
+[Open this notebook in colab](https://colab.research.google.com/github/amygdala/tensorflow-workshop/blob/master/workshop_sections/high_level_APIs/mnist_cnn_custom_estimator/cnn_mnist_keras.ipynb).
 
 ### A Custom Estimator CNN that uses tf.layers
 
@@ -44,7 +44,7 @@ The notebook is here: [cnn_mnist_tf.ipynb](cnn_mnist_tf.ipynb).
 The custom Estimator 'boilerplate' remains the same, but this time TensorFlow layers are used for
 constructing the inference model.
 
-[Open this notebook in colab](https://colab.research.google.com/github/amygdala/tensorflow-workshop/blob/master/workshop_sections/mnist_series/mnist_cnn_custom_estimator/cnn_mnist_tf.ipynb).
+[Open this notebook in colab](https://colab.research.google.com/github/amygdala/tensorflow-workshop/blob/master/workshop_sections/high_level_APIs/mnist_cnn_custom_estimator/cnn_mnist_tf.ipynb).
 
 You can see that these two models give similar results when trained on 'regular' MNIST data:
 
@@ -73,7 +73,7 @@ Our custom Estimator implementation is here:
 original Keras layers with the 'VGG-like' Keras layers.  The custom Estimator lets us do easy
 distributed training of this model.
 
-[Open this notebook in colab](https://colab.research.google.com/github/amygdala/tensorflow-workshop/blob/master/workshop_sections/mnist_series/mnist_cnn_custom_estimator/cnn_mnist_keras_vgg_like.ipynb).
+[Open this notebook in colab](https://colab.research.google.com/github/amygdala/tensorflow-workshop/blob/master/workshop_sections/high_level_APIs/mnist_cnn_custom_estimator/cnn_mnist_keras_vgg_like.ipynb).
 
 We can see from the comparison graph below that the VGG-like model gets better prediction accuracy even though its loss values are not so low (our original CNN models look to be overfitting on this dataset).
 

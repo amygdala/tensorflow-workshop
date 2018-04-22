@@ -14,12 +14,11 @@ This directory contains the workshop labs.
 - A [LinearRegressor example](linear_regressor_datasets) that uses Datasets.
 
 
-## The MNIST (& 'fashion MNIST') series
+## [The high-level TensorFlow APIs, via MNIST & 'fashion MNIST'](high_level_APIs)
 
-- [Introducing MNIST, and building a simple linear classifier in TensorFlow](mnist_series/01_README_mnist_simple.md).
-- [Using TensorFlow's high-level APIs to build an MNIST DNN Classifier, and introducing TensorBoard](mnist_series/02_README_mnist_tflearn.md).
-- [An example of using Keras with TensorFlow eager mode, on the'Fashion MNIST' dataset](mnist_series/mnist_eager_keras.ipynb): This notebook shows an example of using Keras with TensorFlow eager mode, on the 'Fashion MNIST' dataset. This notebook requires TensorFlow >=1.7.
-- [Building Custom `Estimator`s for a version of MNIST that uses CNNs](mnist_series/mnist_cnn_custom_estimator/README.md), using either TensorFlow or [Keras](https://keras.io/) layers.
+- [Using TensorFlow's high-level APIs to build an MNIST DNN Classifier, and introducing TensorBoard](high_level_APIs/02_README_mnist_tflearn.md).
+- [An example of using Keras with TensorFlow eager mode, on the'Fashion MNIST' dataset](high_level_APIs/mnist_eager_keras.ipynb): This notebook shows an example of using Keras with TensorFlow eager mode, on the 'Fashion MNIST' dataset. This notebook requires TensorFlow >=1.7.
+- [Building Custom `Estimator`s for a version of MNIST that uses CNNs](high_level_APIs/mnist_cnn_custom_estimator/README.md), using either TensorFlow or [Keras](https://keras.io/) layers.
 
 
 ## 'Wide & Deep'
