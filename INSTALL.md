@@ -15,7 +15,7 @@ Then install the following into your virtual environment:
 
 -  Install [Jupyter](https://jupyter.org/install.html). 
 
-- Optionally, install `matplotlib`. (If you're using a conda virtual environment, use `conda install matplotlib`.)
+- Optionally, install `pandas` and `matplotlib`. (If you're using a conda virtual environment, use `conda install matplotlib`.)
 
 ### Test your installation
 
