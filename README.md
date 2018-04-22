@@ -1,10 +1,9 @@
 
 # TensorFlow workshop materials
 
-This repo contains materials for use in a TensorFlow workshop.  
-Contributions are not currently accepted.  This is not an official Google product.
+This repo contains materials for use in TensorFlow workshops.
 
-This document points to more information for each workshop lab.  
+Contributions are not currently accepted.  This is not an official Google product.
 
 <!---
 [** add note re: TF versions tested with **].
@@ -26,7 +25,8 @@ This document points to more information for each workshop lab.
 
 ## 'Wide & Deep'
 
-- [Using a tf.estimator to train a 'Wide & Deep' model](workshop_sections/wide_n_deep/README.md).
+- [Using a tf.estimator to train a 'Wide & Deep' model](workshop_sections/wide_n_deep/README.md). The example highlights use of [`tf.feature_columns`](https://www.tensorflow.org/versions/master/get_started/feature_columns), which are intermediaries between raw data and Estimators, enabling you to transform a diverse range of raw data into formats that Estimators can use, and allowing easy experimentation.
+It also includes the use of [**`tf.estimator.train_and_evaluate`**](https://www.tensorflow.org/api_docs/python/tf/estimator/train_and_evaluate) and [**Datasets**](https://www.tensorflow.org/api_docs/python/tf/data/Dataset).
 
 
 ## Extras

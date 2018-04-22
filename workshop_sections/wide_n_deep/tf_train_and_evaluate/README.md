@@ -1,6 +1,8 @@
 
 # Easy distributed training with TensorFlow using `tf.estimator.train_and_evaluate`
 
+Run the Jupyter notebook in this directory: [using_tf.estimator.train_and_evaluate.ipynb](using_tf.estimator.train_and_evaluate.ipynb), or [run the notebook on colab](colab.research.google.com/github/amygdala/tensorflow-workshop/blob/master/workshop_sections/wide_n_deep/tf_train_and_evaluate/using_tf.estimator.train_and_evaluate.ipynb).
+
 ## Introduction
 
 TensorFlow release 1.4 introduced the function [**`tf.estimator.train_and_evaluate`**](https://www.tensorflow.org/api_docs/python/tf/estimator/train_and_evaluate), which simplifies training, evaluation, and exporting of [`Estimator`](https://www.tensorflow.org/get_started/estimator) models. It abstracts away the details of [distributed execution](https://www.google.com/url?q=https://www.tensorflow.org/deploy/distributed) for training and evaluation, while also supporting local execution, and provides consistent behavior across both local/non-distributed and distributed configurations.
@@ -21,8 +23,6 @@ Set](https://archive.ics.uci.edu/ml/datasets/Census+Income) hosted by the [UC Ir
 Repository](https://archive.ics.uci.edu/ml/datasets/). We have hosted the data
 on [Google Cloud Storage](https://cloud.google.com/storage/) (GCS) in a slightly cleaned form. We'll use this dataset to predict income category based on various information about a person.
 
-This README omits some of the details of the example.
-To see the specifics and work through the code yourself, visit the [Jupyter](http://jupyter.org/) notebook [in this directory](using_tf.estimator.train_and_evaluate.ipynb).
 (The example in the [notebook](using_tf.estimator.train_and_evaluate.ipynb) is a slightly modified version of [this other example](https://github.com/GoogleCloudPlatform/cloudml-samples/tree/master/census/estimator/trainer)).
 
 

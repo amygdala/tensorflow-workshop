@@ -24,7 +24,8 @@ This directory contains the workshop labs.
 
 ## 'Wide & Deep'
 
-- [Using a tf.estimator to train a 'Wide & Deep' model](wide_n_deep/README.md).
+- [Using a tf.estimator to train a 'Wide & Deep' model](wide_n_deep/README.md). The example highlights use of [`tf.feature_columns`](https://www.tensorflow.org/versions/master/get_started/feature_columns), which are intermediaries between raw data and Estimators, enabling you to transform a diverse range of raw data into formats that Estimators can use, and allowing easy experimentation.
+It also includes the use of [**`tf.estimator.train_and_evaluate`**](https://www.tensorflow.org/api_docs/python/tf/estimator/train_and_evaluate) and [**Datasets**](https://www.tensorflow.org/api_docs/python/tf/data/Dataset).
 
 
 ## Extras
