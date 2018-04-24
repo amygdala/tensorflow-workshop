@@ -17,6 +17,8 @@ Then install the following into your virtual environment:
 
 - Optionally, install `pandas` and `matplotlib`. (If you're using a conda virtual environment, use `conda install matplotlib`.)
 
+- Optionally, download the ‘Fashion-MNIST’ files: [https://github.com/zalandoresearch/fashion-mnist#get-the-data](https://github.com/zalandoresearch/fashion-mnist#get-the-data).
+
 ### Test your installation
 
 Start up a jupyter notebooks server from the command line:
