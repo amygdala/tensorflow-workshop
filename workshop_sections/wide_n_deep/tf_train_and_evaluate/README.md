@@ -1,7 +1,12 @@
 
 # Easy distributed training with TensorFlow using `tf.estimator.train_and_evaluate`
 
-Run the Jupyter notebook in this directory: [using_tf.estimator.train_and_evaluate.ipynb](using_tf.estimator.train_and_evaluate.ipynb), or [run the notebook on colab](colab.research.google.com/github/amygdala/tensorflow-workshop/blob/master/workshop_sections/wide_n_deep/tf_train_and_evaluate/using_tf.estimator.train_and_evaluate.ipynb).
+This directory has two Jupyter notebooks that successively add more input features to the same "wide & deep" ([`DNNLinearCombinedClassifier`](https://www.tensorflow.org/api_docs/python/tf/estimator/DNNLinearCombinedClassifier)) model, but don't differ otherwise.
+
+For the workshop, we'll start with [using_tf.estimator.train_and_eval_features1.ipynb](using_tf.estimator.train_and_eval_features1.ipynb) ([colab](https://colab.research.google.com/github/amygdala/tensorflow-workshop/blob/master/workshop_sections/wide_n_deep/tf_train_and_evaluate/using_tf.estimator.train_and_eval_features1.ipynb)),
+then see
+[using_tf.estimator.train_and_evaluate.ipynb](using_tf.estimator.train_and_evaluate.ipynb) ([colab](https://colab.research.google.com/github/amygdala/tensorflow-workshop/blob/master/workshop_sections/wide_n_deep/tf_train_and_evaluate/using_tf.estimator.train_and_evaluate.ipynb)) for the final version.
+
 
 ## Introduction
 
