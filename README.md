@@ -17,7 +17,7 @@ Contributions are not currently accepted.  This is not an official Google produc
 
 ## [The high-level TensorFlow APIs, via MNIST & 'fashion MNIST'](workshop_sections/high_level_APIs)
 
-- [Using TensorFlow's high-level APIs to build an MNIST DNN Classifier, and introducing TensorBoard](workshop_sections/high_level_APIs/02_README_mnist_tflearn.md).
+- [Using TensorFlow's high-level APIs to build classifiers, and introducing TensorBoard](workshop_sections/high_level_APIs/mnist_estimator.ipynb).
 - [An example of using Keras with TensorFlow eager mode, on the'Fashion MNIST' dataset](workshop_sections/high_level_APIs/mnist_eager_keras.ipynb): This notebook shows an example of using Keras with TensorFlow eager mode, on the 'Fashion MNIST' dataset. This notebook requires TensorFlow >=1.7.
 - [Building Custom `Estimator`s for a version of MNIST that uses CNNs](workshop_sections/high_level_APIs/mnist_cnn_custom_estimator/README.md), using either TensorFlow or [Keras](https://keras.io/) layers.
 
